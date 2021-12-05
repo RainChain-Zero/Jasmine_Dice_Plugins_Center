@@ -79,7 +79,7 @@ function trust(msg)
     end
     local notice=getGroupConf(msg.fromGroup,"notice",0)
     local noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
-    if(msg.fromGroup=="0")then
+    if(msg.fromGroup=="0" and noticeQQ==0)then
             noticeQQ=noticeQQ+1
             local content="**[好感互动模块-版本通告Ver4.0]**\n新增了剧情系统（Beta），可以浏览和茉莉酱一起经历的故事，目前已完成（短篇）序章，好感达到1000者可通过指令“进入剧情 序章”进入剧情浏览，欢迎阅读哦~\n1.进度自动保存，重新输入“进入剧情”将会从零开始\n2.部分选项会增加/降低好感\n3.阅读完章节将会给予道具奖励\n"..
             "策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：@Ashiterui（2677409596）\n——By 慕北_Innocent(RainChain)(3032902237)\n2021.12.05"

@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Beta)
     @Create 2021/12/05 00:04
-    @Last Update 2021/12/05 10:00
+    @Last Update 2021/12/05 11:34
     ]]
 
 msg_order={}
@@ -16,7 +16,6 @@ function StoryZero(msg)
     local ChoiceIndex=getUserConf(msg.fromQQ,"ChoiceIndex",1)
     local ChoiceSelected=getUserConf(msg.fromQQ,"ChoiceSelected0",0)
     local content;
-    --是否为正常剧情阅读
     if(string.find(msg.fromMsg,"n")~=nil)then
         local Story=getUserConf(msg.fromQQ,"StoryReadNow",-1)
 
@@ -122,6 +121,7 @@ function StoryZero(msg)
                     setUserConf(msg.fromQQ,"梦的开始",1)
                     setUserConf(msg.fromQQ,"isStory0Read",1)
                     sendMsg(content,0,msg.fromQQ)
+                    sleepTime(2000)
                     return "系统：您得到了道具『梦的开始』x1（一把象牙白的钥匙，晶莹剔透，不知道是用什么制作的，或许能开启什么）"
                 end
                 return content
@@ -137,6 +137,9 @@ function StoryZero(msg)
 
     --是否是选择分支
     elseif(string.find(msg.fromMsg,"选择")~=nil)then
+        if(getUserConf(msg.fromQQ,"StoryReadNow",-1)==-1)then
+            return ""
+        end
         if(Option==0)then
             return "您现在还不能选择任何选项哦~"
         end
