@@ -159,15 +159,17 @@ function favor_punish(msg)
         if(subday==1 and subhour<=-15)then
             return ""
         end
-        if(favor<9000)then
+        if(favor<8500 and favor>1250)then
             Llimit,Rlimit=60*math.log(2*subday,2),70*math.log(2*subday,2)
-        else
+        elseif(favor>=8500)then
             Llimit,Rlimit=120*math.log(2*subday,2),140*math.log(2*subday,2)
+        else
+            Llimit,Rlimit=30*math.log(2*subday,2),35*math.log(2*subday,2)
         end
     elseif(subday<=8)then
         Llimit,Rlimit=150*subday,185*subday
     else
-        Llimit,Rlimit=820+195*(subday-7)*math.log(2*(subday-7),2),870+225*(subday-7)*math.log(2*(subday-7),2)
+        Llimit,Rlimit=820+195*(subday-5)*math.log(2*(subday-5),2),870+225*(subday-5)*math.log(2*(subday-5),2)
     end
     --
     --//todo 将左右端点取整才可带入ranint
@@ -480,6 +482,12 @@ function rcv_Ciallo_afternoon(msg)
     local today_sorry=getUserToday(msg.fromQQ,"sorry",0)
     if(favor<-600)then
         return ""
+    end
+    if(hour>7 and hour<12)then
+        return "诶..可现在还没到中午诶，是茉莉出故障了吗..."
+    end
+    if(hour>=18 or hour<=6)then
+        return "茉莉这次才不会搞错呢！才不会被{nick}这种小花招骗到！外面明明那么黑（指着窗外）"
     end
     --爱酱特殊问候模式
     if(msg.fromQQ=="2677409596")then
@@ -1191,7 +1199,7 @@ function action(msg)
             if(today_rude<=2 and today_sorry<=1)then
                 if(favor<=1250)then
                     if(today_lift<=today_lift_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor-60)
+                        setUserConf(msg.fromQQ,"好感度",favor-100)
                     end
                     reply_main= table_draw(reply_lift_less)
                 elseif(favor<=2200)then
@@ -1234,7 +1242,7 @@ function action(msg)
         else
             if(today_rude<=2 and today_sorry<=1)then
                 if(favor<=1700)then
-                    setUserConf(msg.fromQQ,"好感度",favor-200)
+                    setUserConf(msg.fromQQ,"好感度",favor-175)
                     reply_main= table_draw(reply_kiss_less)
                 elseif(favor<=3200)then
                     setUserConf(msg.fromQQ,"好感度",favor-20)
