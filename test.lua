@@ -1,6 +1,0 @@
--- msg_order={}
--- Trade_order="测试"
--- function test(msg)
---     return msg.fromGroup
--- end
--- msg_order[Trade_order]="test"

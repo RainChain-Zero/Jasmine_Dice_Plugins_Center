@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Beta)
     @Create 2021/12/05 00:04
-    @Last Update 2021/12/05 11:34
+    @Last Update 2021/12/07 13:13
     ]]
 
 msg_order={}
@@ -16,7 +16,7 @@ function StoryZero(msg)
     local ChoiceIndex=getUserConf(msg.fromQQ,"ChoiceIndex",1)
     local ChoiceSelected=getUserConf(msg.fromQQ,"ChoiceSelected0",0)
     local content;
-    if(string.find(msg.fromMsg,"n")~=nil)then
+    if(string.find(msg.fromMsg,"f")~=nil)then
         local Story=getUserConf(msg.fromQQ,"StoryReadNow",-1)
 
         --未进入剧情模式不触发
@@ -153,10 +153,10 @@ function StoryZero(msg)
             end
         end
         setUserConf(msg.fromQQ,"Choice",res*1)
-        return "您已选择选项"..res.." 输入.n以推进"
+        return "您已选择选项"..res.." 输入.f以推进"
     end
 end
-msg_order[".n"]="StoryZero"
+msg_order[".f"]="StoryZero"
 msg_order["选择"]="StoryZero"
 
 EntryStoryOrder="进入剧情"
@@ -176,7 +176,7 @@ function EnterStory(msg)
     end
     setUserConf(msg.fromQQ,"MainIndex",1)
     setUserConf(msg.fromQQ,"Option",0)
-    return "您已进入剧情模式『"..Story.."』,请在小窗模式下输入.n一步一步进行哦~"
+    return "您已进入剧情模式『"..Story.."』,请在小窗模式下输入.f一步一步进行哦~"
 end
 msg_order[EntryStoryOrder]="EnterStory"
 
