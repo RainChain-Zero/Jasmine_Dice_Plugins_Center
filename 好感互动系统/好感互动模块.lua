@@ -145,7 +145,7 @@ function favor_punish(msg)
     setUserConf(msg.fromQQ,"hour_last",hour)
     setUserConf(msg.fromQQ,"year_last",year)
     --flag用于标记是否是从>500的favor降到500以下的
-    if(favor>500)then
+    if(favor>=500)then
         flag=true
     else
         return ""   --本身<500的用户不会触发
@@ -663,6 +663,15 @@ msg_order["茉莉酱晚安"]="rcv_Ciallo_night"
 msg_order["茉莉晚安"]="rcv_Ciallo_night"
 msg_order["晚安啊茉莉"]="rcv_Ciallo_night"
 
+-- function Ciallo_xiawuhao(msg)
+--     trust(msg)
+--     local favor=getUserConf(msg.fromQQ,"好感度",0)
+--     local today_rude=getUserToday(msg.fromQQ,"rude",0)
+--     local today_sorry=getUserToday(msg.fromQQ,"sorry",0)
+--     if(favor<-600)then
+--         return ""
+--     end
+-- end
 --爱酱特殊晚安问候程序
 function night_master(msg)
     --trust(msg)
@@ -770,6 +779,7 @@ function punish_favor_rude(msg)
     local favor = getUserConf(msg.fromQQ,"好感度",0)
     local trust_flag=getUserConf(msg.fromQQ,"trust_flag",0)
     local admin_judge=msg.fromQQ~="2677409596" and msg.fromQQ~="3032902237"
+    local today_rude=getUserToday(msg.fromQQ,"rude",0)  
     --festival(msg)
     if(admin_judge)then
         if(favor<1000)then
@@ -814,7 +824,6 @@ function punish_favor_rude(msg)
         return ""
     end
 
-    local today_rude=getUserToday(msg.fromQQ,"rude",0)  
     local today_sorry=getUserToday(msg.fromQQ,"sorry",0)
     today_rude=today_rude+1
     setUserToday(msg.fromQQ,"rude",today_rude)
