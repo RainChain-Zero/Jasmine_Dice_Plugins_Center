@@ -2,13 +2,14 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Beta)
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/13 08:53
+    @Last Modified 2021/12/13 13:59
     ]]
 
 msg_order={}
 
-package.path="/home/container/Dice3349795206/plugin/FavorReply/?.lua"
+package.path="/home/container/Dice3349795206/plugin/Story/?.lua"
 require "Story"
+require "Story0"
 
 --todo 主调入口
 function StoryMain(msg)
@@ -87,7 +88,7 @@ function Choose(msg)
     local Option =getUserConf(msg.fromQQ,"Option",0)
     local StoryNormal=getUserConf(msg.fromQQ,"StoryReadNow",-1)
     local StorySpecial=getUserConf(msg.fromQQ,"SpecialReadNow",-1)
-    local ChoiceSelected=getUserConf(msg.fromQQ,"ChoiceSelected0",0)
+    local Reply
    --未进入任何剧情模式
     if(StoryNormal+StorySpecial==-2)then
        return ""
@@ -103,145 +104,16 @@ function Choose(msg)
         return "您必须输入一个有效的选项数字哦~"
     end
 
-
     --todo 不同章节一一处理
     if(StoryNormal~=-1)then
         if(StoryNormal==0)then
-            if(Option==0)then
-                return "您现在还不能选择任何选项哦~"
-            end
-            local res=string.match(msg.fromMsg,"[%s]*(%d)",string.find(msg.fromMsg,"选择")+1)
-            if(res==nil or res=="" or res*1<1 or res*1>3)then
-                return "您必须输入一个有效的选项数字哦~"
-            end
-            if(Option==2)then
-                if((res*1==1 and (ChoiceSelected==1 or ChoiceSelected==4)) or (res*1==3 and (ChoiceSelected==3 or ChoiceSelected==4)))then
-                    return "这个选项目前处于不可选中状态哦~"
-                end
-            end
-            setUserConf(msg.fromQQ,"Choice",res*1)
-            return "您已选择选项"..res.." 输入.f以推进"
+            Reply=StoryZeroChoose(msg,res)
         end
     else
         if(StorySpecial==0)then
             
         end
     end
-    return ""
+    return Reply
 end
 msg_order["选择"]="Choose"
-
-
-
---todo 具体的剧情
-function StoryZero(msg)
-    local MainIndex,Option,Choice=getUserConf(msg.fromQQ,"MainIndex",1),getUserConf(msg.fromQQ,"Option",0),getUserConf(msg.fromQQ,"Choice",0)
-    local ChoiceIndex=getUserConf(msg.fromQQ,"ChoiceIndex",1)
-    local ChoiceSelected=getUserConf(msg.fromQQ,"ChoiceSelected0",0)
-    local content;
-    --判断是否进入分支
-    if(Option==0)then
-        content=Story0[MainIndex];
-        if(MainIndex==3)then
-            setUserConf(msg.fromQQ,"Option",1)
-        elseif(MainIndex==7)then
-            setUserConf(msg.fromQQ,"Option",2)
-        end
-        if(MainIndex==7)then
-            content=Story0[7][1]    --初发选项
-        end
-        MainIndex=MainIndex+1
-        setUserConf(msg.fromQQ,"MainIndex",MainIndex)
-        return content
-
-        --选项1
-    elseif(Option==1)then
-        --未选择
-        if(Choice==0)then
-            return "请选择其中一个选项以推进哦~"
-        end
-        if(Choice==1)then
-            MainIndex=4
-            content=Story0[MainIndex]
-            MainIndex=7
-            setUserConf(msg.fromQQ,"MainIndex",MainIndex)
-            setUserConf(msg.fromQQ,"Option",0)
-            setUserConf(msg.fromQQ,"Choice",0)
-            return content
-        elseif(Choice==2)then
-            MainIndex=5
-            content=Story0[MainIndex][ChoiceIndex]
-            ChoiceIndex=ChoiceIndex+1
-            setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>2)then
-                setUserConf(msg.fromQQ,"MainIndex",7)
-                setUserConf(msg.fromQQ,"ChoiceIndex",1)
-                setUserConf(msg.fromQQ,"Option",0)
-                setUserConf(msg.fromQQ,"Choice",0)
-            end
-            return content
-        elseif(Choice==3)then
-            if(getUserConf(msg.fromQQ,"isStory0Read",0)==0)then
-                setUserConf(msg.fromQQ,"好感度",getUserConf(msg.fromQQ,"好感度",0)+200)
-            end
-            MainIndex=6
-            content=Story0[MainIndex][ChoiceIndex+1]
-            sendMsg(Story0[MainIndex][ChoiceIndex],0,msg.fromQQ)
-            ChoiceIndex=ChoiceIndex+2
-            setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex > 4)then
-                setUserConf(msg.fromQQ,"MainIndex",7)
-                setUserConf(msg.fromQQ,"ChoiceIndex",1)
-                setUserConf(msg.fromQQ,"Option",0)
-                setUserConf(msg.fromQQ,"Choice",0)
-            end
-            sleepTime(2500)
-            return content
-        end
-    elseif(Option==2)then
-        --未选择
-        if(Choice==0)then
-            if(MainIndex==7)then
-                local Choicen=getUserConf(msg.fromQQ,"ChoiceSelected0",0)
-                --return Choice
-                if(Choicen==1)then
-                    return Story0[7][2]
-                end
-                if(Choicen==3)then
-                    return Story0[7][3]
-                end
-                if(Choicen==4)then
-                    return Story0[7][4]
-                end
-            end
-            return "请选择其中一个选项以推进哦~"
-        end
-
-        if(Choice==1)then
-            ChoiceSelected=ChoiceSelected+1
-            setUserConf(msg.fromQQ,"ChoiceSelected0",ChoiceSelected)
-            content=Story0[8]
-            setUserConf(msg.fromQQ,"MainIndex",7)
-            setUserConf(msg.fromQQ,"Choice",0)
-            return content
-        elseif(Choice==2)then
-            content=Story0[9]
-            Init(msg)
-            if(getUserConf(msg.fromQQ,"isStory0Read",0)==0)then
-                setUserConf(msg.fromQQ,"梦的开始",1)
-                setUserConf(msg.fromQQ,"isStory0Read",1)
-                sendMsg(content,0,msg.fromQQ)
-                sleepTime(2000)
-                return "系统：您得到了道具『梦的开始』x1（一把象牙白的钥匙，晶莹剔透，不知道是用什么制作的，或许能开启什么）"
-            end
-            return content
-        elseif(Choice==3)then
-            ChoiceSelected=ChoiceSelected+3
-            setUserConf(msg.fromQQ,"ChoiceSelected0",ChoiceSelected)
-            content=Story0[10]
-            setUserConf(msg.fromQQ,"MainIndex",7)
-            setUserConf(msg.fromQQ,"Choice",0)
-            return content
-        end
-    end
-end
