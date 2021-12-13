@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 
 --以下更新仅限个人使用
 --updated by 慕北_Innocent 2021.8.19
@@ -662,6 +663,8 @@ msg_order["晚安茉莉"]="rcv_Ciallo_night"
 msg_order["茉莉酱晚安"]="rcv_Ciallo_night"
 msg_order["茉莉晚安"]="rcv_Ciallo_night"
 msg_order["晚安啊茉莉"]="rcv_Ciallo_night"
+msg_order["茉莉哦呀斯密纳塞"]="rcv_Ciallo_night"
+msg_order["茉莉哦呀斯密"]="rcv_Ciallo_night"
 
 -- function Ciallo_xiawuhao(msg)
 --     trust(msg)
