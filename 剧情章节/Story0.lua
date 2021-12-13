@@ -1,6 +1,6 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 1.0(Beta)
+    @version 1.1
     @Created 2021/12/13 12:07
     @Last Modified 2021/12/13 13:58
     ]]
@@ -10,7 +10,7 @@ function StoryZero(msg)
     local MainIndex,Option,Choice=getUserConf(msg.fromQQ,"MainIndex",1),getUserConf(msg.fromQQ,"Option",0),getUserConf(msg.fromQQ,"Choice",0)
     local ChoiceIndex=getUserConf(msg.fromQQ,"ChoiceIndex",1)
     local ChoiceSelected=getUserConf(msg.fromQQ,"ChoiceSelected0",0)
-    local content;
+    local content
     --判断是否进入分支
     if(Option==0)then
         content=Story0[MainIndex];

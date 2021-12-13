@@ -34,7 +34,7 @@ function StoryMain(msg)
         end
     else
         if(StorySpecial==0)then
-            
+            Reply=SpecialZero(msg)
         end
     end
     return Reply
@@ -50,19 +50,21 @@ function EnterStory(msg)
     if(Story==nil or Story=="")then
         return "请输入章节名哦~"
     end
-    if(Story=="序章")then
+    if(string.find(Story,"序章")~=nil or string.find(Story,"惊蛰")~=nil)then
         local favor=getUserConf(msg.fromQQ,"好感度",0)
         if(favor<1000)then
             return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
         end
+        Story="序章 『惊蛰』"
         setUserConf(msg.fromQQ,"StoryReadNow",0)
-        setUserConf(msg.fromQQ,"SpecialReadNow",-1)
-    elseif(Story=="元旦特典")then
+    elseif(string.find(Story,"元旦特典")~=nil or string.find(Story,"预想此时应更好")~=nil)then
 
         --! Alpha Ver
         if(msg.fromQQ=="3032902231" or msg.fromQQ=="2677409596")then
+            Story="元旦特典 预想此时应更好"
             setUserConf(msg.fromQQ,"SpecialReadNow",0)
-            setUserConf(msg.fromQQ,"StoryReadNow",-1)
+        else
+            return "本功能暂未开放哦~"
         end
 
     end
@@ -88,7 +90,7 @@ function Choose(msg)
     local Option =getUserConf(msg.fromQQ,"Option",0)
     local StoryNormal=getUserConf(msg.fromQQ,"StoryReadNow",-1)
     local StorySpecial=getUserConf(msg.fromQQ,"SpecialReadNow",-1)
-    local Reply
+    local Reply="系统：出现未知错误，请报告系统管理员"
    --未进入任何剧情模式
     if(StoryNormal+StorySpecial==-2)then
        return ""
@@ -111,7 +113,7 @@ function Choose(msg)
         end
     else
         if(StorySpecial==0)then
-            
+            Reply=SpecialZeroChoose(msg,res)
         end
     end
     return Reply
