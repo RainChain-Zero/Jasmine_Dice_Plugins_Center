@@ -81,6 +81,7 @@ function Init(msg)
     setUserConf(msg.fromQQ,"ChoiceSelected0",0)
 end
 
+
 --todo 选项选择
 function Choose(msg)
     local Option =getUserConf(msg.fromQQ,"Option",0)
@@ -101,6 +102,7 @@ function Choose(msg)
     if(res==nil or res=="" or res*1<1 or res*1>3)then
         return "您必须输入一个有效的选项数字哦~"
     end
+
 
     --todo 不同章节一一处理
     if(StoryNormal~=-1)then
