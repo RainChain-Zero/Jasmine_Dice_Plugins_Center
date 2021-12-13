@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 0.1(Alpha)
     @Created 2021/12/13 09:19
-    @Last Modified 2021/12/13 15:06
+    @Last Modified 2021/12/13 16:06
     ]]
     
 --元旦特典 2021.12.13
@@ -57,16 +57,20 @@ function SpecialZero(msg)
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
             if(ChoiceIndex>6)then
-                Init(msg)  --! 后续删除
-                content= "TO BE CONTINUED"
+                if(ChoiceIndex>7)then
+                    Init(msg)  --! 后续删除
+                    OptionNormalInit(msg,1)
+                    content="TO BE CONTINUED"
+                end
             end
-        
             --todo TO BE CONTINUED
         elseif(Choice==2)then
             Init(msg)  --! 后续删除
+            OptionNormalInit(msg,1)
             content="TO BE CONTINUED"
         elseif(Choice==3)then
             Init(msg)  --! 后续删除
+            OptionNormalInit(msg,1)
             content="TO BE CONTINUED"
         end
     end

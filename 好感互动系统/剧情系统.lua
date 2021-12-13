@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Beta)
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/13 13:59
+    @Last Modified 2021/12/13 15:12
     ]]
 
 msg_order={}
@@ -10,6 +10,7 @@ msg_order={}
 package.path="/home/container/Dice3349795206/plugin/Story/?.lua"
 require "Story"
 require "Story0"
+require "Special0"
 
 --todo 主调入口
 function StoryMain(msg)
@@ -55,12 +56,12 @@ function EnterStory(msg)
         if(favor<1000)then
             return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
         end
-        Story="序章 『惊蛰』"
+        Story="序章 惊蛰"
         setUserConf(msg.fromQQ,"StoryReadNow",0)
     elseif(string.find(Story,"元旦特典")~=nil or string.find(Story,"预想此时应更好")~=nil)then
 
         --! Alpha Ver
-        if(msg.fromQQ=="3032902231" or msg.fromQQ=="2677409596")then
+        if(msg.fromQQ=="3032902237" or msg.fromQQ=="2677409596")then
             Story="元旦特典 预想此时应更好"
             setUserConf(msg.fromQQ,"SpecialReadNow",0)
         else
