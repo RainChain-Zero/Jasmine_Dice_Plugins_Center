@@ -1606,7 +1606,7 @@ function favor_history(msg)
     local QQ=string.match(msg.fromMsg,"%d*",#admin_order4+1)
     if(msg.fromQQ=="3032902237" or msg.fromQQ=="2677409596" or msg.fromQQ=="2225336268")then
         return "目标最后一次好感交互在"..string.format("%.0f",getUserConf(QQ,"year_last",2021)).."年"..string.format("%.0f",getUserConf(QQ,"month_last",10)).."月"..
-        string.format("%.0f",getUserConf(QQ,"day_last",11)).."日"..string.format("%.0f",getUserConf(QQ,"hour_last",23)).."时"
+        string.format("%.0f",getUserConf(QQ,"day_last",11)).."日"..string.format("%.0f",getUserConf(QQ,"hour_last",23)).."时".."\n好感度为"..string.format("%.0f",getUserConf(QQ,"好感度",0))
     end
 end
 msg_order[admin_order4]="favor_history"
