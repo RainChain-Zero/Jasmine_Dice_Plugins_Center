@@ -1,22 +1,11 @@
 ---@diagnostic disable: lowercase-global
 
---以下更新仅限个人使用
---updated by 慕北_Innocent 2021.8.19
---Ver2.0 增加更多的好感交互行为，追加好感降低惩罚，优化好感升降数值
---updated by 慕北_Innocent 2021.8.20
---Ver2.5 增加认错交互，追加更多的互动分支，为之前的好感交互增加rude_sorry判定
---updated by 慕北_Innocent 2021.8.21
---Ver2.6 修复道歉系统中出现的逻辑漏洞
---Ver3.0 updated by 慕北_Innocent 2021.8.23
---Ver3.0 修改（提高）互动等级阈值，追加动作初步交互系统，新增交互分支,优化交互匹配逻辑机制,追加初步时间系统
---Ver3.2 updated by 慕北——Innocent 2021.8.27
---Ver3.2 追加初步夸奖和感情表达系统，增加可交互的动作，新增可选分支
---updated by 慕北——Innocent 2021.9.20
---Ver3.3 增加好感下限黑名单保护机制
---Ver3.4 将好感度和用户信任等级关联
---Ver3.6 增加“互动”模式 可以选择身体部位进行交互（初步） 增加节日相关内容 分支追加
---Ver3.7 现在一定时间不进行好感互动将会降好感
---Ver3.8 所有好感增幅减半 脏话若不指定茉莉不会触发回复，但会隐式降低好感度 增加逼近好感下限提醒
+--[[
+    @author 慕北_Innocent(RainChain)
+    @version 4.1
+    @Created 2021/08/19 13:16
+    @Last Modified 2021/12/19 17:52
+    ]]
 
 --载入回复模块
 package.path="/home/container/Dice3349795206/plugin/FavorReply/?.lua"
@@ -70,20 +59,19 @@ function trust(msg)
     local favorVersion=getGroupConf(msg.fromGroup,"favorVersion",0)
     local favorUVersion=getUserConf(msg.fromQQ,"favorVersion",0)
     --修改版本号只需要将下面的数字修改为目前的版本号即可
-    if(favorUVersion~=40)then
+    if(favorUVersion~=41)then
         setUserConf(msg.fromQQ,"noticeQQ",0)
-        setUserConf(msg.fromQQ,"favorVersion",40)
+        setUserConf(msg.fromQQ,"favorVersion",41)
     end
-    if(favorVersion~=40)then
-        setGroupConf(msg.fromGroup,"favorVersion",40)
+    if(favorVersion~=41)then
+        setGroupConf(msg.fromGroup,"favorVersion",41)
         setGroupConf(msg.fromGroup,"notice",0)
     end
     local notice=getGroupConf(msg.fromGroup,"notice",0)
     local noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
     if(msg.fromGroup=="0" and noticeQQ==0)then
             noticeQQ=noticeQQ+1
-            local content="**[好感互动模块-版本通告Ver4.0]**\n新增了剧情系统（Beta），可以浏览和茉莉酱一起经历的故事，目前已完成（短篇）序章，好感达到1000者可通过指令“进入剧情 序章”进入剧情浏览，欢迎阅读哦~\n1.进度自动保存，重新输入“进入剧情”将会从零开始\n2.部分选项会增加/降低好感\n3.阅读完章节将会给予道具奖励\n"..
-            "策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：@Ashiterui（2677409596）\n——By 慕北_Innocent(RainChain)(3032902237)\n2021.12.05"
+            local content="**[好感互动模块-版本预告Ver4.1]**\n剧情模式追加 [元旦特典]将于2021.12.31开放，好感锁为1500，同时部分选项也将有好感限制。(注:序章已开放（1000+），进入指令为“进入剧情 序章”)\n——Admin\n2021.12.19"
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,0,msg.fromQQ)
     end
@@ -92,8 +80,7 @@ function trust(msg)
         if(notice<=2 and noticeQQ==0)then
             notice=notice+1
             noticeQQ=noticeQQ+1
-            local content="**[好感互动模块-版本通告Ver4.0]**\n新增了剧情系统（Beta），可以浏览和茉莉酱一起经历的故事，目前已完成（短篇）序章，好感达到1000者可通过指令“进入剧情 序章”进入剧情浏览，欢迎阅读哦~\n1.进度自动保存，重新输入“进入剧情”将会从零开始\n2.部分选项会增加/降低好感\n3.阅读完章节将会给予道具奖励\n"..
-            "策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：@Ashiterui（2677409596）\n本通告各群将广播3次("..string.format("%.0f",notice).."/3)\n——By 慕北_Innocent(RainChain)(3032902237)\n2021.12.05"
+            local content="**[好感互动模块-版本预告Ver4.1]**\n剧情模式追加 [元旦特典]将于2021.12.31开放，好感锁为1500，同时部分选项也将有好感限制。(注:序章已开放（1000+），进入指令为“进入剧情 序章”)\n本通告各群将广播3次("..string.format("%.0f",notice).."/3)\n——Admin\n2021.12.19"
             setGroupConf(msg.fromGroup,"notice",notice)
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,msg.fromGroup,msg.fromQQ)
