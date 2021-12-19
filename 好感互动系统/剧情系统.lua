@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Beta)
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/13 15:12
+    @Last Modified 2021/12/20 02:38
     ]]
 
 msg_order={}
@@ -78,6 +78,7 @@ msg_order[EntryStoryOrder]="EnterStory"
 --todo 配置初始化
 function Init(msg)
     setUserConf(msg.fromQQ,"MainIndex",1)
+    setUserConf(msg.fromQQ,"ChoiceIndex",1)
     setUserConf(msg.fromQQ,"Option",0)
     setUserConf(msg.fromQQ,"Choice",0)
     setUserConf(msg.fromQQ,"StoryReadNow",-1)

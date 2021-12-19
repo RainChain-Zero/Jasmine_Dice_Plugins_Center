@@ -1,21 +1,26 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 0.1(Alpha)
+    @version 1.0(Alpha)
     @Created 2021/12/13 09:19
-    @Last Modified 2021/12/13 16:06
+    @Last Modified 2021/12/13 01:13
     ]]
     
 --元旦特典 2021.12.13
 function SpecialZero(msg)
     local MainIndex,Option,Choice=getUserConf(msg.fromQQ,"MainIndex",1),getUserConf(msg.fromQQ,"Option",0),getUserConf(msg.fromQQ,"Choice",0)
     local ChoiceIndex=getUserConf(msg.fromQQ,"ChoiceIndex",1)
+    local favor=getUserConf(msg.fromQQ,"好感度",0)
     local content="系统：出现未知错误，请报告系统管理员"
     if(Option==0)then
         content=Special0[MainIndex];
         if(MainIndex==7)then
             setUserConf(msg.fromQQ,"Option",1)
-        elseif(MainIndex==15)then
+        elseif(MainIndex==24)then
             setUserConf(msg.fromQQ,"Option",2)
+        elseif(MainIndex==35)then
+            setUserConf(msg.fromQQ,"Option",3)
+        elseif(MainIndex==43)then
+            setUserConf(msg.fromQQ,"Option",4)
         end
         MainIndex=MainIndex+1
         setUserConf(msg.fromQQ,"MainIndex",MainIndex)
@@ -52,26 +57,71 @@ function SpecialZero(msg)
         if(Choice==0)then
             return "请选择其中一个选项以推进哦~"
         elseif(Choice==1)then
-            MainIndex=16
+            if(favor<3000)then
+                return "您的好感度不足哦~为"..favor
+            end
+            MainIndex=25
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>6)then
-                if(ChoiceIndex>7)then
-                    Init(msg)  --! 后续删除
-                    OptionNormalInit(msg,1)
-                    content="TO BE CONTINUED"
-                end
+            if(ChoiceIndex>9)then
+                OptionNormalInit(msg,28)
             end
-            --todo TO BE CONTINUED
         elseif(Choice==2)then
-            Init(msg)  --! 后续删除
-            OptionNormalInit(msg,1)
-            content="TO BE CONTINUED"
+            if(favor<2000)then
+                return "您的好感度不足哦~为"..favor
+            end
+            MainIndex=26
+            content=Special0[MainIndex][ChoiceIndex]
+            ChoiceIndex=ChoiceIndex+1
+            setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
+            if(ChoiceIndex>10)then
+                OptionNormalInit(msg,28)
+            end
         elseif(Choice==3)then
-            Init(msg)  --! 后续删除
-            OptionNormalInit(msg,1)
-            content="TO BE CONTINUED"
+            MainIndex=27
+            content=Special0[MainIndex][ChoiceIndex]
+            ChoiceIndex=ChoiceIndex+1
+            setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
+            --! 直接结束
+            if(ChoiceIndex>7)then
+                Init(msg);
+            end
+        end
+    elseif(Option==3)then
+        if(Choice==0)then
+            return "请选择其中一个选项以推进哦~"
+        else
+            setUserConf(msg.fromQQ,"Special0Option3",Choice)
+            OptionNormalInit(msg,36)
+            os.exit()
+        end
+    elseif(Option==4)then
+        if(Choice==0)then
+            return "请选择其中一个选项以推进哦~"
+        elseif(Choice==1)then
+            MainIndex=44
+            if(ChoiceIndex==5)then
+                content=Special0[MainIndex][ChoiceIndex][getUserConf(msg.fromQQ,"Special0Option3",1)]
+            else
+                content=Special0[MainIndex][ChoiceIndex]
+            end
+            ChoiceIndex=ChoiceIndex+1
+            setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
+            if(ChoiceIndex>14)then
+                --todo 记录用户在给出卡片的前提下结束剧情
+                setUserConf(msg.fromQQ,"Special0Flag",1)
+
+                Init(msg)
+            end
+        elseif(Choice==2)then
+            MainIndex=45
+            content=Special0[MainIndex][ChoiceIndex]
+            ChoiceIndex=ChoiceIndex+1
+            setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
+            if(ChoiceIndex>9)then
+                Init(msg);
+            end
         end
     end
     return content
@@ -79,6 +129,10 @@ end
 
 
 function SpecialZeroChoose(msg,res)
+    local Option=getUserConf(msg.fromQQ,"Option",0)
+    if(Option==4 and res*1==3)then
+        return "您必须输入一个有效的选项数字哦~"
+    end
     setUserConf(msg.fromQQ,"Choice",res*1)
     return "您已选择选项"..res.." 输入.f以推进"
 end
