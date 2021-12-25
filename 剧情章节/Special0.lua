@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Alpha)
     @Created 2021/12/13 09:19
-    @Last Modified 2021/12/13 01:13
+    @Last Modified 2021/12/26 00:42
     ]]
     
 --元旦特典 2021.12.13
@@ -93,8 +93,8 @@ function SpecialZero(msg)
             return "请选择其中一个选项以推进哦~"
         else
             setUserConf(msg.fromQQ,"Special0Option3",Choice)
-            OptionNormalInit(msg,36)
-            os.exit()
+            OptionNormalInit(msg,37)
+            return Special0[36]
         end
     elseif(Option==4)then
         if(Choice==0)then
