@@ -4,7 +4,7 @@
     @author 慕北_Innocent(RainChain)
     @version 4.1
     @Created 2021/08/19 13:16
-    @Last Modified 2021/12/19 17:52
+    @Last Modified 2021/12/26 01：10
     ]]
 
 --载入回复模块
@@ -392,11 +392,11 @@ function rcv_Ciallo_morning(msg)
                 if(today_morning<=1)then
                     setUserConf(msg.fromQQ,"好感度",favor+5)
                 end
-                if(favor<1000)then
+                if(favor<1500)then
                     return table_draw(reply_morning_less)
-                elseif(favor<2000)then
+                elseif(favor<4500)then
                     return table_draw(reply_morning_low)
-                elseif(favor<3000)then
+                elseif(favor<6000)then
                     return table_draw(reply_morning_high)
                 else
                     return table_draw(reply_morning_highest)
@@ -484,11 +484,11 @@ function rcv_Ciallo_afternoon(msg)
         end
     end
     if(today_rude<=2 and today_sorry<=1)then
-        if(favor<1000)then
+        if(favor<1500)then
             return "嗯？要睡午觉了吗，也是，养好精神也很重要呢"
-        elseif(favor<2000)then
+        elseif(favor<4000)then
             return "午安哦，茉莉也有点困了...呼呼呼"
-        elseif(favor<3000)then
+        elseif(favor<6000)then
             return "诶要睡了吗，好、好吧...之后记得找茉莉玩哦"
         else
             return "嗯呐，在你午睡的时候，请让茉莉在一旁陪着你吧#依"
@@ -547,11 +547,11 @@ function rcv_Ciallo_noon(msg)
             return "Error!机体故障！目标信息丢失，无法识别该对象！你是谁啊茉莉不认识你"
         else
             if(hour>=11 and hour<=14)then
-                if(favor<=1000)then
+                if(favor<=1500)then
                     return "唔，中午好！{nick}，吃过午饭了吗？吃过就赶快去休息吧"
-                elseif(favor<=2000)then
+                elseif(favor<=4500)then
                     return "中午好呀{nick}——今天过去一半了哦，有什么要做的就抓紧吧"
-                elseif(favor<=3000)then
+                elseif(favor<=6000)then
                     return "中，中午好{nick}，是有什么要和茉莉说吗！"
                 else
                     return "中↘午↗好——呀！想睡觉了呢...在那之前#拉衣角 再陪茉莉玩一会吧"
@@ -626,11 +626,11 @@ function rcv_Ciallo_night(msg)
                 if(today_night<=1)then
                     setUserConf(msg.fromQQ,"好感度",favor+5)
                 end
-                if(favor<1000)then
+                if(favor<1500)then
                     return table_draw(reply_night_less)
-                elseif(favor<2000)then
+                elseif(favor<4500)then
                     return table_draw(reply_night_low)
-                elseif(favor<3000)then
+                elseif(favor<6000)then
                     return table_draw(reply_night_high)
                 else
                     return table_draw(reply_night_highest)
@@ -1121,7 +1121,7 @@ function action(msg)
                             setUserConf(msg.fromQQ,"好感度",favor+10)
                         end
                         reply_main= table_draw(reply_hug_low)
-                    elseif(favor<=4500)then
+                    elseif(favor<=6000)then
                         if(today_hug<=today_hug_limit)then
                             setUserConf(msg.fromQQ,"好感度",favor+20)
                         end
@@ -1160,12 +1160,12 @@ function action(msg)
                         setUserConf(msg.fromQQ,"好感度",favor-40)
                     end
                     reply_main= table_draw(reply_touch_less)
-                elseif(favor<=1800)then
+                elseif(favor<=2000)then
                     if(today_touch<=today_touch_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_touch_low)
-                elseif(favor<=3000)then
+                elseif(favor<=4500)then
                     if(today_touch<=today_touch_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+15)
                     end
@@ -1196,17 +1196,17 @@ function action(msg)
             end
         else
             if(today_rude<=2 and today_sorry<=1)then
-                if(favor<=1250)then
+                if(favor<=1550)then
                     if(today_lift<=today_lift_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor-100)
                     end
                     reply_main= table_draw(reply_lift_less)
-                elseif(favor<=2200)then
+                elseif(favor<=3200)then
                     if(today_lift<=today_lift_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
                     reply_main= table_draw(reply_lift_low)
-                elseif(favor<=3500)then
+                elseif(favor<=6800)then
                     if(today_lift<=today_lift_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+17)
                     end
@@ -1246,7 +1246,7 @@ function action(msg)
                 elseif(favor<=3200)then
                     setUserConf(msg.fromQQ,"好感度",favor-20)
                     reply_main= table_draw(reply_kiss_low)
-                elseif(favor<=4700)then
+                elseif(favor<=6700)then
                     if(today_kiss<=today_kiss_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+50)
                     end
@@ -1279,15 +1279,15 @@ function action(msg)
             end
         else
             if(today_rude<=2 and today_sorry<=1)then
-                if(favor<=1100)then
+                if(favor<=1200)then
                     setUserConf(msg.fromQQ,"好感度",favor-45)
                     reply_main= table_draw(reply_hand_less)
-                elseif(favor<=2000)then
+                elseif(favor<=3500)then
                     if(today_hand<=today_hand_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_hand_low)
-                elseif(favor<=3000)then
+                elseif(favor<=6000)then
                     if(today_hand<=today_hand_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
@@ -1320,15 +1320,15 @@ function action(msg)
             end
         else
             if(today_rude<=2 and today_sorry<=1)then
-                if(favor<=1000)then
+                if(favor<=1100)then
                     setUserConf(msg.fromQQ,"好感度",favor-40)
                     reply_main= table_draw(reply_face_less)
-                elseif(favor<=1800)then
+                elseif(favor<=3200)then
                     if(today_face<=today_face_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+5)
                     end
                     reply_main= table_draw(reply_face_low)
-                elseif(favor<=3000)then
+                elseif(favor<=6000)then
                     if(today_face<=today_face_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
@@ -1363,17 +1363,17 @@ function action(msg)
             end
         else
             if(today_rude<=2 and today_sorry<=1)then
-                if(favor<=1000)then
+                if(favor<=1050)then
                     if(today_cute<=today_cute_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_cute_less)
-                elseif(favor<=2000)then
+                elseif(favor<=3000)then
                     if(today_cute<=today_cute_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
                     reply_main= table_draw(reply_cute_low)
-                elseif(favor<=3000)then
+                elseif(favor<=4000)then
                     if(today_cute<=today_cute_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+15)
                     end
@@ -1405,14 +1405,14 @@ function action(msg)
             end
         else
             if(today_rude<=2 and today_sorry<=1)then
-                if(favor<=1400)then
+                if(favor<=1500)then
                     reply_main= table_draw(reply_suki_less)
-                elseif(favor<=2900)then
+                elseif(favor<=3500)then
                     if(today_suki<=today_suki_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+15)
                     end
                     reply_main= table_draw(reply_suki_low)
-                elseif(favor<=4200)then
+                elseif(favor<=5500)then
                     if(today_suki<=today_suki_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+20)
                     end
@@ -1444,14 +1444,14 @@ function action(msg)
             end
         else
             if(today_rude<=2 and today_sorry<=1)then
-                if(favor<=1600)then
+                if(favor<=1800)then
                     reply_main =table_draw(reply_love_less)
-                elseif(favor<=3300)then
+                elseif(favor<=4500)then
                     if(today_love<=today_love_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+20)
                     end
                     reply_main= table_draw(reply_love_low)
-                elseif(favor<=4800)then
+                elseif(favor<=6500)then
                     if(today_love<=today_love_limit)then
                         setUserConf(msg.fromQQ,"好感度",favor+25)
                     end
