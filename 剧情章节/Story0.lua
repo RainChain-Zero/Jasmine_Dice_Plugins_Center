@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.1
     @Created 2021/12/13 12:07
-    @Last Modified 2021/12/13 13:58
+    @Last Modified 2021/12/30 14:15
     ]]
 
 --序章
@@ -32,6 +32,9 @@ function StoryZero(msg)
         if(Choice==0)then
             return "请选择其中一个选项以推进哦~"
         end
+        --记录下一个跳转选项
+        setUserConf(msg.fromQQ,"NextOption",2)
+
         if(Choice==1)then
             MainIndex=4
             content=Story0[MainIndex]
@@ -71,6 +74,8 @@ function StoryZero(msg)
             return content
         end
     elseif(Option==2)then
+        --记录下一个跳转选项
+        setUserConf(msg.fromQQ,"NextOption",-1)
         --未选择
         if(Choice==0)then
             if(MainIndex==7)then
@@ -127,5 +132,23 @@ function StoryZeroChoose(msg,res)
         end
     end
     setUserConf(msg.fromQQ,"Choice",res*1)
-    return "您已选择选项"..res.." 输入.f以推进"
+    return "您已选择选项"..res.." 输入.f以确认选择"
+end
+
+function SkipStory0(msg)
+    local NextOption=getUserConf(msg.fromQQ,"NextOption",1)
+    local isStory0Read=getUserConf(msg.fromQQ,"isStory0Read",0)
+    if(isStory0Read==0)then
+        return "初次阅读可不支持跳过哦？"
+    end
+    if(NextOption==-1)then
+        return "当前所处选项不允许跳转哦？~（选项限制/已经是最后一个选项）"
+    end
+    OptionNormalInit(msg,1)
+    local MAININDEX=
+    {
+        [1]=3,
+        [2]=7
+    }
+    setUserConf(msg.fromQQ,"MainIndex",MAININDEX[NextOption])
 end

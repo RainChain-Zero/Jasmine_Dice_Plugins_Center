@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Beta)
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/20 02:38
+    @Last Modified 2021/12/30 14:46
     ]]
 
 msg_order={}
@@ -84,8 +84,8 @@ function Init(msg)
     setUserConf(msg.fromQQ,"StoryReadNow",-1)
     setUserConf(msg.fromQQ,"SpecialReadNow",-1)
     setUserConf(msg.fromQQ,"ChoiceSelected0",0)
+    setUserConf(msg.fromQQ,"NextOption",1)
 end
-
 
 --todo 选项选择
 function Choose(msg)
@@ -121,3 +121,36 @@ function Choose(msg)
     return Reply
 end
 msg_order["选择"]="Choose"
+
+--todo 一个选项结束后初始化有关记录
+function OptionNormalInit(msg,index)
+    setUserConf(msg.fromQQ,"MainIndex",index)
+    setUserConf(msg.fromQQ,"ChoiceIndex",1)
+    setUserConf(msg.fromQQ,"Option",0)
+    setUserConf(msg.fromQQ,"Choice",0)
+end
+
+--todo 跳转到下一选项
+function Skip(msg)
+    local StoryNormal=getUserConf(msg.fromQQ,"StoryReadNow",-1)
+    local StorySpecial=getUserConf(msg.fromQQ,"SpecialReadNow",-1)
+    local Reply
+    --未进入任何剧情模式 不响应
+    if(StoryNormal+StorySpecial==-2)then
+        return ""
+     end
+    if(StoryNormal~=-1)then
+        if(StoryNormal==0)then
+            Reply= SkipStory0(msg)
+        end
+    else
+        if(StorySpecial==0)then
+            Reply= SkipSpecial0(msg)
+        end
+    end
+    if(Reply==nil)then
+        Reply="您选择了跳过本段剧情，输入.f以确认跳转"
+    end
+    return Reply
+end
+msg_order["跳过"]="Skip"

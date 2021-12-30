@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Alpha)
     @Created 2021/12/13 09:19
-    @Last Modified 2021/12/26 00:42
+    @Last Modified 2021/12/30 14:45
     ]]
     
 --元旦特典 2021.12.13
@@ -28,7 +28,11 @@ function SpecialZero(msg)
     elseif(Option==1)then
         if(Choice==0)then
             return "请选择其中一个选项以推进哦~"
-        elseif(Choice==1)then
+        end
+        --记录下一个跳转选项
+        setUserConf(msg.fromQQ,"NextOption",2)
+
+        if(Choice==1)then
             MainIndex=8
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
@@ -56,7 +60,11 @@ function SpecialZero(msg)
     elseif(Option==2)then
         if(Choice==0)then
             return "请选择其中一个选项以推进哦~"
-        elseif(Choice==1)then
+        end
+        --记录下一个跳转选项
+        setUserConf(msg.fromQQ,"NextOption",3)
+
+        if(Choice==1)then
             if(favor<3000)then
                 return "您的好感度不足哦~为"..favor
             end
@@ -79,12 +87,16 @@ function SpecialZero(msg)
                 OptionNormalInit(msg,28)
             end
         elseif(Choice==3)then
+            --进入本选择则不可跳转
+            setUserConf(msg.fromQQ,"NextOption",-1)
+        
             MainIndex=27
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
             --! 直接结束
             if(ChoiceIndex>7)then
+                setUserConf(msg.fromQQ,"isSpecial0Read",1)
                 Init(msg);
             end
         end
@@ -92,6 +104,9 @@ function SpecialZero(msg)
         if(Choice==0)then
             return "请选择其中一个选项以推进哦~"
         else
+            --记录下一个跳转选项
+            setUserConf(msg.fromQQ,"NextOption",4)
+
             setUserConf(msg.fromQQ,"Special0Option3",Choice)
             OptionNormalInit(msg,37)
             return Special0[36]
@@ -99,7 +114,11 @@ function SpecialZero(msg)
     elseif(Option==4)then
         if(Choice==0)then
             return "请选择其中一个选项以推进哦~"
-        elseif(Choice==1)then
+        end
+        --进入本选择则不可跳转
+        setUserConf(msg.fromQQ,"NextOption",-1)
+
+        if(Choice==1)then
             MainIndex=44
             if(ChoiceIndex==5)then
                 content=Special0[MainIndex][ChoiceIndex][getUserConf(msg.fromQQ,"Special0Option3",1)]
@@ -111,7 +130,7 @@ function SpecialZero(msg)
             if(ChoiceIndex>14)then
                 --todo 记录用户在给出卡片的前提下结束剧情
                 setUserConf(msg.fromQQ,"Special0Flag",1)
-
+                setUserConf(msg.fromQQ,"isSpecial0Read",1)
                 Init(msg)
             end
         elseif(Choice==2)then
@@ -120,6 +139,7 @@ function SpecialZero(msg)
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
             if(ChoiceIndex>9)then
+                setUserConf(msg.fromQQ,"isSpecial0Read",1)
                 Init(msg);
             end
         end
@@ -127,20 +147,31 @@ function SpecialZero(msg)
     return content
 end
 
-
 function SpecialZeroChoose(msg,res)
     local Option=getUserConf(msg.fromQQ,"Option",0)
     if(Option==4 and res*1==3)then
         return "您必须输入一个有效的选项数字哦~"
     end
     setUserConf(msg.fromQQ,"Choice",res*1)
-    return "您已选择选项"..res.." 输入.f以推进"
+    return "您已选择选项"..res.." 输入.f以确认选择"
 end
 
--- 一个选项结束后初始化有关记录
-function OptionNormalInit(msg,index)
-    setUserConf(msg.fromQQ,"MainIndex",index)
-    setUserConf(msg.fromQQ,"ChoiceIndex",1)
-    setUserConf(msg.fromQQ,"Option",0)
-    setUserConf(msg.fromQQ,"Choice",0)
+function SkipSpecial0(msg)
+    local NextOption=getUserConf(msg.fromQQ,"NextOption",1)
+    if(NextOption==-1)then
+        return "当前所处选项不允许跳转哦？~（选项限制/已经是最后一个选项）"
+    end
+    local isSpecial0Read=getUserConf(msg.fromQQ,"isSpecial0Read",0)
+    if(isSpecial0Read==0)then
+        return "初次阅读可不支持跳过哦？"
+    end
+    OptionNormalInit(msg,1)
+    local MAININDEX=
+    {
+        [1]=7,
+        [2]=24,
+        [3]=35,
+        [4]=43
+    }
+    setUserConf(msg.fromQQ,"MainIndex",MAININDEX[NextOption])
 end
