@@ -4,7 +4,7 @@
     @author 慕北_Innocent(RainChain)
     @version 4.1
     @Created 2021/08/19 13:16
-    @Last Modified 2021/12/26 01：10
+    @Last Modified 2021/12/26 23:29
     ]]
 
 --载入回复模块
@@ -339,14 +339,14 @@ function show_favor(msg)
     trust(msg)
     local favor = getUserConf(msg.fromQQ,"好感度",0)
     --trust关联
-	if(favor<5000)then
-    	return "对{nick}的好感度只有"..favor.."，要加油哦"
-    elseif(favor<8000)then
-    	return "对{nick}的好感度有"..favor.."，有在花心思呢"
+	if(favor<3000)then
+    	return "对{nick}的好感度只有"..favor.."，要加油哦，茉莉...可是很期待{sample:我们之间能发生什么故事的哦？|你的表现的哦？|你能...（摇头），不，不，没什么|的哦，可这次...茉莉能做好吗}"
+    elseif(favor<6000)then
+    	return "对{nick}的好感度有"..favor.."，{sample:还真是发生了不少事情呢，对吧？~|茉莉要好好记下和你在一起的点点滴滴|最近对茉莉的照顾...我很感激...能不能...}"
     elseif(favor<10000)then
-    	return "好感度到"..favor.."了，不愧是{nick}呢"
+    	return "好感度到"..favor.."了，{sample:有时候我会想，说不定真能...嗯嗯？没，我什么都没说，对吧对吧|你总能给茉莉带来很多快乐呢|最近茉莉总有点心神不宁...算了不想了，反正和你在一起就好啦~}"
     else
-    	return "对{nick}的好感度已经有"..favor.."了，以后也要永远在一起哦"
+    	return "对{nick}的好感度已经有"..favor.."了，以后也要永远在一起哦，{sample:真是的...明明...还要确认一下感情吗（嘟嘴）|茉莉当初没有想到，你会一直 一直陪在茉莉身边...|茉莉觉得，只要和你一直走下去，一定能抓住属于我们的未来的吧？|遇见你之后，我才明白，原来回忆是这么让人快乐和温暖的事|那些独自做不到的事，就让我们一起来把握吧|总感觉，只有和你在一起，茉莉才能看到曾经看不见的『可能性』呢}"
     end
 end
 msg_order["茉莉好感"]= "show_favor"
@@ -677,10 +677,10 @@ function night_master(msg)
             end
         end
     else
-        if(favor>=1200)then
+        if(favor>=2000)then
             if(today_rude<=2 and today_sorry<=1)then
                 if ((hour>=21 and hour<=23) or (hour>=0 and hour<=4)) then
-                    return "晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~"
+                    return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
                 else
                     return "嗯...{nick}现在好像还没到晚安的时间呢..."
                 end
