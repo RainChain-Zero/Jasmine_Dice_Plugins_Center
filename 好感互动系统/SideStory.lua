@@ -1,8 +1,8 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 1.5(Beta)
+    @version 1.6
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/31 13:47
+    @Last Modified 2021/12/31 23:33
     ]]
 
 msg_order={}
@@ -99,7 +99,7 @@ function Choose(msg)
     end
     
     --匹配选项
-    local res=string.match(msg.fromMsg,"[%s]*(%d)",string.find(msg.fromMsg,"选择")+1)
+    local res=string.match(msg.fromMsg,"[%s]*(%d)",3)
     if(res==nil or res=="" or res*1<1 or res*1>3)then
         return "您必须输入一个有效的选项数字哦~"
     end
@@ -116,7 +116,8 @@ function Choose(msg)
     end
     return Reply
 end
-msg_order["选择"]="Choose"
+msg_order[".c"]="Choose"
+msg_order[".C"]="Choose"
 
 --todo 一个选项结束后初始化有关记录
 function OptionNormalInit(msg,index)

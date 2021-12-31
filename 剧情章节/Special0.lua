@@ -1,8 +1,8 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 1.5(Beta)
+    @version 1.6
     @Created 2021/12/13 09:19
-    @Last Modified 2021/12/30 14:45
+    @Last Modified 2021/12/31 23:34
     ]]
     
 --元旦特典 2021.12.13
@@ -13,13 +13,13 @@ function SpecialZero(msg)
     local content="系统：出现未知错误，请报告系统管理员"
     if(Option==0)then
         content=Special0[MainIndex];
-        if(MainIndex==7)then
+        if(MainIndex==3)then
             setUserConf(msg.fromQQ,"Option",1)
-        elseif(MainIndex==24)then
+        elseif(MainIndex==14)then
             setUserConf(msg.fromQQ,"Option",2)
-        elseif(MainIndex==35)then
+        elseif(MainIndex==21)then
             setUserConf(msg.fromQQ,"Option",3)
-        elseif(MainIndex==43)then
+        elseif(MainIndex==24)then
             setUserConf(msg.fromQQ,"Option",4)
         end
         MainIndex=MainIndex+1
@@ -33,28 +33,28 @@ function SpecialZero(msg)
         setUserConf(msg.fromQQ,"NextOption",2)
 
         if(Choice==1)then
-            MainIndex=8
+            MainIndex=4
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>6)then
-                OptionNormalInit(msg,11)
+            if(ChoiceIndex>4)then
+                OptionNormalInit(msg,7)
             end
         elseif(Choice==2)then
-            MainIndex=9
+            MainIndex=5
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>12)then
-                OptionNormalInit(msg,11)
+            if(ChoiceIndex>4)then
+                OptionNormalInit(msg,7)
             end
         elseif(Choice==3)then
-            MainIndex=10
+            MainIndex=6
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>8)then
-                OptionNormalInit(msg,11)
+            if(ChoiceIndex>3)then
+                OptionNormalInit(msg,7)
             end
         end
     elseif(Option==2)then
@@ -68,34 +68,34 @@ function SpecialZero(msg)
             if(favor<3000)then
                 return "您的好感度不足哦~为"..favor
             end
-            MainIndex=25
+            MainIndex=15
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>9)then
-                OptionNormalInit(msg,28)
+            if(ChoiceIndex>5)then
+                OptionNormalInit(msg,18)
             end
         elseif(Choice==2)then
             if(favor<2000)then
                 return "您的好感度不足哦~为"..favor
             end
-            MainIndex=26
+            MainIndex=16
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>10)then
-                OptionNormalInit(msg,28)
+            if(ChoiceIndex>4)then
+                OptionNormalInit(msg,18)
             end
         elseif(Choice==3)then
             --进入本选择则不可跳转
             setUserConf(msg.fromQQ,"NextOption",-1)
         
-            MainIndex=27
+            MainIndex=17
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
             --! 直接结束
-            if(ChoiceIndex>7)then
+            if(ChoiceIndex>3)then
                 setUserConf(msg.fromQQ,"isSpecial0Read",1)
                 Init(msg);
             end
@@ -108,8 +108,8 @@ function SpecialZero(msg)
             setUserConf(msg.fromQQ,"NextOption",4)
 
             setUserConf(msg.fromQQ,"Special0Option3",Choice)
-            OptionNormalInit(msg,37)
-            return Special0[36]
+            OptionNormalInit(msg,23)
+            return Special0[22]
         end
     elseif(Option==4)then
         if(Choice==0)then
@@ -119,26 +119,26 @@ function SpecialZero(msg)
         setUserConf(msg.fromQQ,"NextOption",-1)
 
         if(Choice==1)then
-            MainIndex=44
-            if(ChoiceIndex==5)then
+            MainIndex=25
+            if(ChoiceIndex==2)then
                 content=Special0[MainIndex][ChoiceIndex][getUserConf(msg.fromQQ,"Special0Option3",1)]
             else
                 content=Special0[MainIndex][ChoiceIndex]
             end
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>14)then
+            if(ChoiceIndex>6)then
                 --todo 记录用户在给出卡片的前提下结束剧情
                 setUserConf(msg.fromQQ,"Special0Flag",1)
                 setUserConf(msg.fromQQ,"isSpecial0Read",1)
                 Init(msg)
             end
         elseif(Choice==2)then
-            MainIndex=45
+            MainIndex=26
             content=Special0[MainIndex][ChoiceIndex]
             ChoiceIndex=ChoiceIndex+1
             setUserConf(msg.fromQQ,"ChoiceIndex",ChoiceIndex)
-            if(ChoiceIndex>9)then
+            if(ChoiceIndex>4)then
                 setUserConf(msg.fromQQ,"isSpecial0Read",1)
                 Init(msg);
             end
@@ -168,10 +168,10 @@ function SkipSpecial0(msg)
     OptionNormalInit(msg,1)
     local MAININDEX=
     {
-        [1]=7,
-        [2]=24,
-        [3]=35,
-        [4]=43
+        [1]=3,
+        [2]=14,
+        [3]=21,
+        [4]=24
     }
     setUserConf(msg.fromQQ,"MainIndex",MAININDEX[NextOption])
 end
