@@ -4,7 +4,7 @@
     @author 慕北_Innocent(RainChain)
     @version 4.3
     @Created 2021/08/19 13:16
-    @Last Modified 2021/12/31 23:53
+    @Last Modified 2022/01/01 2:47
     ]]
 
 --载入回复模块
@@ -51,7 +51,7 @@ year=os.date("%Y")*1
 --关联骰娘trust
 function trust(msg)
     --强制更新提示信息
-    --sendMsg("Error！茉莉好感组件强制更新维护中！暂停服务！",msg.fromGroup,msg.fromQQ)
+    --sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
     --os.exit()
 
     --版本通告处
@@ -88,8 +88,10 @@ function trust(msg)
             sendMsg(content,msg.fromGroup,msg.fromQQ)
         end
     end
-    --把时间-好感降低函数放在trust函数第一句
+
+    --! 好感时间惩罚
     favor_punish(msg)
+
     local favor = getUserConf(msg.fromQQ,"好感度",0)
     local trust_flag=getUserConf(msg.fromQQ,"trust_flag",0)
     local admin_judge=msg.fromQQ~="2677409596" and msg.fromQQ~="3032902237"
@@ -122,14 +124,25 @@ function trust(msg)
         end
     end
 end
+
 --一定时间不交互将会降低好感度
 function favor_punish(msg)
     local favor=getUserConf(msg.fromQQ,"好感度",0)
     local flag=false
     --初始时间记为编写该程序段的时间
     local _year,_month,_day,_hour=getUserConf(msg.fromQQ,"year_last",2021),getUserConf(msg.fromQQ,"month_last",10),getUserConf(msg.fromQQ,"day_last",11),getUserConf(msg.fromQQ,"hour_last",23)
-    local subyear,submonth,subday,subhour=year-_year,month-_month,day-_day,hour-_hour
-    subday=365*subyear+30*submonth+subday
+    local subyear,subhour=year-_year,hour-_hour
+    local subday
+    --! 注意时间的计算方式
+
+    if(subyear==1)then
+        subday=(12-_month+month)*30+day-_day    --跨年情况
+    elseif (subyear==0) then
+        subday=(month-_month)*30+day-_day      --时间段为本年
+    else
+        subday=1000     -- 超过两年的直接设为1000天
+    end
+
     setUserConf(msg.fromQQ,"month_last",month)
     setUserConf(msg.fromQQ,"day_last",day)
     setUserConf(msg.fromQQ,"hour_last",hour)
