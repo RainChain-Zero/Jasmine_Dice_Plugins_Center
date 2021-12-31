@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Alpha)
     @Create 2021/11/21 0:21
-    @Last Update 2021/11/28 00:50
+    @Last Update 2022/01/01 03:50
     ]]
 
 msg_order={}
@@ -221,7 +221,34 @@ function check(msg)
     local res=getUserConf(msg.fromQQ,item,0)
     sendMsg( "系统：正在检索..."..ranint(20,50).."%..."..ranint(51,80).."%...",msg.fromGroup,msg.fromQQ)
     sleepTime(1000)
-    return "您目前的"..item.."余量为"..string.format("%0.f",res)
+    return "您目前的『"..item.."』数量为"..string.format("%0.f",res).."\n("..Item[item]..")"
 end
 msg_order[check_order]="check"
 
+
+--管理员发送奖励
+admin_order_gift="奖励"
+function adminGift(msg)
+    if(msg.fromQQ~="3032902237" and msg.fromQQ~="2677409596")then
+        return ""
+    end
+    --目标 赠送道具数量 赠送道具 附加信息
+    local QQ,num,item,message=string.match(msg.fromMsg,"[%s]*(%d*)[%s]*(%d*)[%s]*(%S*)[%s]*(.*)",#admin_order_gift+1)
+    if(QQ==nil or num==nil or item==nil or message==nil)then
+        return "参数输入有误！"
+    end
+    setUserConf(QQ,item,getUserConf(QQ,item,0)+num)
+    --发送消息提醒对方
+    local content="系统邮件："..message.."\n已接收附件："..item.."x"..string.format("%.0f",num)..",通过指令“查询 道具名”确认"
+    sendMsg(content,0,QQ)
+    return "权限确认：已成功将奖励送至目标"
+end
+msg_order[admin_order_gift]="adminGift"
+
+--物品描述
+Item=
+{
+    ["好感度"]="用于指示和茉莉亲密关系的重要指标，具有很高的参考价值",
+    ["梦的开始"]="一把象牙白的钥匙，晶莹剔透，不知道是用什么制作的，或许能开启什么",
+    ["未言的期待"]="茉莉最喜欢牌子的棒棒糖，在你向她诉说些什么时给你的，听她说棒棒糖有魔力\n效果：附加永久增益：使「打工」时间缩减10%"
+}
