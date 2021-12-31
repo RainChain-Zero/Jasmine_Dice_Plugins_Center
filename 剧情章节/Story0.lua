@@ -132,7 +132,7 @@ function StoryZeroChoose(msg,res)
         end
     end
     setUserConf(msg.fromQQ,"Choice",res*1)
-    return "您已选择选项"..res.." 输入.f以确认选择"
+    return "您选中了选项"..res.." 输入.f以确认选择"
 end
 
 function SkipStory0(msg)

@@ -1,6 +1,6 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 1.0(Alpha)
+    @version 1.5(Beta)
     @Created 2021/12/13 09:19
     @Last Modified 2021/12/30 14:45
     ]]
@@ -153,7 +153,7 @@ function SpecialZeroChoose(msg,res)
         return "您必须输入一个有效的选项数字哦~"
     end
     setUserConf(msg.fromQQ,"Choice",res*1)
-    return "您已选择选项"..res.." 输入.f以确认选择"
+    return "您选中了选项"..res.." 输入.f以确认选择"
 end
 
 function SkipSpecial0(msg)

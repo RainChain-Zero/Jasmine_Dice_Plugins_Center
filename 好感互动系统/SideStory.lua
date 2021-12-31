@@ -1,8 +1,8 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 1.0(Beta)
+    @version 1.5(Beta)
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/30 14:46
+    @Last Modified 2021/12/31 13:47
     ]]
 
 msg_order={}
@@ -46,28 +46,24 @@ msg_order[".f"]="StoryMain"
 EntryStoryOrder="进入剧情"
 function EnterStory(msg)
     --清空之前所有操作
+    local favor=getUserConf(msg.fromQQ,"好感度",0)
     Init(msg)
     local Story=string.match(msg.fromMsg,"[%s]*(.*)",#EntryStoryOrder+1)
     if(Story==nil or Story=="")then
         return "请输入章节名哦~"
     end
     if(string.find(Story,"序章")~=nil or string.find(Story,"惊蛰")~=nil)then
-        local favor=getUserConf(msg.fromQQ,"好感度",0)
         if(favor<1000)then
             return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
         end
         Story="序章 惊蛰"
         setUserConf(msg.fromQQ,"StoryReadNow",0)
     elseif(string.find(Story,"元旦特典")~=nil or string.find(Story,"预想此时应更好")~=nil)then
-
-        --! Alpha Ver
-        if(msg.fromQQ=="3032902237" or msg.fromQQ=="2677409596")then
-            Story="元旦特典 预想此时应更好"
-            setUserConf(msg.fromQQ,"SpecialReadNow",0)
-        else
-            return "本功能暂未开放哦~"
+        if(favor<1500)then
+            return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
         end
-
+        Story="元旦特典 预想此时应更好"
+        setUserConf(msg.fromQQ,"SpecialReadNow",0)
     end
     setUserConf(msg.fromQQ,"MainIndex",1)
     setUserConf(msg.fromQQ,"Option",0)

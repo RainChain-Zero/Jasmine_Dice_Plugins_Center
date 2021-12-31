@@ -2,9 +2,9 @@
 
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 4.1
+    @version 4.3
     @Created 2021/08/19 13:16
-    @Last Modified 2021/12/26 23:29
+    @Last Modified 2021/12/31 14:01
     ]]
 
 --载入回复模块
@@ -59,28 +59,28 @@ function trust(msg)
     local favorVersion=getGroupConf(msg.fromGroup,"favorVersion",0)
     local favorUVersion=getUserConf(msg.fromQQ,"favorVersion",0)
     --修改版本号只需要将下面的数字修改为目前的版本号即可
-    if(favorUVersion~=41)then
+    if(favorUVersion~=43)then
         setUserConf(msg.fromQQ,"noticeQQ",0)
-        setUserConf(msg.fromQQ,"favorVersion",41)
+        setUserConf(msg.fromQQ,"favorVersion",43)
     end
-    if(favorVersion~=41)then
-        setGroupConf(msg.fromGroup,"favorVersion",41)
+    if(favorVersion~=43)then
+        setGroupConf(msg.fromGroup,"favorVersion",43)
         setGroupConf(msg.fromGroup,"notice",0)
     end
     local notice=getGroupConf(msg.fromGroup,"notice",0)
     local noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
     if(msg.fromGroup=="0" and noticeQQ==0)then
             noticeQQ=noticeQQ+1
-            local content="**[好感互动模块-版本预告Ver4.1]**\n剧情模式追加 [元旦特典]将于2021.12.31开放，好感锁为1500，同时部分选项也将有好感限制。(注:序章已开放（1000+），进入指令为“进入剧情 序章”)\n——Admin\n2021.12.19"
+            local content="**[好感互动模块-版本通告Ver4.3]**\n1.剧情模式追加 [元旦特典]开放，好感要求1500以上。进入指令“进入剧情 元旦特典”，另外，在本次剧情中的选择情况将会影响以后的剧情（谨慎选择），同时部分选项将有好感限制，支持重复阅读以获得完整剧情体验哦~\n2.剧情模式增加“跳过”指令，输入“跳过”将跳转到下一选项处\n3.提高各交互好感阈值，增加部分交互内容\n4.帮助文档更新，指令“.help 好感交互”查看详情\n（序章 1000好感已开放，“进入剧情 序章”）\n策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：直接联系Ashiterui或者通过“.send [消息内容]”指令向管理员发送信息\n——By Ashiterui 2021.12.31"
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,0,msg.fromQQ)
     end
     noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
     if(notice~=nil)then
-        if(notice<=2 and noticeQQ==0)then
+        if(notice<=3 and noticeQQ==0)then
             notice=notice+1
             noticeQQ=noticeQQ+1
-            local content="**[好感互动模块-版本预告Ver4.1]**\n剧情模式追加 [元旦特典]将于2021.12.31开放，好感锁为1500，同时部分选项也将有好感限制。(注:序章已开放（1000+），进入指令为“进入剧情 序章”)\n本通告各群将广播3次("..string.format("%.0f",notice).."/3)\n——Admin\n2021.12.19"
+            local content="**[好感互动模块-版本通告Ver4.3]**（本群通告次数："..string.format("%.0f",notice).."/4)\n1.剧情模式追加 [元旦特典]开放，好感要求1500以上。进入指令“进入剧情 元旦特典”，另外，在本次剧情中的选择情况将会影响以后的剧情（谨慎选择），同时部分选项将有好感限制，支持重复阅读以获得完整剧情体验哦~\n2.剧情模式增加“跳过”指令，输入“跳过”将跳转到下一选项处\n3.提高各交互好感阈值，增加部分交互内容\n4.帮助文档更新，指令“.help 好感交互”查看详情\n（序章 1000好感已开放，“进入剧情 序章”）\n策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：直接联系Ashiterui或者通过“.send [消息内容]”指令向管理员发送信息\n——By Ashiterui 2021.12.31"
             setGroupConf(msg.fromGroup,"notice",notice)
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,msg.fromGroup,msg.fromQQ)
