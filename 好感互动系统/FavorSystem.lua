@@ -184,10 +184,13 @@ function favor_punish(msg)
     setUserConf(msg.fromQQ,"好感度",favor)
 end
 
-function add_favor_food()
+function add_favor_food(favor)
     --单次固定好感上升
     --return 100
-    --随机好感上升
+    --随机好感上升,低好感用户翻倍
+    if(favor<=1250)then
+        return ranint(40,60)
+    end
     return ranint(20,30)
 end
 function add_gift_once()	--单次计数上升
@@ -200,7 +203,7 @@ function blackList(msg)
     local favor=getUserConf(msg.fromQQ,"好感度",0)
     if(favor<=-300 and favor>-600)then
         sendMsg("Warning:检测到{nick}的好感度过低，即将触发机体下限保护机制！",msg.fromGroup,msg.fromQQ)
-        sendMsg("Warning:检测到用户"..msg.fromQQ.."好感度过低".."在群"..msg.fromGroup,msg.fromGroup,2677409596)
+        sendMsg("Warning:检测到用户"..msg.fromQQ.."好感度过低".."在群"..msg.fromGroup,0,2677409596)
     end
     if(favor<-600)then
         eventMsg(".admin blackqq ".."违反人机和谐共处条例 "..msg.fromQQ,0,2677409596)
@@ -263,7 +266,7 @@ function rcv_food(msg)
     setUserConf(DiceQQ,"gifts",self_total_gift)
     --更新好感度
     if(today_sorry==0)then
-        favor=favor+ add_favor_food()
+        favor=favor+ add_favor_food(favor)
         setUserConf(msg.fromQQ, "好感度", favor)
         cnt=cnt-1
         flag_food=flag_food+1
@@ -368,7 +371,7 @@ msg_order["茉莉好感"]= "show_favor"
 
 --早安问候互动程序
 function rcv_Ciallo_morning(msg)
-    --每天第一次早安加10好感度
+    --每天第一次早安加5好感度
     trust(msg)
     local today_morning=getUserToday(msg.fromQQ,"morning",0)
     local favor=getUserConf(msg.fromQQ,"好感度",0)
@@ -1559,7 +1562,7 @@ zhongqiu_highest={
 -- end
 -- msg_order["图片"]="picture"
 
--- --管理员测试权限
+-- 管理员测试权限
 function setfavor(msg)
     local first,second ="",string.match(msg.fromMsg,"^[%s]*[%d]*[%s]*[%d]*$",#admin_order1+1)
     if(second == "")then
@@ -1601,7 +1604,6 @@ function reset_food(msg)
 end
 admin_order3="重置喂食 "
 msg_order[admin_order3]="reset_food"
--- --end
 
 admin_order4="好感历史 "
 function favor_history(msg)

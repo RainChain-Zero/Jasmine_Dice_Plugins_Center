@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0(Alpha)
     @Create 2021/11/21 0:21
-    @Last Update 2022/01/01 03:50
+    @Last Update 2022/01/01 13:00
     ]]
 
 msg_order={}
@@ -212,12 +212,27 @@ msg_order[trade_order]="Trade"
 check_order="查询"
 function check(msg)
     local item=string.match(msg.fromMsg,"[%s]*(.*)",#check_order+1)
+    local flag=false
     if(item==nil or item=="")then
         return "系统：请输入要查询的条目哦~"
     end
     if(item=="好感")then
         item="好感度"
     end
+
+    --判断道具是否存在
+    for k,v in pairs(ItemName)
+    do
+        if(string.find(item,v)~=nil)then
+            flag=true
+            item=v
+            break
+        end
+    end
+    if(not flag)then
+        return "该道具暂未被图鉴收录哦~"
+    end
+
     local res=getUserConf(msg.fromQQ,item,0)
     sendMsg( "系统：正在检索..."..ranint(20,50).."%..."..ranint(51,80).."%...",msg.fromGroup,msg.fromQQ)
     sleepTime(1000)
@@ -225,6 +240,19 @@ function check(msg)
 end
 msg_order[check_order]="check"
 
+--道具图鉴
+function handbook()
+    local res=""
+    local cnt=1
+    for k,v in pairs(ItemName)
+    do
+        res=res..string.format("%.0f",cnt).."."..v.."\n"
+        cnt=cnt+1
+    end
+    res=res.."输入“查询 道具名”以查阅具体词条"
+    return res
+end
+msg_order["道具图鉴"]="handbook"
 
 --管理员发送奖励
 admin_order_gift="奖励"
@@ -237,7 +265,7 @@ function adminGift(msg)
     if(QQ==nil or num==nil or item==nil or message==nil)then
         return "参数输入有误！"
     end
-    setUserConf(QQ,item,getUserConf(QQ,item,0)+num)
+    setUserConf(QQ,item,getUserConf(QQ*1,item,0)+num)
     --发送消息提醒对方
     local content="系统邮件："..message.."\n已接收附件："..item.."x"..string.format("%.0f",num)..",通过指令“查询 道具名”确认"
     sendMsg(content,0,QQ)
@@ -250,5 +278,11 @@ Item=
 {
     ["好感度"]="用于指示和茉莉亲密关系的重要指标，具有很高的参考价值",
     ["梦的开始"]="一把象牙白的钥匙，晶莹剔透，不知道是用什么制作的，或许能开启什么",
-    ["未言的期待"]="茉莉最喜欢牌子的棒棒糖，在你向她诉说些什么时给你的，听她说棒棒糖有魔力\n效果：附加永久增益：使「打工」时间缩减10%"
+    ["未言的期待"]="茉莉最喜欢牌子的棒棒糖，在你向她诉说些什么时给你的，听她说棒棒糖有魔力\n效果：附加永久增益：使「打工」时间缩减10%",
+    ["永恒之戒"]="泛着耀眼光芒的钻戒，传说只有纯粹和心意相通的两人才能使其绽放出流光溢彩的永恒之光吧。\n“谁也没有见过风，更别说我和你了；谁都没有见过爱情，直到有花束抛向自己”\n效果：？？？"
+}
+
+ItemName=
+{
+    "好感度","梦的开始","未言的期待","永恒之戒"
 }
