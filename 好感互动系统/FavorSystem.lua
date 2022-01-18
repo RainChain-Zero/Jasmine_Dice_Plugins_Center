@@ -2,9 +2,9 @@
 
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 4.3
+    @version 4.4
     @Created 2021/08/19 13:16
-    @Last Modified 2022/01/01 2:47
+    @Last Modified 2022/01/05 18:52
     ]]
 
 --载入回复模块
@@ -59,20 +59,19 @@ function trust(msg)
     local favorVersion=getGroupConf(msg.fromGroup,"favorVersion",0)
     local favorUVersion=getUserConf(msg.fromQQ,"favorVersion",0)
     --修改版本号只需要将下面的数字修改为目前的版本号即可
-    if(favorUVersion~=43)then
+    if(favorUVersion~=44)then
         setUserConf(msg.fromQQ,"noticeQQ",0)
-        setUserConf(msg.fromQQ,"favorVersion",43)
+        setUserConf(msg.fromQQ,"favorVersion",44)
     end
-    if(favorVersion~=43)then
-        setGroupConf(msg.fromGroup,"favorVersion",43)
+    if(favorVersion~=44)then
+        setGroupConf(msg.fromGroup,"favorVersion",44)
         setGroupConf(msg.fromGroup,"notice",0)
     end
     local notice=getGroupConf(msg.fromGroup,"notice",0)
     local noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
     if(msg.fromGroup=="0" and noticeQQ==0)then
             noticeQQ=noticeQQ+1
-            local content="**[好感互动模块-版本通告Ver4.3]**\n1.剧情模式追加 [元旦特典]开放，好感要求1500以上。进入指令“进入剧情 元旦特典”，另外，在本次剧情中的选择情况将会影响以后的剧情（谨慎选择），同时部分选项将有好感限制，支持重复阅读以获得完整剧情体验哦~\n（！注意！好感度至少2000才能解锁本次的相对完整内容）\n2.剧情模式增加“跳过”指令，输入“跳过”将跳转到下一选项处\n3.提高各交互好感阈值，增加部分交互内容\n4.帮助文档更新，指令“.help 好感交互”查看详情\n（序章 1000好感已开放，“进入剧情 序章”）\n策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：直接联系Ashiterui或者通过“.send [消息内容]”指令向管理员发送信息\n——By Ashiterui 2021.12.31\f"..
-            "2021.12.31附加：降低了.f的使用频率，修改了相关指令；可及时通过“.send 消息内容”向管理员联系反馈，被采纳者将给予一定道具奖励"
+            local content="【Admin】现在低好感（<1250）用户通过喂食获得的好感度*2"
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,0,msg.fromQQ)
     end
@@ -81,8 +80,7 @@ function trust(msg)
         if(notice<=3 and noticeQQ==0)then
             notice=notice+1
             noticeQQ=noticeQQ+1
-            local content="**[好感互动模块-版本通告Ver4.3]**（本群通告次数："..string.format("%.0f",notice).."/4)\n1.剧情模式追加 [元旦特典]开放，好感要求1500以上。进入指令“进入剧情 元旦特典”，另外，在本次剧情中的选择情况将会影响以后的剧情（谨慎选择），同时部分选项将有好感限制，支持重复阅读以获得完整剧情体验哦~\n（！注意！好感度至少2000才能解锁本次的相对完整内容）\n2.剧情模式增加“跳过”指令，输入“跳过”将跳转到下一选项处\n3.提高各交互好感阈值，增加部分交互内容\n4.帮助文档更新，指令“.help 好感交互”查看详情\n（序章 1000好感已开放，“进入剧情 序章”）\n策划及文案：@Ashiterui（2677409596）\n脚本及实现：@慕北_Innocent（RainChain）(3032902237)\nBug及意见反馈：直接联系Ashiterui或者通过“.send [消息内容]”指令向管理员发送信息\n——By Ashiterui 2021.12.31\f"..
-            "2021.12.31附加：降低了.f的使用频率，修改了相关指令；可及时通过“.send 消息内容”向管理员联系反馈，被采纳者将给予一定道具奖励"
+            local content="【Admin】现在低好感（<1250）用户通过喂食获得的好感度*2"
             setGroupConf(msg.fromGroup,"notice",notice)
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,msg.fromGroup,msg.fromQQ)
@@ -216,7 +214,6 @@ end
 --!提醒：请不要随意修改rcv_food函数！！递归中牵扯过多，容易引发bug
 function rcv_food(msg)
     --rude值判定是否接受喂食
-    --return "Warning!好感组件强制更新中 相关功能已停用"
     trust(msg)
     local today_rude=getUserToday(msg.fromQQ,"rude",0)
     local today_sorry=getUserToday(msg.fromQQ,"sorry",0)
