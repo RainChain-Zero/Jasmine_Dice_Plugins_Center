@@ -1,16 +1,17 @@
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 1.6
+    @version 1.7
     @Created 2021/12/05 00:04
-    @Last Modified 2021/12/31 23:33
+    @Last Modified 2022/01/21 21:25
     ]]
 
 msg_order={}
 
-package.path="/home/container/Dice3349795206/plugin/Story/?.lua"
+package.path=getDiceDir().."/plugin/Story/?.lua"
 require "Story"
 require "Story0"
 require "Special0"
+require "Story1"
 
 --todo 主调入口
 function StoryMain(msg)
@@ -32,6 +33,8 @@ function StoryMain(msg)
     if(StoryNormal~=-1)then
         if(StoryNormal==0)then
             Reply=StoryZero(msg)
+        elseif(StoryNormal==1) then
+            Reply=StoryOne(msg)
         end
     else
         if(StorySpecial==0)then
@@ -45,25 +48,41 @@ msg_order[".f"]="StoryMain"
 --todo 剧情入口点
 EntryStoryOrder="进入剧情"
 function EnterStory(msg)
-    --清空之前所有操作
+    --初始化配置
     local favor=getUserConf(msg.fromQQ,"好感度",0)
     Init(msg)
-    local Story=string.match(msg.fromMsg,"[%s]*(.*)",#EntryStoryOrder+1)
-    if(Story==nil or Story=="")then
+    local StoryTemp=string.match(msg.fromMsg,"[%s]*(.*)",#EntryStoryOrder+1)
+    local Story=""
+    if(Story==nil or StoryTemp=="")then
         return "请输入章节名哦~"
     end
-    if(string.find(Story,"序章")~=nil or string.find(Story,"惊蛰")~=nil)then
+    --提取具体章节
+    if(string.find(StoryTemp,"序章")~=nil or string.find(StoryTemp,"惊蛰")~=nil)then
         if(favor<1000)then
             return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
         end
         Story="序章 惊蛰"
         setUserConf(msg.fromQQ,"StoryReadNow",0)
-    elseif(string.find(Story,"元旦特典")~=nil or string.find(Story,"预想此时应更好")~=nil)then
+        setUserConf(msg.fromQQ,"ChoiceSelected0",0)
+    elseif(string.find(StoryTemp,"元旦特典")~=nil or string.find(StoryTemp,"预想此时应更好")~=nil)then
         if(favor<1500)then
             return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
         end
         Story="元旦特典 预想此时应更好"
         setUserConf(msg.fromQQ,"SpecialReadNow",0)
+    elseif(string.find(StoryTemp,"第一章")~=nil or string.find(StoryTemp,"夜未央")~=nil)then
+        if(getUserConf(msg.fromQQ,"isStory1Unlocked",0)==0)then
+            setUserConf(msg.fromQQ,"entryCheckStory",1)
+            return "眼前的记忆碎片被一股神秘的光芒所环绕，将它从外界隔绝开来，也许只有某些特定的物品才能将其解除。\n（输入“.u 道具名”使用道具，可输入“道具图鉴”以查询）"
+        end
+        setUserConf(msg.fromQQ,"actionRoundLeft",4)
+        setUserConf(msg.fromQQ,"StoryReadNow",1)
+        setUserConf(msg.fromQQ,"isStory1Option1Choice3",-1)
+        Story="第一章 夜未央"
+    end
+    --是否存在章节
+    if(Story=="")then
+        return "请输入正确的章节名哦~"
     end
     setUserConf(msg.fromQQ,"MainIndex",1)
     setUserConf(msg.fromQQ,"Option",0)
@@ -79,7 +98,6 @@ function Init(msg)
     setUserConf(msg.fromQQ,"Choice",0)
     setUserConf(msg.fromQQ,"StoryReadNow",-1)
     setUserConf(msg.fromQQ,"SpecialReadNow",-1)
-    setUserConf(msg.fromQQ,"ChoiceSelected0",0)
     setUserConf(msg.fromQQ,"NextOption",1)
 end
 
@@ -108,6 +126,8 @@ function Choose(msg)
     if(StoryNormal~=-1)then
         if(StoryNormal==0)then
             Reply=StoryZeroChoose(msg,res)
+        elseif (StoryNormal==1) then
+            Reply=StoryOneChoose(msg,res)
         end
     else
         if(StorySpecial==0)then
@@ -139,6 +159,8 @@ function Skip(msg)
     if(StoryNormal~=-1)then
         if(StoryNormal==0)then
             Reply= SkipStory0(msg)
+        elseif (StoryNormal==1) then
+            Reply=SkipStory1()
         end
     else
         if(StorySpecial==0)then
