@@ -74,7 +74,7 @@ function Trade(msg)
         --//? 记录下被交易方是否在同一个群内，用于被交易方回复时判断不同的处理方式
         setUserConf(QQReceive,"isInGroup",isInGroup)
 
-        --//todo 交易双方在对方处留下记录作为交易进行的凭证
+        --交易双方在对方处留下记录作为交易进行的凭证
         --//! 注意！QQ号超出9位会爆UserConf #3 arg，必须分开存储！！！
         local QQReceive1,QQReceive2,QQRequest1,QQRequest2="0","0","0","0"
         if(QQReceive*1>999999999)then
@@ -125,7 +125,7 @@ function Trade(msg)
     elseif(string.find(msg.fromMsg,"同意")~=nil or string.find(msg.fromMsg,"接受")~=nil or string.find(msg.fromMsg,"拒绝")~=nil)then
         --debug
         --return msg.fromQQ
-        --//todo 记录获取交易发起方
+        -- 记录获取交易发起方
         local reply=string.match(msg.fromMsg,"[%s]*(.*)",#trade_order+1)
         local tradeRequest
         if(getUserConf(msg.fromQQ,"isQQBiggerThanNine","n")=="y")then
