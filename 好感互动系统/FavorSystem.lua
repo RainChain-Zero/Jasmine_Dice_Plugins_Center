@@ -2,15 +2,15 @@
 
 --[[
     @author 慕北_Innocent(RainChain)
-    @version 4.4
+    @version 4.5
     @Created 2021/08/19 13:16
-    @Last Modified 2022/01/05 18:52
+    @Last Modified 2022/01/31 23：51
     ]]
 
 --载入回复模块
-package.path="/home/container/Dice3349795206/plugin/FavorReply/?.lua"
+package.path=getDiceDir().."/plugin/ReplyAndDescription/?.lua"
 require "favorReply"
-
+require "itemDescription"
 msg_order = {}
 
 function topercent(num)
@@ -18,6 +18,35 @@ function topercent(num)
         return ""
     end
     return string.format("%.2f",num/100)
+end
+
+--每次交互道具增加的附加好感度
+function addFavor_Item(msg)
+    local favor=0
+    if(os.time()<getUserConf(msg.fromQQ,"addFavorDDL_Cookie",0))then
+        if (getUserToday(msg.fromQQ,"addFavor_Cookie",0)==0) then
+            favor=favor+30
+            setUserToday(msg.fromQQ,"addFavor_Cookie",1)
+        end
+    elseif(getUserConf(msg.fromQQ,"addFavorDDLFlag_Cookie",1)==0)then
+        sendMsg("注意，您的『袋装曲奇』道具效果已消失",msg.fromGroup,msg.fromQQ)
+        --更新标记，下次不做提醒
+        setUserConf(msg.fromQQ,"addFavorDDLFlag_Cookie",1)
+    end
+    setUserConf(msg.fromQQ,"好感度",getUserConf(msg.fromQQ,"好感度",0)+favor)
+end
+
+--好感时间惩罚减免百分比计算
+function favorTimePunishDownRate(msg)
+    if(os.time()<getUserConf(msg.fromQQ,"favorTimePunishDownDDL",0))then
+        return getUserConf(msg.fromQQ,"favorTimePunishDownRate",0)
+    elseif (getUserConf(msg.fromQQ,"favorTimePunishDownDDLFlag",1)==0) then
+        sendMsg("注意，您的好感度时间惩罚减免道具效果已消失",msg.fromGroup,msg.fromQQ)
+        --更新标记，下次不做提醒
+        setUserConf(msg.fromQQ,"favorTimePunishDownDDLFlag",1)
+        setUserConf(msg.fromQQ,"favorTimePunishDownRate",0)
+    end
+    return 0
 end
 --各类上限
 today_food_limit = 3   --单日喂食次数上限
@@ -53,34 +82,34 @@ function trust(msg)
     --强制更新提示信息
     --sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
     --os.exit()
-
+    --道具附加的额外好感追加
+    addFavor_Item(msg)
     --版本通告处
-    
     local favorVersion=getGroupConf(msg.fromGroup,"favorVersion",0)
     local favorUVersion=getUserConf(msg.fromQQ,"favorVersion",0)
     --修改版本号只需要将下面的数字修改为目前的版本号即可
-    if(favorUVersion~=44)then
+    if(favorUVersion~=45)then
         setUserConf(msg.fromQQ,"noticeQQ",0)
-        setUserConf(msg.fromQQ,"favorVersion",44)
+        setUserConf(msg.fromQQ,"favorVersion",45)
     end
-    if(favorVersion~=44)then
-        setGroupConf(msg.fromGroup,"favorVersion",44)
+    if(favorVersion~=45)then
+        setGroupConf(msg.fromGroup,"favorVersion",45)
         setGroupConf(msg.fromGroup,"notice",0)
     end
     local notice=getGroupConf(msg.fromGroup,"notice",0)
     local noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
     if(msg.fromGroup=="0" and noticeQQ==0)then
             noticeQQ=noticeQQ+1
-            local content="【Admin】现在低好感（<1250）用户通过喂食获得的好感度*2"
+            local content="【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,0,msg.fromQQ)
     end
     noticeQQ=getUserConf(msg.fromQQ,"noticeQQ",0)
     if(notice~=nil)then
-        if(notice<=3 and noticeQQ==0)then
+        if(notice<=4 and noticeQQ==0)then
             notice=notice+1
             noticeQQ=noticeQQ+1
-            local content="【Admin】现在低好感（<1250）用户通过喂食获得的好感度*2"
+            local content="【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
             setGroupConf(msg.fromGroup,"notice",notice)
             setUserConf(msg.fromQQ,"noticeQQ",noticeQQ)
             sendMsg(content,msg.fromGroup,msg.fromQQ)
@@ -161,18 +190,20 @@ function favor_punish(msg)
             return ""
         end
         if(favor<8500 and favor>1250)then
-            Llimit,Rlimit=60*math.log(2*subday,2),70*math.log(2*subday,2)
+            Llimit,Rlimit=80*math.log(2*subday,2),100*math.log(2*subday,2)
         elseif(favor>=8500)then
-            Llimit,Rlimit=120*math.log(2*subday,2),140*math.log(2*subday,2)
+            Llimit,Rlimit=150*math.log(2*subday,2),180*math.log(2*subday,2)
         else
             Llimit,Rlimit=30*math.log(2*subday,2),35*math.log(2*subday,2)
         end
     elseif(subday<=8)then
-        Llimit,Rlimit=150*subday,185*subday
+        Llimit,Rlimit=180*subday,200*subday
     else
-        Llimit,Rlimit=820+195*(subday-5)*math.log(2*(subday-5),2),870+225*(subday-5)*math.log(2*(subday-5),2)
+        Llimit,Rlimit=820+215*(subday-5)*math.log(2*(subday-5),2),870+245*(subday-5)*math.log(2*(subday-5),2)
     end
     --
+    --! 道具减免
+    Llimit,Rlimit=Llimit*(1-favorTimePunishDownRate(msg)),Rlimit*(1-favorTimePunishDownRate(msg))
     --//todo 将左右端点取整才可带入ranint
     Llimit,Rlimit=math.modf(Llimit),math.modf(Rlimit)
     favor=favor-ranint(Llimit,Rlimit)
@@ -984,12 +1015,12 @@ function interaction(msg)
     elseif(favor<=5000)then
         level="high"
         if(today_interaction<=today_lift_limit)then
-            setUserConf(msg.fromQQ,"好感度",favor+ranint(25,50))
+            setUserConf(msg.fromQQ,"好感度",favor+ranint(12,25))
         end
     else
         level="highest"
         if(today_interaction<=today_lift_limit)then
-            setUserConf(msg.fromQQ,"好感度",favor+ranint(30,65))
+            setUserConf(msg.fromQQ,"好感度",favor+ranint(15,30))
         end
     end
     local first,second ="",string.match(msg.fromMsg,"^[%s]*[%S]*[%s]*[%S]*$",#normal_order_old+1)
@@ -1133,17 +1164,17 @@ function action(msg)
                         reply_main= table_draw(reply_hug_less)
                     elseif(favor<=3000)then
                         if(today_hug<=today_hug_limit)then
-                            setUserConf(msg.fromQQ,"好感度",favor+10)
+                            setUserConf(msg.fromQQ,"好感度",favor+8)
                         end
                         reply_main= table_draw(reply_hug_low)
                     elseif(favor<=6000)then
                         if(today_hug<=today_hug_limit)then
-                            setUserConf(msg.fromQQ,"好感度",favor+20)
+                            setUserConf(msg.fromQQ,"好感度",favor+15)
                         end
                         reply_main= table_draw(reply_hug_high)
                     else
                         if(today_hug<=today_hug_limit)then
-                            setUserConf(msg.fromQQ,"好感度",favor+30)
+                            setUserConf(msg.fromQQ,"好感度",favor+25)
                         end
                         reply_main= table_draw(reply_hug_highest)
                     end
@@ -1161,7 +1192,7 @@ function action(msg)
                 reply_main= "被笨蛋主人这样摸头...总感觉开心不起来呢"
             else
                 if(today_touch<=today_touch_limit)then
-                    setUserConf(msg.fromQQ,"好感度",favor+25)
+                    setUserConf(msg.fromQQ,"好感度",favor+20)
                 end
                 reply_main= "唔唔唔，主、主人不要摸啦，头、头发会乱的...#闭眼缩起脖子"
             end
@@ -1177,17 +1208,17 @@ function action(msg)
                     reply_main= table_draw(reply_touch_less)
                 elseif(favor<=2000)then
                     if(today_touch<=today_touch_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+10)
+                        setUserConf(msg.fromQQ,"好感度",favor+8)
                     end
                     reply_main= table_draw(reply_touch_low)
                 elseif(favor<=4500)then
                     if(today_touch<=today_touch_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+15)
+                        setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
                     reply_main= table_draw(reply_touch_high)
                 else
                     if(today_touch<=today_touch_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+20)
+                        setUserConf(msg.fromQQ,"好感度",favor+16)
                     end
                     reply_main= table_draw(reply_touch_highest)
                 end
@@ -1218,17 +1249,17 @@ function action(msg)
                     reply_main= table_draw(reply_lift_less)
                 elseif(favor<=3200)then
                     if(today_lift<=today_lift_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+12)
+                        setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_lift_low)
                 elseif(favor<=6800)then
                     if(today_lift<=today_lift_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+17)
+                        setUserConf(msg.fromQQ,"好感度",favor+14)
                     end
                     reply_main= table_draw(reply_lift_high)
                 else
                     if(today_lift<=today_lift_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+22)
+                        setUserConf(msg.fromQQ,"好感度",favor+18)
                     end
                     reply_main=table_draw(reply_lift_highest)
                 end
@@ -1263,12 +1294,12 @@ function action(msg)
                     reply_main= table_draw(reply_kiss_low)
                 elseif(favor<=6700)then
                     if(today_kiss<=today_kiss_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+50)
+                        setUserConf(msg.fromQQ,"好感度",favor+40)
                     end
                     reply_main= table_draw(reply_kiss_high)
                 else
                     if(today_kiss<=today_kiss_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+75)
+                        setUserConf(msg.fromQQ,"好感度",favor+65)
                     end
                     reply_main= table_draw(reply_kiss_highest)
                 end
@@ -1299,17 +1330,17 @@ function action(msg)
                     reply_main= table_draw(reply_hand_less)
                 elseif(favor<=3500)then
                     if(today_hand<=today_hand_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+10)
+                        setUserConf(msg.fromQQ,"好感度",favor+8)
                     end
                     reply_main= table_draw(reply_hand_low)
                 elseif(favor<=6000)then
                     if(today_hand<=today_hand_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+12)
+                        setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_hand_high)
                 else
                     if(today_hand<=today_hand_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+15)
+                        setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
                     reply_main= table_draw(reply_hand_highest)
                 end
@@ -1345,12 +1376,12 @@ function action(msg)
                     reply_main= table_draw(reply_face_low)
                 elseif(favor<=6000)then
                     if(today_face<=today_face_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+12)
+                        setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_face_high)
                 else
                     if(today_face<=today_face_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+17)
+                        setUserConf(msg.fromQQ,"好感度",favor+14)
                     end
                     reply_main= table_draw(reply_face_highest)
                 end
@@ -1380,22 +1411,22 @@ function action(msg)
             if(today_rude<=2 and today_sorry<=1)then
                 if(favor<=1050)then
                     if(today_cute<=today_cute_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+10)
+                        setUserConf(msg.fromQQ,"好感度",favor+8)
                     end
                     reply_main= table_draw(reply_cute_less)
                 elseif(favor<=3000)then
                     if(today_cute<=today_cute_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+12)
+                        setUserConf(msg.fromQQ,"好感度",favor+10)
                     end
                     reply_main= table_draw(reply_cute_low)
                 elseif(favor<=4000)then
                     if(today_cute<=today_cute_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+15)
+                        setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
                     reply_main= table_draw(reply_cute_high)
                 else
                     if(today_cute<=today_cute_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+17)
+                        setUserConf(msg.fromQQ,"好感度",favor+15)
                     end
                     reply_main= table_draw(reply_cute_highest)
                 end
@@ -1424,17 +1455,17 @@ function action(msg)
                     reply_main= table_draw(reply_suki_less)
                 elseif(favor<=3500)then
                     if(today_suki<=today_suki_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+15)
+                        setUserConf(msg.fromQQ,"好感度",favor+12)
                     end
                     reply_main= table_draw(reply_suki_low)
                 elseif(favor<=5500)then
                     if(today_suki<=today_suki_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+20)
+                        setUserConf(msg.fromQQ,"好感度",favor+15)
                     end
                     reply_main= table_draw(reply_suki_high)
                 else
                     if(today_suki<=today_suki_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+25)
+                        setUserConf(msg.fromQQ,"好感度",favor+20)
                     end
                     reply_main= table_draw(reply_suki_highest)
                 end
@@ -1463,17 +1494,17 @@ function action(msg)
                     reply_main =table_draw(reply_love_less)
                 elseif(favor<=4500)then
                     if(today_love<=today_love_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+20)
+                        setUserConf(msg.fromQQ,"好感度",favor+15)
                     end
                     reply_main= table_draw(reply_love_low)
                 elseif(favor<=6500)then
                     if(today_love<=today_love_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+25)
+                        setUserConf(msg.fromQQ,"好感度",favor+20)
                     end
                     reply_main= table_draw(reply_love_high)
                 else
                     if(today_love<=today_love_limit)then
-                        setUserConf(msg.fromQQ,"好感度",favor+30)
+                        setUserConf(msg.fromQQ,"好感度",favor+25)
                     end
                     reply_main= table_draw(reply_love_highest)
                 end
@@ -1571,7 +1602,7 @@ function setfavor(msg)
         return "权限确认：已将目标好感度设置为"..second
     end
 end
-admin_order1="设置好感 "
+admin_order1="设置好感"
 msg_order[admin_order1]="setfavor"
 
 function reset_rude_sorry(msg)
