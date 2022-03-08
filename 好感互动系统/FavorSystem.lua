@@ -8,11 +8,121 @@
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "favorReply"
 require "itemDescription"
+package.path=getDiceDir().."/plugin/dataSync/?.lua"
+require "dataSync"
+
 msg_order = {}
+
+-- 各类上限
+today_food_limit = 3 -- 单日喂食次数上限
+today_morning_limit = 1 -- 单日早安好感增加次数上限
+today_night_limit = 1 -- 每日晚安好感增加次数上限
+today_hug_limit = 1 -- 每日拥抱加好感次数上限
+today_touch_limit = 1 -- 每日摸头加好感次数上限
+today_lift_limit = 1 -- 每日举高高加好感次数上限
+today_kiss_limit = 1 -- 每日kiss加好感次数上限
+today_hand_limit = 1 -- 每日牵手加好感次数上限
+today_face_limit = 1 -- 每日捏/揉脸加好感次数上限
+today_suki_limit = 1 -- 每日喜欢加好感次数上限
+today_love_limit = 1 -- 每日爱加好感次数上限
+today_interaction_limit = 3 -- 每日"互动-部位"增加好感次数上限
+today_cute_limit = 1
+flag_food = 0 -- 用于标记多次喂食只回复一次
+cnt = 0 -- 用户输入的喂食次数
+
+-- 时间系统
+hour = os.date("*t").hour * 1
+minute = os.date("%M") * 1
+month = os.date("%m") * 1
+day = os.date("%d") * 1
+year = os.date("%Y") * 1
+-- do
+--     if(hour>=16 and hour<=23)then
+--         hour=0+8-(24-hour)         --GMT时间转北京时间
+--     end
+-- end
 
 function topercent(num)
     if (num == nil) then return "" end
     return string.format("%.2f", num / 100)
+end
+
+-- 各条交互前预处理
+function preHandle(msg)
+    -- 强制更新提示信息
+    -- sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
+    -- os.exit()
+    --数据同步
+    DataSync(msg)
+    -- 道具附加的额外好感追加
+    addFavor_Item(msg)
+    -- 版本通告处
+    Notice(msg)
+    -- ! 好感时间惩罚
+    favor_punish(msg)
+
+end
+
+
+function TrustChange(msg)
+    local favor = getUserConf(msg.fromQQ, "好感度", 0)
+    local trust_flag = getUserConf(msg.fromQQ, "trust_flag", 0)
+    local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~=
+                            "3032902237"
+    if (admin_judge) then
+        if (favor < 1000) then
+            if (trust_flag == 0) then return "" end
+            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust_flag", 0)
+        elseif (favor < 3000) then
+            if (trust_flag == 1) then return "" end
+            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust_flag", 1)
+        elseif (favor < 5000) then
+            if (trust_flag == 2) then return "" end
+            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust_flag", 2)
+        else
+            if (trust_flag == 3) then return "" end
+            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust_flag", 3)
+        end
+    end
+end
+
+function Notice(msg)
+    local favorVersion = getGroupConf(msg.fromGroup, "favorVersion", 0)
+    local favorUVersion = getUserConf(msg.fromQQ, "favorVersion", 0)
+    -- 修改版本号只需要将下面的数字修改为目前的版本号即可
+    if (favorUVersion ~= 45) then
+        setUserConf(msg.fromQQ, "noticeQQ", 0)
+        setUserConf(msg.fromQQ, "favorVersion", 45)
+    end
+    if (favorVersion ~= 45) then
+        setGroupConf(msg.fromGroup, "favorVersion", 45)
+        setGroupConf(msg.fromGroup, "notice", 0)
+    end
+    local notice = getGroupConf(msg.fromGroup, "notice", 0)
+    local noticeQQ = getUserConf(msg.fromQQ, "noticeQQ", 0)
+    if (msg.fromGroup == "0" and noticeQQ == 0) then
+        noticeQQ = noticeQQ + 1
+        local content =
+            "【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
+        setUserConf(msg.fromQQ, "noticeQQ", noticeQQ)
+        sendMsg(content, 0, msg.fromQQ)
+    end
+    noticeQQ = getUserConf(msg.fromQQ, "noticeQQ", 0)
+    if (notice ~= nil) then
+        if (notice <= 4 and noticeQQ == 0) then
+            notice = notice + 1
+            noticeQQ = noticeQQ + 1
+            local content =
+                "【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
+            setGroupConf(msg.fromGroup, "notice", notice)
+            setUserConf(msg.fromQQ, "noticeQQ", noticeQQ)
+            sendMsg(content, msg.fromGroup, msg.fromQQ)
+        end
+    end
 end
 
 -- 每次交互道具增加的附加好感度
@@ -46,104 +156,6 @@ function favorTimePunishDownRate(msg)
         setUserConf(msg.fromQQ, "favorTimePunishDownRate", 0)
     end
     return 0
-end
--- 各类上限
-today_food_limit = 3 -- 单日喂食次数上限
-today_morning_limit = 1 -- 单日早安好感增加次数上限
-today_night_limit = 1 -- 每日晚安好感增加次数上限
-today_hug_limit = 1 -- 每日拥抱加好感次数上限
-today_touch_limit = 1 -- 每日摸头加好感次数上限
-today_lift_limit = 1 -- 每日举高高加好感次数上限
-today_kiss_limit = 1 -- 每日kiss加好感次数上限
-today_hand_limit = 1 -- 每日牵手加好感次数上限
-today_face_limit = 1 -- 每日捏/揉脸加好感次数上限
-today_suki_limit = 1 -- 每日喜欢加好感次数上限
-today_love_limit = 1 -- 每日爱加好感次数上限
-today_interaction_limit = 3 -- 每日"互动-部位"增加好感次数上限
-today_cute_limit = 1
-flag_food = 0 -- 用于标记多次喂食只回复一次
-cnt = 0 -- 用户输入的喂食次数
-
--- 时间系统
-hour = os.date("*t").hour * 1
-minute = os.date("%M") * 1
-month = os.date("%m") * 1
-day = os.date("%d") * 1
-year = os.date("%Y") * 1
--- do
---     if(hour>=16 and hour<=23)then
---         hour=0+8-(24-hour)         --GMT时间转北京时间
---     end
--- end
-
--- 关联骰娘trust
-function trust(msg)
-    -- 强制更新提示信息
-    -- sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
-    -- os.exit()
-    -- 道具附加的额外好感追加
-    addFavor_Item(msg)
-    -- 版本通告处
-    local favorVersion = getGroupConf(msg.fromGroup, "favorVersion", 0)
-    local favorUVersion = getUserConf(msg.fromQQ, "favorVersion", 0)
-    -- 修改版本号只需要将下面的数字修改为目前的版本号即可
-    if (favorUVersion ~= 45) then
-        setUserConf(msg.fromQQ, "noticeQQ", 0)
-        setUserConf(msg.fromQQ, "favorVersion", 45)
-    end
-    if (favorVersion ~= 45) then
-        setGroupConf(msg.fromGroup, "favorVersion", 45)
-        setGroupConf(msg.fromGroup, "notice", 0)
-    end
-    local notice = getGroupConf(msg.fromGroup, "notice", 0)
-    local noticeQQ = getUserConf(msg.fromQQ, "noticeQQ", 0)
-    if (msg.fromGroup == "0" and noticeQQ == 0) then
-        noticeQQ = noticeQQ + 1
-        local content =
-            "【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
-        setUserConf(msg.fromQQ, "noticeQQ", noticeQQ)
-        sendMsg(content, 0, msg.fromQQ)
-    end
-    noticeQQ = getUserConf(msg.fromQQ, "noticeQQ", 0)
-    if (notice ~= nil) then
-        if (notice <= 4 and noticeQQ == 0) then
-            notice = notice + 1
-            noticeQQ = noticeQQ + 1
-            local content =
-                "【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
-            setGroupConf(msg.fromGroup, "notice", notice)
-            setUserConf(msg.fromQQ, "noticeQQ", noticeQQ)
-            sendMsg(content, msg.fromGroup, msg.fromQQ)
-        end
-    end
-
-    -- ! 好感时间惩罚
-    favor_punish(msg)
-
-    local favor = getUserConf(msg.fromQQ, "好感度", 0)
-    local trust_flag = getUserConf(msg.fromQQ, "trust_flag", 0)
-    local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~=
-                            "3032902237"
-    -- festival(msg)
-    if (admin_judge) then
-        if (favor < 1000) then
-            if (trust_flag == 0) then return "" end
-            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
-            setUserConf(msg.fromQQ, "trust_flag", 0)
-        elseif (favor < 3000) then
-            if (trust_flag == 1) then return "" end
-            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
-            setUserConf(msg.fromQQ, "trust_flag", 1)
-        elseif (favor < 5000) then
-            if (trust_flag == 2) then return "" end
-            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
-            setUserConf(msg.fromQQ, "trust_flag", 2)
-        else
-            if (trust_flag == 3) then return "" end
-            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
-            setUserConf(msg.fromQQ, "trust_flag", 3)
-        end
-    end
 end
 
 -- 一定时间不交互将会降低好感度
@@ -251,7 +263,7 @@ end
 -- !提醒：请不要随意修改rcv_food函数！！递归中牵扯过多，容易引发bug
 function rcv_food(msg)
     -- rude值判定是否接受喂食
-    trust(msg)
+    preHandle(msg)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
@@ -339,59 +351,8 @@ function punish_favor_papapa() -- 好感下降
     return ranint(300, 500)
 end
 
-function papapa(msg)
-    trust(msg)
-    local favor = getUserConf(msg.fromQQ, "好感度", 0)
-    -- rude值判定
-    local today_rude = getUserToday(msg.fromQQ, "rude", 0)
-    local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
-
-    local blackReply = blackList(msg)
-    if (blackReply ~= "" and blackReply ~= "已触发！") then
-        return blackReply
-    elseif (blackReply == "已触发！") then
-        return ""
-    end
-    if (msg.fromQQ == "2677409596") then
-        if (today_rude >= 4 or today_sorry >= 2) then
-            setUserConf(msg.fromQQ, "好感度", favor - 200)
-            return "茉莉今天生气了！就算是主人也不行！"
-        end
-    else
-        if (today_rude >= 3 or today_sorry >= 2) then
-            setUserConf(msg.fromQQ, "好感度", favor - 800)
-            return "不要！放开我！你是坏人！茉莉才不要！"
-        end
-    end
-    if (msg.fromQQ == "2677409596") then -- 爱酱专属
-        return "呜哇，为什么主人你也……"
-    end
-    -- 判定当日上限
-    local today_limit = 1
-    local today_times = getUserToday(msg.fromQQ, "pa", 0)
-    if (today_times >= today_limit) then
-        return "{nick}今天还嫌不够吗？"
-    end
-    setUserToday(msg.fromQQ, "pa", today_times + 1)
-    -- 基于好感阈值差分
-    if (favor < 5000) then
-        local punish = punish_favor_papapa()
-        setUserConf(msg.fromQQ, "好感度", favor - punish)
-        return table_draw(reply_papapa_favor_less) ..
-                   "\n{nick}的某些数值悄悄下降了——" .. punish
-    elseif (favor < 8000) then
-        return table_draw(reply_papapa_favor_low)
-    elseif (favor < 10000) then
-        return table_draw(reply_papapa_favor_high)
-    else
-        return table_draw(reply_papapa_favor_highiest)
-    end
-end
-
-msg_order["啪茉莉"] = "papapa"
-
 function show_favor(msg)
-    trust(msg)
+    preHandle(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     -- trust关联
     if (favor < 3000) then
@@ -413,7 +374,7 @@ msg_order["茉莉好感"] = "show_favor"
 -- 早安问候互动程序
 function rcv_Ciallo_morning(msg)
     -- 每天第一次早安加5好感度
-    trust(msg)
+    preHandle(msg)
     local today_morning = getUserToday(msg.fromQQ, "morning", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
@@ -480,7 +441,7 @@ msg_order["早安茉莉"] = "rcv_Ciallo_morning"
 
 -- 爱酱特殊问候关键词触发程序
 function rcv_Ciallo_morning_master(msg)
-    -- trust(msg)
+    preHandle(msg)
     local today_morning = getUserToday(msg.fromQQ, "morning", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
@@ -530,7 +491,7 @@ msg_order["早"] = "rcv_Ciallo_morning_master"
 
 -- 午安问候程序（不触发好感事件）
 function rcv_Ciallo_afternoon(msg)
-    trust(msg)
+    preHandle(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -570,7 +531,7 @@ msg_order["茉莉酱午安"] = "rcv_Ciallo_afternoon"
 
 -- 非指向性午安判断程序
 function afternoon_special(msg)
-    -- trust(msg)
+    -- preHandle(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -596,7 +557,7 @@ msg_order["午安"] = "afternoon_special"
 
 -- 指代性中午好
 function rcv_Ciallo_noon(msg)
-    trust(msg)
+    preHandle(msg)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -649,7 +610,7 @@ msg_order["中午好哟茉莉"] = "rcv_Ciallo_noon"
 
 -- 非指向性中午好
 function Ciallo_noon_normal(msg)
-    -- trust(msg)
+    -- preHandle(msg)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -680,7 +641,7 @@ msg_order["中午好"] = "Ciallo_noon_normal"
 
 -- 晚安问候程序（每日首次好感度+10）
 function rcv_Ciallo_night(msg)
-    trust(msg)
+    preHandle(msg)
     local today_night = getUserToday(msg.fromQQ, "night", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
@@ -735,7 +696,7 @@ msg_order["茉莉哦呀斯密纳塞"] = "rcv_Ciallo_night"
 msg_order["茉莉哦呀斯密"] = "rcv_Ciallo_night"
 
 -- function Ciallo_xiawuhao(msg)
---     trust(msg)
+--     preHandle(msg)
 --     local favor=getUserConf(msg.fromQQ,"好感度",0)
 --     local today_rude=getUserToday(msg.fromQQ,"rude",0)
 --     local today_sorry=getUserToday(msg.fromQQ,"sorry",0)
@@ -745,7 +706,7 @@ msg_order["茉莉哦呀斯密"] = "rcv_Ciallo_night"
 -- end
 -- 爱酱特殊晚安问候程序
 function night_master(msg)
-    -- trust(msg)
+    preHandle(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -777,7 +738,7 @@ msg_order["晚安"] = "night_master"
 
 -- 关于晚安、午安的其他表达
 function Ciallo_night_2(msg)
-    -- trust(msg)
+    -- preHandle(msg)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
@@ -814,7 +775,7 @@ msg_order["我睡了"] = "Ciallo_night_2"
 
 -- “睡了”的特殊判断
 function Ciallo_night_2_add(msg)
-    -- trust(msg)
+    -- preHandle(msg)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
 
@@ -854,7 +815,7 @@ msg_order["乌乌"] = "cry_master"
 
 -- 好感度降低惩罚（粗俗）
 function punish_favor_rude(msg)
-    -- 为了使触发该函数时不触发版本通告，不使用trust(msg)而采取部分内联形式
+    -- 为了使触发该函数时不触发版本通告，不使用preHandle(msg)而采取部分内联形式
     favor_punish(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local trust_flag = getUserConf(msg.fromQQ, "trust_flag", 0)
@@ -975,7 +936,7 @@ rude_table = {
 
 -- 道歉相关判断程序
 function say_sorry(msg)
-    trust(msg)
+    preHandle(msg)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0);
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
@@ -1032,7 +993,7 @@ msg_order["我错了茉莉"] = "say_sorry"
 interaction_order = "茉莉 互动 "
 normal_order_old = "茉莉 "
 function interaction(msg)
-    trust(msg)
+    preHandle(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -1107,7 +1068,7 @@ normal_order = "茉莉"
 -- 普通问候程序
 function _Ciallo_normal(msg)
     -- return "Warning！好感组件强制更新中 相关功能已停用"
-    -- trust(msg)
+    -- preHandle(msg)
     local str = string.match(msg.fromMsg, "(.*)", #normal_order + 1)
     local deepjudge = {
         "在", "——", "？", "~", "！", "!", "?", "吗", "呢", "了",
@@ -1142,7 +1103,7 @@ function _Ciallo_normal(msg)
 end
 
 function action(msg)
-    trust(msg)
+    preHandle(msg)
     local favor = getUserConf(msg.fromQQ, "好感度", 0)
     local today_rude = getUserToday(msg.fromQQ, "rude", 0)
     local today_sorry = getUserToday(msg.fromQQ, "sorry", 0)
@@ -1601,66 +1562,6 @@ function action_main(msg)
 end
 msg_order[normal_order] = "action_main"
 
--- 节日系统（临时只设中秋）
-function festival(msg)
-    local favor = getUserConf(msg.fromQQ, "好感度", 0)
-    local today_festival = getUserToday(msg.fromQQ, "festival", 0)
-    if (month == 9 and day == 21) then
-        if (today_festival == 0) then
-            if (msg.fromQQ == "2677409596") then
-                sendMsg(
-                    "主人主人！中秋快乐啊！（少女一如既往地扑到了你的怀里）今天茉莉可是有理由一直在你身边了哦~连带着大家一起！在那之前，茉莉就抢在他们前面先给你祝福啦",
-                    0, msg.fromQQ)
-            else
-                if (favor <= 500) then
-                    return ""
-                elseif (favor <= 2000) then
-                    sendMsg(
-                        "今天..唔..按大家的说法应该是中秋节吧！那、那个，感谢一直以来的陪伴哦，在这个团圆的日子里，茉莉也会一直陪着你的哟！总、总而言之，中秋快乐！",
-                        0, msg.fromQQ)
-                elseif (favor <= 3000) then
-                    sendMsg(
-                        "Ciallo~唔 主人告诉我今天是中秋节诶，茉莉想和大家一起度过哦，多谢一直以来的照顾~以后也要一起玩哦！诶 可不能被主人发现我偷偷跑过来，先走啦！",
-                        0, msg.fromQQ)
-                else
-                    sendMsg(table_draw(zhongqiu_highest), 0, msg.fromQQ)
-                end
-            end
-        end
-        setUserToday(msg.fromQQ, "festival", 1)
-    end
-    if (month == 10 and day == 1) then
-        if (today_festival == 0) then
-            if (msg.fromQQ == "2677409596") then
-                sendMsg(
-                    "主——人——今天可是国庆节哦~在这个假期里有什么安排吗？嗯嗯，我知道我知道，一定是没有是吧，和茉莉一起去玩吧！~（顺势拉起手小跑起来）",
-                    0, msg.fromQQ)
-            else
-                if (favor <= 500) then
-                    return ""
-                elseif (favor <= 2000) then
-                    sendMsg(
-                        "国庆节快乐哟~在这个难得的假期里好好休息吧~嗯？你说茉莉？唔姆，在你面前的可是24小时不间断工作的超级勤勉的茉！莉！酱！",
-                        0, msg.fromQQ)
-                elseif (favor <= 3000) then
-                    sendMsg(
-                        "国庆快乐！（突然冒出）怎么样想我了吗想我了吗，好好我知道我知道不用回答了，茉莉可是有在想你哦，唔，谁让你不在的话茉莉就少东西吃了，对！就是这样没错！",
-                        0, msg.fromQQ)
-                else
-                    sendMsg(
-                        "（突然从背后抱住）嘿咻！抓到你了！国庆快乐呀~这个假期要好好休息哦，嗯嗯，因为休息完了才能和我一起玩个够嘛，总、总而言之！茉莉就缠着你了！可别想把我甩开！（她嘟起嘴仰起头就这样赌气般地望着你）",
-                        0, msg.fromQQ)
-                end
-            end
-        end
-        setUserToday(msg.fromQQ, "festival", 1)
-    end
-end
-zhongqiu_highest = {
-    "中秋——快乐——！怎么样怎么样，是不是有种惊喜的感觉了！茉莉可是偷偷过来的哦，因为你一直以来都对我很好..总、总之，今后也要一直在一起哦~茉莉会一直期待着属于我们的未来的！\n啊 不好，得赶紧走，不然主人要生气了 再会啦~",
-    "哼哼哼，你的小可爱突然出现！（少女冲着你做了个鬼脸）今天可是中秋节哦，茉莉可是有好好记住的！嘛..才不是因为在意你呢，虽然确实是偷偷跑出来的...不过那不重要！今天要开开心心的哦~茉莉要赶紧回主人那里了",
-    "快看快看，茉莉今天也来找你玩了哦，中秋节当然要大家在一起嘛，至少..茉莉想和你一起..啊 没有没有 你忘了吧 主人叫我了哦，茉莉就开溜——啦！"
-}
 -- function picture(msg)
 --     return "[CQ:image,url=https://img.paulzzh.com/touhou/konachan/image/2491526e5dce044efea57ef29e6a9999.jpg]"
 -- end
