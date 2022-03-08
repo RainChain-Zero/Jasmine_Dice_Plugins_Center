@@ -2,61 +2,83 @@
     @author RainChain-Zero
     @version 0.1
     @Created 2022/03/08 20:35
-    @Last Modified 2022/02/03 19:57
+    @Last Modified 2022/03/09 03:21
     ]] 
 
+package.path=getDiceDir().."/plugin/dataSync/?.lua"
 local Json=require "json"
 
---读取json文件
-local f=assert(getDiceDir().."/user/UserConf.json","r+")
-local g=assert(getDiceDir().."/user/GroupConf.json","r+")
-local str=f:read("a")
-local strg=g:read("a")
---转lua表
-local j=Json.decode(str)
-local jg=Json.decode(strg)
-
 function SetUserConf(qq,key,value)
+   --! 必须进行这一步转换
+   qq=tostring(qq)
+   --读取json文件
+   local f1=assert(io.open(getDiceDir().."/user/UserConf.json","r"))
+   local str=f1:read("a")
+   local j=Json.decode(str)
+   j[qq][key]=value
+   f1:close()
+   local f2=assert(io.open(getDiceDir().."/user/UserConf.json","w"))
    j[qq][key]=value
    local res=Json.encode(j)
-   f:write(res)
-   f:close()
-   g:close()
+   f2:write(res)
+   f2:close()
 end
 
 function GetUserConf(qq,key,defult)
+   qq=tostring(qq)
+   local f1=assert(io.open(getDiceDir().."/user/UserConf.json","r"))
+   local str=f1:read("a")
+   local j=Json.decode(str)
+   f1:close()
    if (j[qq][key]==nil) then
-      f:close()
-      g:close()
       return defult
    end
-   f:close()
-   g:close()
    return j[qq][key]
 end
 
 function GetGroupConf(group,key,defult)
+   --判断是否为群聊
+   if(group=="0")then
+      return nil
+   end
+   qq=tostring(group)
+   local g1=assert(io.open(getDiceDir().."/user/GroupConf.json","r"))
+   local strg=g1:read("a")
+   local jg=Json.decode(strg)
+   g1:close()
    if (jg[group][key]==nil) then
-      f:close()
-      g:close()
       return defult
    end
-   f:close()
-   g:close()
    return jg[group][key]
 end
 
 function SetGroupConf(group,key,value)
+   --判断是否为群聊
+   if(group=="0")then
+      return ""
+   end
+   qq=tostring(group)
+   local g1=assert(io.open(getDiceDir().."/user/GroupConf.json","r"))
+   local strg=g1:read("a")
+   local jg=Json.decode(strg)
+   g1:close()
+   local g2=assert(io.open(getDiceDir().."/user/GroupConf.json","w"))
    jg[group][key]=value
    local res=Json.encode(jg)
-   g:write(res)
-   f:close()
-   g:close()
+   g2:write(res)
+   g2:close()
 end
+
+
 function DataSync(msg)
 
-   if(getUserConf(msg.frommsg.fromQQ,"dataSync",0)==0)then
-      j[msg.fromQQ]["noticemsg.fromQQ"]=getUserConf(msg.fromQQ,"noticemsg.fromQQ",0)
+   if(getUserConf(msg.fromQQ,"dataSync",0)==0)then
+      local f1=assert(io.open(getDiceDir().."/user/UserConf.json","r"))
+      local str=f1:read("a")
+      local j=Json.decode(str)
+      f1:close()
+      j[msg.fromQQ]={}
+      j[msg.fromQQ]["noticeQQ"]=getUserConf(msg.fromQQ,"noticeQQ",0)
       j[msg.fromQQ]["favorVersion"]=getUserConf(msg.fromQQ,"favorVersion",0)
       j[msg.fromQQ]["trust_flag"]=getUserConf(msg.fromQQ,"trust_flag",0)
       j[msg.fromQQ]["month_last"]=getUserConf(msg.fromQQ,"month_last",10)
@@ -79,7 +101,7 @@ function DataSync(msg)
       j[msg.fromQQ]["tradeReceive2"]=getUserConf(msg.fromQQ,"tradeReceive2",0)
       j[msg.fromQQ]["tradeRequest1"]=getUserConf(msg.fromQQ,"tradeRequest1",0)
       j[msg.fromQQ]["tradeRequest2"]=getUserConf(msg.fromQQ,"tradeRequest2",0)
-      j[msg.fromQQ]["ismsg.fromQQBiggerThanNine"]=getUserConf(msg.fromQQ,"ismsg.fromQQBiggerThanNine","n")
+      j[msg.fromQQ]["isQQBiggerThanNine"]=getUserConf(msg.fromQQ,"isQQBiggerThanNine","n")
       j[msg.fromQQ]["itemRequestNum"]=getUserConf(msg.fromQQ,"itemRequestNum",0)
       j[msg.fromQQ]["itemReceiveNum"]=getUserConf(msg.fromQQ,"itemReceiveNum",0)
       j[msg.fromQQ]["itemReceive"]=getUserConf(msg.fromQQ,"itemReceive","nil")
@@ -113,24 +135,35 @@ function DataSync(msg)
 
       --转码保存
       local res=Json.encode(j)
-      f:write(res)
+      local f2=assert(io.open(getDiceDir().."/user/UserConf.json","w"))
+      f2:write(res)
       --所有数据同步完成
       setUserConf(msg.fromQQ,"dataSync",1)
+      f2:close()
    end
    --群配置同步
    if (msg.fromGroup~="0") then
       if (getGroupConf(msg.fromGroup,"dataSync",0)==0) then
+         local g1=assert(io.open(getDiceDir().."/user/GroupConf.json","r"))
+         local strg=g1:read("a")
+         local jg=Json.decode(strg)
+         g1:close()
+         jg[msg.fromGroup]={}
          jg[msg.fromGroup]["favorVersion"]=getGroupConf(msg.fromGroup,"favorVersion",0)
          jg[msg.fromGroup]["notice"]=getGroupConf(msg.fromGroup,"notice",0)
 
          --转码保存
          local res=Json.encode(jg)
-         g:write(res)
+         local g2=assert(io.open(getDiceDir().."/user/GroupConf.json","w"))
+         g2:write(res)
          --所有数据同步完成
          setGroupConf(msg.fromGroup,"dataSync",1)
+         g2:close()
       end
    end
-   --关闭文件
-   f:close()
-   g:close()
+end
+
+function ResetSyncFlag(msg)
+   setUserConf(msg.fromQQ,"dataSync",0)
+   setGroupConf(msg.fromGroup,"dataSync",0)
 end
