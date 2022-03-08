@@ -179,6 +179,11 @@ function favor_punish(msg)
         return "" -- 本身<500的用户不会触发
     end
     if (subday == 0) then return "" end
+
+    --! 小半好感度锁定
+    if(msg.fromQQ=="2720577231")then
+        return ""
+    end
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
     if (subday <= 3) then
