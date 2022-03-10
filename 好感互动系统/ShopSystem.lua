@@ -7,18 +7,17 @@
 
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
-
+package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
+require "dataSync"
 -- 商店主面板
 function ShopMenu(msg)
-    if (getUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+    if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
         return "您还没有解锁商店功能哦~"
     end
-    local res =
-        "南云の小店：（输入“购买 数量 商品名”即可购买，数量不填默认为1）\n提示：可通过“查询 物品名”查看详细信息\n"
+    local res = "南云の小店：（输入“购买 数量 商品名”即可购买，数量不填默认为1）\n提示：可通过“查询 物品名”查看详细信息\n"
     local cnt = 1
     for k, _ in pairs(ItemShop) do
-        res = res .. string.format("%.0f", cnt) .. "." .. k .. ":" ..
-                  ItemShop[k].price .. "\n"
+        res = res .. string.format("%.0f", cnt) .. "." .. k .. ":" .. ItemShop[k].price .. "\n"
         cnt = cnt + 1
     end
     return res
@@ -29,11 +28,14 @@ msg_order["进入商店"] = "ShopMenu"
 purchase_order = "购买"
 function BuyItem(msg)
     local num, item = "", ""
-    num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.*)",
-                             #purchase_order + 1)
-    if (num == "" or num == nil) then num = 1 end
-    if (num == 1 and (item == nil or item == "")) then return "" end
-    if (getUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+    num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.*)", #purchase_order + 1)
+    if (num == "" or num == nil) then
+        num = 1
+    end
+    if (num == 1 and (item == nil or item == "")) then
+        return ""
+    end
+    if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
         return "您还没有解锁商店功能，无法购买哦~"
     end
     if (item == nil or item == "") then
@@ -49,23 +51,20 @@ function BuyItem(msg)
         end
     end
     if (not flag) then
-        return
-            "你在小店来回寻找，几乎要把这里翻了个底朝天，也没找到你想要的东西呢"
+        return "你在小店来回寻找，几乎要把这里翻了个底朝天，也没找到你想要的东西呢"
     end
 
-    local FL = getUserConf(msg.fromQQ, "FL", 500) -- 初始FL为500
+    local FL = GetUserConf(msg.fromQQ, "FL", 500) -- 初始FL为500
     local price = tonumber(string.match(ItemShop[item].price, "%d*")) * num
     if (FL < price) then
         return "诶？身上好像没带够FL...看来只能下次来了呢"
     else
-        setUserConf(msg.fromQQ, "FL", FL - price)
-        setUserConf(msg.fromQQ, item, getUserConf(msg.fromQQ, item, 0) + num)
+        SetUserConf(msg.fromQQ, {"FL", item}, {FL - price, GetUserConf(msg.fromQQ, item, 0) + num})
         -- 判断是否初次在小店购买（第一章剧情判断用）
-        if (getUserConf(msg.fromQQ, "isShopUnlocked", 0) == 10) then
-            setUserConf(msg.fromQQ, "isShopUnlocked", 1)
+        if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 10) then
+            SetUserConf(msg.fromQQ, "isShopUnlocked", 1)
         end
-        return
-            "购买成功！感谢惠顾南云小店~期待您的下次光临~"
+        return "购买成功！感谢惠顾南云小店~期待您的下次光临~"
     end
 end
 msg_order[purchase_order] = "BuyItem"
