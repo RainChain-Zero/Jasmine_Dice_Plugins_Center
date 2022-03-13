@@ -10,9 +10,11 @@
 task_call = {
     clearTodayConf="clearTodayConf"
 }
+-- UserToday.json的路径
+UserTodayPath = getDiceDir() .. "/user/UserToday.json"
 
 function clearTodayConf()
-    local f=assert(io.open(getDiceDir().."/user/UserToday.json","w"))
+    local f=assert(io.open(UserTodayPath,"w"))
     f:write("{}")
     f:close()
     log("用户每日数据清除成功！")

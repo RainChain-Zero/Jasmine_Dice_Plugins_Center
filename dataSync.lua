@@ -323,5 +323,4 @@ end
 
 function ResetSyncFlag(msg)
     setUserConf(msg.fromQQ, "dataSync", 0)
-    setGroupConf(msg.fromGroup, "dataSync", 0)
 end
