@@ -11,6 +11,9 @@ package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
 require "dataSync"
 -- 商店主面板
 function ShopMenu(msg)
+    --!数据同步
+    DataSync(msg)
+    
     if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
         return "您还没有解锁商店功能哦~"
     end
@@ -27,6 +30,9 @@ msg_order["进入商店"] = "ShopMenu"
 -- 购买商品
 purchase_order = "购买"
 function BuyItem(msg)
+    --!数据同步
+    DataSync(msg)
+    
     local num, item = "", ""
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.*)", #purchase_order + 1)
     if (num == "" or num == nil) then

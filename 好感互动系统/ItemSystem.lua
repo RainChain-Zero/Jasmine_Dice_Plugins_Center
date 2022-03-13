@@ -13,6 +13,9 @@ msg_order = {}
 item = ""
 -- 使用道具
 function UseItem(msg)
+    --!数据同步
+    DataSync(msg)
+    
     local reply = "唔姆姆，你这是要对着空气做什么呀？（部分物品需要赠送给茉莉才会触发：“赠送茉莉 数量 道具”数量不填默认为1）"
     local num = ""
     num, item = string.match(msg.fromMsg, "[u,U][%s]*(%d*)[%s]*(.*)")
@@ -47,6 +50,9 @@ msg_order[".U"] = "UseItem"
 -- 赠送茉莉礼物
 gift_order = "赠送茉莉"
 function GiveGift(msg)
+    --!数据同步
+    DataSync(msg)
+    
     local num = ""
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.+)", #gift_order + 1)
     if (num == "" or num == nil) then

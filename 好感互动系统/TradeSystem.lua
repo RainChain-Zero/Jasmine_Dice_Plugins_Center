@@ -18,6 +18,9 @@ itemRequestNum = ""
 -- //! 注意！同一用户只能有一次进行的交易，如果多次进行，只保留最后一次请求，之前的请求视作无效
 trade_order = "交易"
 function Trade(msg)
+    --!数据同步
+    DataSync(msg)
+    
     local content = ""
     -- //? 首先判断是不是被交易方的回复指令
     if
@@ -183,18 +186,18 @@ function Trade(msg)
             return "系统：对方已取消交易，本次交易已关闭"
         end
         if (reply == "同意" or reply == "接受") then
-            local itemReceive, itemReceiveNow, itemReceiveNum =
+            local itemReceive = GetUserConf(msg.fromQQ, "itemReceive", "nil")
+            local itemReceiveNow, itemReceiveNum =
                 GetUserConf(
                 msg.fromQQ,
                 {
-                    "itemReceive",
                     itemReceive,
                     "itemReceiveNum"
                 },
-                {"nil", 0, 0}
+                {0, 0}
             )
             -- debug
-            -- return itemReceive.." "..itemReceiveNow.." "..itemReceiveNum
+            -- breturn itemReceive.." "..itemReceiveNow.." "..itemReceiveNum
             -- 余额不足，交易自动关闭
             if (itemReceiveNow - itemReceiveNum < 0) then
                 if (GetUserConf(msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
@@ -211,8 +214,8 @@ function Trade(msg)
             -- 物品数量变更
             SetUserConf(msg.fromQQ, itemReceive, itemReceiveNow - itemReceiveNum)
             SetUserConf(tradeRequest, itemReceive, GetUserConf(tradeRequest, itemReceive, 0) + itemReceiveNum)
-            local itemRequest, itemRequestNum, itemRequestNow =
-                GetUserConf(tradeRequest, {"itemRequest", "itemRequestNum", itemRequest}, {"nil", 0, 0})
+            local itemRequest = GetUserConf(tradeRequest, "itemRequest", "nil")
+            local itemRequestNum, itemRequestNow = GetUserConf(tradeRequest, {"itemRequestNum", itemRequest}, {0, 0})
             SetUserConf(msg.fromQQ, itemRequest, GetUserConf(msg.fromQQ, itemRequest, 0) + itemRequestNum)
             SetUserConf(tradeRequest, itemRequest, itemRequestNow - itemRequestNum)
 

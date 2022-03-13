@@ -196,8 +196,8 @@ function favor_punish(msg)
         return ""
     end
 
-    -- ! 小半好感度锁定
-    if (msg.fromQQ == "2720577231") then
+    -- ! 好感度锁定列表
+    if (msg.fromQQ == "2720577231" or msg.fromQQ=="1550506144" or msg.fromQQ=="2908078197") then
         return ""
     end
     local Llimit, Rlimit = 0, 0

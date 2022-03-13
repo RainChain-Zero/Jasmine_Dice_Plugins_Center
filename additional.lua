@@ -25,10 +25,3 @@ picture_api = {
     [4] = "https://www.dmoe.cc/random.php",
     [5] = "https://api.ixiaowai.cn/api/api.php"
 }
-
-
-function DrawCardHelp()
-    return "[CQ:image,file="..getDiceDir().."/plugin/HelpPic/drawcard.png]"
-end
-msg_order["/help 抽卡"]="DrawCardHelp"
-msg_order["/help抽卡"]="DrawCardHelp"

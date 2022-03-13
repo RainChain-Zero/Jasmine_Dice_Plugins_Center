@@ -14,6 +14,9 @@ package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
 require "dataSync"
 -- todo 主调入口
 function StoryMain(msg)
+    --!数据同步
+    DataSync(msg)
+    
     local Reply = "系统：出现未知错误，请报告系统管理员"
     local StoryNormal, StorySpecial =
         GetUserConf(
@@ -54,6 +57,9 @@ msg_order[".f"] = "StoryMain"
 -- todo 剧情入口点
 EntryStoryOrder = "进入剧情"
 function EnterStory(msg)
+    --!数据同步
+    DataSync(msg)
+    
     -- 初始化配置
     local favor = GetUserConf(msg.fromQQ, "好感度", 0)
     Init(msg)
@@ -95,7 +101,7 @@ function EnterStory(msg)
     if (Story == "") then
         return "请输入正确的章节名哦~"
     end
-    SetUserConf(msg.fromQQ, {"MainIndex", 0}, {1, 0})
+    SetUserConf(msg.fromQQ, {"MainIndex", "Option"}, {1, 0})
     return "您已进入剧情模式『" .. Story .. "』,请在小窗模式下输入.f一步一步进行哦~"
 end
 msg_order[EntryStoryOrder] = "EnterStory"
