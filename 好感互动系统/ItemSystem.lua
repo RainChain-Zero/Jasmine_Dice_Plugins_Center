@@ -86,7 +86,7 @@ function GiveGift(msg)
         SetUserConf(
             msg.fromQQ,
             {"favorTimePunishDownDDL", "favorTimePunishDownDDLFlag"},
-            {os.time() + 5 * 24 * 60 * 60 * 1000, 0}
+            {os.time() + 5 * 24 * 60 * 60 , 0}
         )
 
         if (rate < 0.3) then
@@ -98,7 +98,7 @@ function GiveGift(msg)
         SetUserConf(
             msg.fromQQ,
             {"addFavorDDL_Cookie", "addFavorDDLFlag_Cookie"},
-            {os.time() + 3 * 24 * 60 * 60 * 1000, 0}
+            {os.time() + 3 * 24 * 60 * 60 , 0}
         )
     end
     SetUserConf(msg.fromQQ, item, GetUserConf(msg.fromQQ, item, 0) - num * 1)
