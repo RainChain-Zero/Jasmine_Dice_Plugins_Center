@@ -2,7 +2,7 @@
     @author 慕北_Innocent(RainChain)
     @version 1.7
     @Created 2021/12/05 00:04
-    @Last Modified 2022/01/21 21:25
+    @Last Modified 2022/03/19 21:12
     ]] msg_order = {}
 
 package.path = getDiceDir() .. "/plugin/Story/?.lua"
@@ -10,13 +10,14 @@ require "Story"
 require "Story0"
 require "Special0"
 require "Story1"
+require "Story2"
 package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
 require "dataSync"
--- todo 主调入口
+-- 主调入口
 function StoryMain(msg)
     --!数据同步
     DataSync(msg)
-    
+
     local Reply = "系统：出现未知错误，请报告系统管理员"
     local StoryNormal, StorySpecial =
         GetUserConf(
@@ -44,6 +45,8 @@ function StoryMain(msg)
             Reply = StoryZero(msg)
         elseif (StoryNormal == 1) then
             Reply = StoryOne(msg)
+        elseif (StoryNormal == 2) then
+            Reply = StoryTwo(msg)
         end
     else
         if (StorySpecial == 0) then
@@ -54,12 +57,12 @@ function StoryMain(msg)
 end
 msg_order[".f"] = "StoryMain"
 
--- todo 剧情入口点
+-- 剧情入口点
 EntryStoryOrder = "进入剧情"
 function EnterStory(msg)
     --!数据同步
     DataSync(msg)
-    
+
     -- 初始化配置
     local favor = GetUserConf(msg.fromQQ, "好感度", 0)
     Init(msg)
@@ -71,13 +74,13 @@ function EnterStory(msg)
     -- 提取具体章节
     if (string.find(StoryTemp, "序章") ~= nil or string.find(StoryTemp, "惊蛰") ~= nil) then
         if (favor < 1000) then
-            return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1000)"
         end
         Story = "序章 惊蛰"
         SetUserConf(msg.fromQQ, {"StoryReadNow", "ChoiceSelected0"}, {0, 0})
     elseif (string.find(StoryTemp, "元旦特典") ~= nil or string.find(StoryTemp, "预想此时应更好") ~= nil) then
         if (favor < 1500) then
-            return "茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~"
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1500)"
         end
         Story = "元旦特典 预想此时应更好"
         SetUserConf(msg.fromQQ, "SpecialReadNow", 0)
@@ -96,6 +99,19 @@ function EnterStory(msg)
             {4, 1, -1}
         )
         Story = "第一章 夜未央"
+    elseif (string.find(StoryTemp, "第二章") ~= nil or string.find(StoryTemp, "难以言明的选择") ~= nil) then
+        --! 暂未对外开放
+        if (msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "2677409596") then
+            return "『✖权限不足』该章节暂未对外开放！"
+        end
+        if (GetUserConf(msg.fromQQ, "isStory1Unlocked", 0) == 0) then
+            return "『✖条件未满足』您需要在第一章中解锁『商店』功能"
+        elseif (GetUserConf(msg.fromQQ, "好感度", 0) < 3000) then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3000)"
+        else
+            SetUserConf(msg.fromQQ, "StoryReadNow", 2)
+            Story = "第二章 难以言明的选择"
+        end
     end
     -- 是否存在章节
     if (Story == "") then
@@ -106,7 +122,7 @@ function EnterStory(msg)
 end
 msg_order[EntryStoryOrder] = "EnterStory"
 
--- todo 配置初始化
+-- 配置初始化
 function Init(msg)
     SetUserConf(
         msg.fromQQ,
@@ -123,7 +139,7 @@ function Init(msg)
     )
 end
 
--- todo 选项选择
+-- 选项选择
 function Choose(msg)
     local Option, StoryNormal, StorySpecial =
         GetUserConf(msg.fromQQ, {"Option", "StoryReadNow", "SpecialReadNow"}, {0, -1, -1})
@@ -142,12 +158,14 @@ function Choose(msg)
         return "您必须输入一个有效的选项数字哦~"
     end
 
-    -- todo 不同章节一一处理
+    -- 不同章节一一处理
     if (StoryNormal ~= -1) then
         if (StoryNormal == 0) then
             Reply = StoryZeroChoose(msg, res)
         elseif (StoryNormal == 1) then
             Reply = StoryOneChoose(msg, res)
+        elseif (StoryNormal == 2) then
+            Reply = StoryTwoChoose(msg, res)
         end
     else
         if (StorySpecial == 0) then
@@ -159,12 +177,12 @@ end
 msg_order[".c"] = "Choose"
 msg_order[".C"] = "Choose"
 
--- todo 一个选项结束后初始化有关记录
+-- 一个选项结束后初始化有关记录
 function OptionNormalInit(msg, index)
     SetUserConf(msg.fromQQ, {"MainIndex", "ChoiceIndex", "Option", "Choice"}, {index, 1, 0, 0})
 end
 
--- todo 跳转到下一选项
+-- 跳转到下一选项
 function Skip(msg)
     local StoryNormal, StorySpecial =
         GetUserConf(
@@ -180,11 +198,17 @@ function Skip(msg)
     if (StoryNormal + StorySpecial == -2) then
         return ""
     end
+    -- 必须在小窗下进行
+    if (msg.fromGroup ~= "0") then
+        return "茉莉..茉莉可不想在人多的地方和你分享这些哦（脸红）"
+    end
     if (StoryNormal ~= -1) then
         if (StoryNormal == 0) then
             Reply = SkipStory0(msg)
         elseif (StoryNormal == 1) then
             Reply = SkipStory1()
+        elseif (StoryNormal == 2) then
+            Reply = SkipStory2(msg)
         end
     else
         if (StorySpecial == 0) then

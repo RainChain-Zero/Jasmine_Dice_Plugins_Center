@@ -3,7 +3,7 @@
     @author 慕北_Innocent(RainChain)
     @version 4.5
     @Created 2021/08/19 13:16
-    @Last Modified 2022/02/03 19:57
+    @Last Modified 2022/03/19 22:16
     ]] -- 载入回复模块
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "favorReply"
@@ -57,11 +57,13 @@ function preHandle(msg)
     -- 数据同步
     DataSync(msg)
     -- 道具附加的额外好感追加
-    addFavor_Item(msg)
+    AddFavor_Item(msg)
     -- 版本通告处
     Notice(msg)
     -- ! 好感时间惩罚
-    favor_punish(msg)
+    FavorPunish(msg)
+    -- 剧情解锁提示
+    StoryUnlocked(msg)
 end
 
 function TrustChange(msg)
@@ -129,7 +131,7 @@ function Notice(msg)
 end
 
 -- 每次交互道具增加的附加好感度
-function addFavor_Item(msg)
+function AddFavor_Item(msg)
     local favor = 0
     if (os.time() < GetUserConf(msg.fromQQ, "addFavorDDL_Cookie", 0)) then
         if (GetUserToday(msg.fromQQ, "addFavor_Cookie", 0) == 0) then
@@ -157,7 +159,7 @@ function favorTimePunishDownRate(msg)
 end
 
 -- 一定时间不交互将会降低好感度
-function favor_punish(msg)
+function FavorPunish(msg)
     local favor = GetUserConf(msg.fromQQ, "好感度", 0)
     local flag = false
     -- 初始时间记为编写该程序段的时间
@@ -197,7 +199,7 @@ function favor_punish(msg)
     end
 
     -- ! 好感度锁定列表
-    if (msg.fromQQ == "2720577231" or msg.fromQQ=="1550506144" or msg.fromQQ=="2908078197") then
+    if (msg.fromQQ == "2720577231" or msg.fromQQ == "1550506144" or msg.fromQQ == "2908078197" or msg.fromQQ=="751766424") then
         return ""
     end
     local Llimit, Rlimit = 0, 0
@@ -232,6 +234,52 @@ function favor_punish(msg)
     SetUserConf(msg.fromQQ, "好感度", favor)
 end
 
+-- 剧情模式解锁提示
+function StoryUnlocked(msg)
+    local favor = GetUserConf(msg.fromQQ, "好感度", 0)
+    local content, flag, res, storyUnlockedNotice, specialUnlockedNotice =
+        "",
+        "1",
+        "",
+        GetUserConf(
+            msg.fromQQ,
+            {"storyUnlockedNotice", "specialUnlockedNotice"},
+            {"0000000000000000000000000", "0000000000000000000000000"}
+        )
+    if (favor >= 1000 and GetUserConf(msg.fromQQ, "isStory0Read", 0) == 0) then
+        flag = string.sub(storyUnlockedNotice, 1, 1)
+        if (flag == "1") then
+            return ""
+        end
+        if (msg.fromGroup ~= "0") then
+            content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n"
+        end
+        content = content .. "『✔提示』剧情模式 序章,已经解锁,输入“进入剧情 序章”可浏览剧情"
+        res = "1" .. string.sub(storyUnlockedNotice, 2)
+        SetUserConf(msg.fromQQ, "storyUnlockedNotice", res)
+    elseif (favor >= 1500 and GetUserConf(msg.fromQQ, "isSpecial0Read", 0) == 0) then
+        flag = string.sub(specialUnlockedNotice, 1, 1)
+        if (flag == "1") then
+            return ""
+        end
+        content = content .. "『✔提示』剧情模式 元旦特典,已经解锁,输入“进入剧情 元旦特典”可浏览剧情"
+        res = "1" .. string.sub(specialUnlockedNotice, 2)
+        SetUserConf(msg.fromQQ, "specialUnlockedNotice", res)
+    elseif (GetUserConf(msg.fromQQ, "isStory0Read", 0) == 1 and GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+        flag = string.sub(storyUnlockedNotice, 2, 2)
+        if (flag == "1") then
+            return ""
+        end
+        if (msg.fromGroup ~= "0") then
+            content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n"
+        end
+        content = content .. "『✔提示』剧情模式 第一章,已经解锁,输入“进入剧情 第一章”可浏览剧情"
+        res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
+        SetUserConf(msg.fromQQ, "storyUnlockedNotice", res)
+    --todo 第二章提示
+    end
+    sendMsg(content, msg.fromGroup, msg.fromQQ)
+end
 function add_favor_food(favor)
     -- 单次固定好感上升
     -- return 100
@@ -249,11 +297,11 @@ end
 -- 下限黑名单判定
 function blackList(msg)
     local favor = GetUserConf(msg.fromQQ, "好感度", 0)
-    if (favor <= -300 and favor > -600) then
+    if (favor <= -300 and favor > -500) then
         sendMsg("Warning:检测到{nick}的好感度过低，即将触发机体下限保护机制！", msg.fromGroup, msg.fromQQ)
         sendMsg("Warning:检测到用户" .. msg.fromQQ .. "好感度过低" .. "在群" .. msg.fromGroup, 0, 2677409596)
     end
-    if (favor < -600) then
+    if (favor < -500) then
         eventMsg(".admin blackqq " .. "违反人机和谐共处条例 " .. msg.fromQQ, 0, 2677409596)
         eventMsg(
             ".group " .. msg.fromGroup .. " ban " .. msg.fromQQ .. " " .. tostring(-favor),
@@ -778,7 +826,7 @@ msg_order["乌乌"] = "cry_master"
 -- 好感度降低惩罚（粗俗）
 function punish_favor_rude(msg)
     -- 为了使触发该函数时不触发版本通告，不使用preHandle(msg)而采取部分内联形式
-    favor_punish(msg)
+    FavorPunish(msg)
     local favor = GetUserConf(msg.fromQQ, "好感度", 0)
     local trust_flag = GetUserConf(msg.fromQQ, "trust_flag", 0)
     local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237"
@@ -1055,6 +1103,10 @@ normal_order = "茉莉"
 function _Ciallo_normal(msg)
     -- return "Warning！好感组件强制更新中 相关功能已停用"
     -- preHandle(msg)
+    --! 千音暂时不回复
+    if (msg.fromQQ == "959686587") then
+        return ""
+    end
     local str = string.match(msg.fromMsg, "(.*)", #normal_order + 1)
     local deepjudge = {
         "在",
@@ -1097,7 +1149,7 @@ function _Ciallo_normal(msg)
         if (today_rude >= 3 or today_sorry >= 2) then
             reply_main = "Error!不存在的机体名！"
         else
-            reply_main = "嗯哼？茉莉在这哦~Ciallo"
+            reply_main = "{sample:嗯哼？茉莉在这哦~Ciallo|诶...是在叫茉莉吗？茉莉茉莉在哦~|我听到了！就是{nick}在叫我！这次一定没有错！}"
         end
     end
 end
@@ -1196,7 +1248,7 @@ function action(msg)
         end
     end
     -- action 摸头
-    local judge_touch = string.find(msg.fromMsg, "摸头", 1) ~= nil
+    local judge_touch = string.find(msg.fromMsg, "摸头", 1) ~= nil or string.find(msg.fromMsg,"摸摸",1)~=nil
     if (judge_touch) then
         today_touch = today_touch + 1
         SetUserToday(msg.fromQQ, "touch", today_touch)
