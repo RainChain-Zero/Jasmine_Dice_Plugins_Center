@@ -2,34 +2,39 @@
     @author 慕北_Innocent(RainChain)
     @version 1.0
     @Created 2022/01/19 11:11
-    @Last Modified 2022/01/25 13:47
+    @Last Modified 2022/03/31 23:36
     ]] -- 第一章 夜未央
 function StoryOne(msg)
     local MainIndex, Option, Choice, ChoiceIndex, actionRoundLeft =
-        GetUserConf(msg.fromQQ, {"MainIndex", "Option", "Choice", "ChoiceIndex", "actionRoundLeft"}, {1, 0, 0, 1, 4})
+        GetUserConf(
+        "storyConf",
+        msg.fromQQ,
+        {"MainIndex", "Option", "Choice", "ChoiceIndex", "actionRoundLeft"},
+        {1, 0, 0, 1, 4}
+    )
     -- 记录给茉莉发送消息后返回的选项编号
     -- ! -1%10==9
-    local OptionReturn = GetUserConf(msg.fromQQ, "isStory1Option1Choice3", -1) % 10
+    local OptionReturn = GetUserConf("storyConf", msg.fromQQ, "isStory1Option1Choice3", -1) % 10
     -- 剩余行动轮 初始为4
     local content = "系统：出现未知错误，请报告系统管理员"
 
     if (Option == 0) then
         content = Story1[MainIndex]
         if (MainIndex == 4) then
-            SetUserConf(msg.fromQQ, "Option", 1)
+            SetUserConf("storyConf", msg.fromQQ, "Option", 1)
         elseif (MainIndex == 13) then
-            SetUserConf(msg.fromQQ, "Option", 2)
+            SetUserConf("storyConf", msg.fromQQ, "Option", 2)
             content = content .. "\f注意：当前剩余行动次数" .. string.format("%.0f", actionRoundLeft) .. "/4"
         elseif (MainIndex == 30) then
             -- ! 剧情结束
             Init(msg)
             -- ! 商店功能未解锁警告
-            if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+            if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
                 content = content .. "\f系统消息：Warning：您在本章节仍有一项功能未解锁！"
             end
         end
         MainIndex = MainIndex + 1
-        SetUserConf(msg.fromQQ, "MainIndex", MainIndex)
+        SetUserConf("storyConf", msg.fromQQ, "MainIndex", MainIndex)
         return content
     elseif (Option == 1) then
         if (Choice == 0) then
@@ -41,14 +46,14 @@ function StoryOne(msg)
             -- ! 准备跳转到选项1.1
             if (ChoiceIndex == 2) then
                 -- Option记录为11
-                SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {11, 1, 0})
-                if (GetUserConf(msg.fromQQ, "isStory1Option1Choice3", -1) ~= -1) then
+                SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {11, 1, 0})
+                if (GetUserConf("storyConf", msg.fromQQ, "isStory1Option1Choice3", -1) ~= -1) then
                     content = content .. "(不可选)"
                 end
                 return content
             end
             ChoiceIndex = ChoiceIndex + 1
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex)
             return content
         elseif (Choice == 2) then
             return MessageSent(msg, OptionReturn)
@@ -65,13 +70,13 @@ function StoryOne(msg)
             -- ! 准备跳转到选项1.2
             if (ChoiceIndex == 4) then
                 -- Option记录为12
-                SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {12, 1, 0})
-                if (GetUserConf(msg.fromQQ, "isStory1Option1Choice3", -1) ~= -1) then
+                SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {12, 1, 0})
+                if (GetUserConf("storyConf", msg.fromQQ, "isStory1Option1Choice3", -1) ~= -1) then
                     content = content .. "(不可选)"
                 end
                 return content
             end
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
             return content
         elseif (Choice == 2) then
             return MessageSent(msg, OptionReturn)
@@ -121,7 +126,7 @@ function StoryOne(msg)
             return ActionRound_InnerRoom(msg, 16, ChoiceIndex, 3, Option)
         elseif (Choice == 3) then
             -- 返回客厅，不消耗行动轮次数
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {2, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {2, 1, 0})
             return "你又踱回了客厅，接下来要去哪看看呢？\f" .. Story1[13]
         end
     elseif (Option == 22) then
@@ -134,7 +139,7 @@ function StoryOne(msg)
             return ActionRound_InnerRoom(msg, 19, ChoiceIndex, 4, Option)
         elseif (Choice == 3) then
             -- 返回客厅，不消耗行动轮次数
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {2, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {2, 1, 0})
             return "你又踱回了客厅，接下来要去哪看看呢？\f" .. Story1[13]
         end
     elseif (Option == 23) then
@@ -146,7 +151,7 @@ function StoryOne(msg)
             return ActionRound_InnerRoom(msg, 21, ChoiceIndex, 5, Option)
         elseif (Choice == 2) then
             -- 返回客厅，不消耗行动轮次数
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {2, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {2, 1, 0})
             return "你又踱回了客厅，接下来要去哪看看呢？\f" .. Story1[13]
         end
     elseif (Option == 3) then
@@ -158,18 +163,18 @@ function StoryOne(msg)
         content = Story1[MainIndex][ChoiceIndex]
         if (ChoiceIndex == 6) then
             -- 第一次解锁商店
-            if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+            if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
                 content = content .. "\f{FormFeed}{FormFeed}" .. "重要消息：『商店』已经解锁！输入指令“进入商店”来进入商品界面\f系统消息：您得到了500FL"
-                SetUserConf(msg.fromQQ, {"isShopUnlocked", "FL"}, {10, 500})
+                SetUserConf("storyConf", msg.fromQQ, {"isShopUnlocked", "FL"}, {10, 500})
             end
         end
         if (ChoiceIndex == 7) then
-            if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 10) then
+            if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 10) then
                 return "提示：初次阅读，您必须先购买一件商品才能继续进行哦~"
             end
         end
         ChoiceIndex = ChoiceIndex + 1
-        SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex)
+        SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex)
         return content
     end
 end
@@ -194,21 +199,21 @@ end
 function GoToMessage(msg, index, ChoiceIndex)
     local content = ""
     -- 记录发送信息
-    SetUserConf(msg.fromQQ, {"isMessageSent", "isStory1Option1Choice3"}, {1, index})
+    SetUserConf("storyConf", msg.fromQQ, {"isMessageSent", "isStory1Option1Choice3"}, {1, index})
     MainIndex = 7
     content = Story1[MainIndex][ChoiceIndex]
     -- 实现消息延时发送
     if (ChoiceIndex == 2 or ChoiceIndex == 4) then
         content = content .. "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 1]
-        SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+        SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
         ChoiceIndex = ChoiceIndex + 1
     end
     -- ! 准备跳转到选项1.3
     if (ChoiceIndex == 6) then
-        SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {13, 1, 0})
+        SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {13, 1, 0})
         return content
     end
-    SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+    SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
     return content
 end
 
@@ -219,17 +224,17 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
         if (OptionReturn == 0) then
             -- 添加第三选项不可选中标记
             content = Story1[4] .. "(不可选)"
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {1, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {1, 1, 0})
             return content
         elseif (OptionReturn == 1) then
             -- 添加第三选项不可选中标记
             content = Story1[5][3] .. "(不可选)"
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {11, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {11, 1, 0})
             return content
         elseif (OptionReturn == 2) then
             -- 添加第三选项不可选中标记
             content = Story1[6][4] .. "(不可选)"
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {12, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {12, 1, 0})
             return content
         end
     end
@@ -242,7 +247,7 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
                 "{FormFeed}{FormFeed}" ..
                     Story1[MainIndex][ChoiceIndex + 1] ..
                         "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 2]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
             ChoiceIndex = ChoiceIndex + 2
         elseif (ChoiceIndex == 4) then
             content =
@@ -252,14 +257,14 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
                         "{FormFeed}{FormFeed}" ..
                             Story1[MainIndex][ChoiceIndex + 2] ..
                                 "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 3]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 3)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 3)
             ChoiceIndex = ChoiceIndex + 3
         elseif (ChoiceIndex == 8) then
             content =
                 content ..
                 "{FormFeed}{FormFeed}{FormFeed}" ..
                     Story1[MainIndex][ChoiceIndex + 1] .. "{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 2]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
             ChoiceIndex = ChoiceIndex + 2
         elseif (ChoiceIndex == 12) then
             content =
@@ -269,7 +274,7 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
                         "{FormFeed}{FormFeed}" ..
                             Story1[MainIndex][ChoiceIndex + 2] ..
                                 "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 3]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 3)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 3)
             ChoiceIndex = ChoiceIndex + 3
         end
     elseif (MainIndex == 9) then
@@ -279,7 +284,7 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
                 "{FormFeed}{FormFeed}" ..
                     Story1[MainIndex][ChoiceIndex + 1] ..
                         "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 2]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
             ChoiceIndex = ChoiceIndex + 2
         elseif
             (ChoiceIndex == 5 or ChoiceIndex == 7 or ChoiceIndex == 9 or ChoiceIndex == 11 or ChoiceIndex == 13 or
@@ -287,13 +292,13 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
                 ChoiceIndex == 17)
          then
             content = content .. "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 1]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
             ChoiceIndex = ChoiceIndex + 1
         end
     elseif (MainIndex == 10) then
         if (ChoiceIndex == 1 or ChoiceIndex == 6 or ChoiceIndex == 8 or ChoiceIndex == 10 or ChoiceIndex == 13) then
             content = content .. "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 1]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
             ChoiceIndex = ChoiceIndex + 1
         elseif (ChoiceIndex == 3 or ChoiceIndex == 15) then
             content =
@@ -301,19 +306,19 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
                 "{FormFeed}{FormFeed}" ..
                     Story1[MainIndex][ChoiceIndex + 1] ..
                         "{FormFeed}{FormFeed}{FormFeed}" .. Story1[MainIndex][ChoiceIndex + 2]
-            SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
+            SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 2)
             ChoiceIndex = ChoiceIndex + 2
         end
     end
     ChoiceIndex = ChoiceIndex + 1
-    SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex)
+    SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex)
     return content
 end
 
 -- 行动轮剩余次数判断
 function JudgeActionRound(msg)
-    local actionRoundLeft = GetUserConf(msg.fromQQ, "actionRoundLeft", 4) - 1
-    SetUserConf(msg.fromQQ, "actionRoundLeft", actionRoundLeft)
+    local actionRoundLeft = GetUserConf("storyConf", msg.fromQQ, "actionRoundLeft", 4) - 1
+    SetUserConf("storyConf", msg.fromQQ, "actionRoundLeft", actionRoundLeft)
     if (actionRoundLeft >= 1) then
         return true
     end
@@ -335,16 +340,17 @@ function ActionRound_Room(msg, MainIndex, ChoiceIndex, Border)
             elseif (MainIndex == 20) then
                 Option = 23
             end
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {Option, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {Option, 1, 0})
             return content ..
-                "\f注意：当前剩余行动次数" .. string.format("%.0f", GetUserConf(msg.fromQQ, "actionRoundLeft", 4)) .. "/4"
+                "\f注意：当前剩余行动次数" ..
+                    string.format("%.0f", GetUserConf("storyConf", msg.fromQQ, "actionRoundLeft", 4)) .. "/4"
         else
             -- 已经消耗完行动次数，不给出下一个选项
             OptionNormalInit(msg, 23)
             return Story1[22]
         end
     end
-    SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+    SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
     return content
 end
 
@@ -355,36 +361,37 @@ function ActionRound_InnerRoom(msg, MainIndex, ChoiceIndex, Border, OptionNow)
         -- 判定当前行动轮次数是否被消耗完
         if (JudgeActionRound(msg)) then
             -- ! 准备返回选项2.x
-            SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {OptionNow, 1, 0})
+            SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {OptionNow, 1, 0})
             return content ..
-                "\f注意：当前剩余行动次数" .. string.format("%.0f", GetUserConf(msg.fromQQ, "actionRoundLeft", 4)) .. "/4"
+                "\f注意：当前剩余行动次数" ..
+                    string.format("%.0f", GetUserConf("storyConf", msg.fromQQ, "actionRoundLeft", 4)) .. "/4"
         else
             -- 已经消耗完行动次数，不给出下一个选项
             OptionNormalInit(msg, 23)
             return Story1[22]
         end
     end
-    SetUserConf(msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
+    SetUserConf("storyConf", msg.fromQQ, "ChoiceIndex", ChoiceIndex + 1)
     return content
 end
 
 -- 商店界面
 function GoToShop(msg)
-    SetUserConf(msg.fromQQ, {"Option", "ChoiceIndex"}, {3, 2})
+    SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex"}, {3, 2})
     return Story1[31][1]
 end
 -- 选择
 function StoryOneChoose(msg, res)
-    local Option = GetUserConf(msg.fromQQ, "Option", 0)
+    local Option = GetUserConf("storyConf", msg.fromQQ, "Option", 0)
     if (Option == 23 and res * 1 == 3) then
         return "请输入一个有效的选项数字哦~"
     end
     if (Option == 1 or Option == 11 or Option == 12) then
-        if (res * 1 == 3 and GetUserConf(msg.fromQQ, "isStory1Option1Choice3", -1) ~= -1) then
+        if (res * 1 == 3 and GetUserConf("storyConf", msg.fromQQ, "isStory1Option1Choice3", -1) ~= -1) then
             return "该选项处于不可选中状态哦~"
         end
     end
-    SetUserConf(msg.fromQQ, "Choice", res * 1)
+    SetUserConf("storyConf", msg.fromQQ, "Choice", res * 1)
     return "您选中了选项" .. res .. " 输入.f以确认选择"
 end
 

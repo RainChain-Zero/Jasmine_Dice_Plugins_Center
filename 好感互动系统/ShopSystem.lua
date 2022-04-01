@@ -2,19 +2,16 @@
     @author 慕北_Innocent(RainChain)
     @version 1.1
     @Created 2022/01/30 20:13
-    @Last Modified 2022/01/31 18:06
+    @Last Modified 2022/03/31 23:36
     ]] msg_order = {}
 
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
-package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
-require "dataSync"
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "IO"
 -- 商店主面板
 function ShopMenu(msg)
-    --!数据同步
-    DataSync(msg)
-    
-    if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+    if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
         return "您还没有解锁商店功能哦~"
     end
     local res = "南云の小店：（输入“购买 数量 商品名”即可购买，数量不填默认为1）\n提示：可通过“查询 物品名”查看详细信息\n"
@@ -30,9 +27,6 @@ msg_order["进入商店"] = "ShopMenu"
 -- 购买商品
 purchase_order = "购买"
 function BuyItem(msg)
-    --!数据同步
-    DataSync(msg)
-    
     local num, item = "", ""
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.*)", #purchase_order + 1)
     if (num == "" or num == nil) then
@@ -41,7 +35,7 @@ function BuyItem(msg)
     if (num == 1 and (item == nil or item == "")) then
         return ""
     end
-    if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 0) then
+    if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
         return "您还没有解锁商店功能，无法购买哦~"
     end
     if (item == nil or item == "") then
@@ -60,15 +54,20 @@ function BuyItem(msg)
         return "你在小店来回寻找，几乎要把这里翻了个底朝天，也没找到你想要的东西呢"
     end
 
-    local FL = GetUserConf(msg.fromQQ, "FL", 500) -- 初始FL为500
+    local FL = GetUserConf("itemConf", msg.fromQQ, "FL", 500) -- 初始FL为500
     local price = tonumber(string.match(ItemShop[item].price, "%d*")) * num
     if (FL < price) then
         return "诶？身上好像没带够FL...看来只能下次来了呢"
     else
-        SetUserConf(msg.fromQQ, {"FL", item}, {FL - price, GetUserConf(msg.fromQQ, item, 0) + num})
+        SetUserConf(
+            "itemConf",
+            msg.fromQQ,
+            {"FL", item},
+            {FL - price, GetUserConf("itemConf", msg.fromQQ, item, 0) + num}
+        )
         -- 判断是否初次在小店购买（第一章剧情判断用）
-        if (GetUserConf(msg.fromQQ, "isShopUnlocked", 0) == 10) then
-            SetUserConf(msg.fromQQ, "isShopUnlocked", 1)
+        if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 10) then
+            SetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 1)
         end
         return "购买成功！感谢惠顾南云小店~期待您的下次光临~"
     end

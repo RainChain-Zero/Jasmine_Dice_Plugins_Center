@@ -2,20 +2,17 @@
     @author 慕北_Innocent(RainChain)
     @version 1.1
     @Create 2022/01/19 11:30
-    @Last Update 2022/01/31 20:35
+    @Last Modified 2022/03/31 23:36
     ]] package.path =
     getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
-package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
-require "dataSync"
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "IO"
 msg_order = {}
 -- item为全局变量，检测合法性时不用传入
 item = ""
 -- 使用道具
 function UseItem(msg)
-    --!数据同步
-    DataSync(msg)
-    
     local reply = "唔姆姆，你这是要对着空气做什么呀？（部分物品需要赠送给茉莉才会触发：“赠送茉莉 数量 道具”数量不填默认为1）"
     local num = ""
     num, item = string.match(msg.fromMsg, "[u,U][%s]*(%d*)[%s]*(.*)")
@@ -36,10 +33,10 @@ function UseItem(msg)
     end
 
     -- ? 是否用于解锁剧情章节
-    local entryStoryCheck = GetUserConf(msg.fromQQ, "entryCheckStory")
+    local entryStoryCheck = GetUserConf("storyConf", msg.fromQQ, "entryCheckStory")
     if (entryStoryCheck ~= -1) then
         reply = UnlockStory(msg, entryStoryCheck, item)
-        SetUserConf(msg.fromQQ, "entryCheckStory", -1)
+        SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
     end
 
     return reply
@@ -50,9 +47,6 @@ msg_order[".U"] = "UseItem"
 -- 赠送茉莉礼物
 gift_order = "赠送茉莉"
 function GiveGift(msg)
-    --!数据同步
-    DataSync(msg)
-    
     local num = ""
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.+)", #gift_order + 1)
     if (num == "" or num == nil) then
@@ -77,31 +71,38 @@ function GiveGift(msg)
     -- todo 完善排除特例的情况（采用遍历排除）
 
     if (item ~= "推理小说" and item ~= "袋装曲奇") then
-        SetUserConf(msg.fromQQ, "好感度", GetUserConf(msg.fromQQ, "好感度", 0) + num * 1 * Gift_list[item].favor)
+        SetUserConf(
+            "favorConf",
+            msg.fromQQ,
+            "好感度",
+            GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + num * 1 * Gift_list[item].favor
+        )
     elseif (item == "推理小说") then
         -- !时间惩罚降低的好感减少百分之多少，同类不覆盖
-        local rate = GetUserConf(msg.fromQQ, "favorTimePunishDownRate", 0)
+        local rate = GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
         -- 更新时间，取最新时间
         -- ! 打上标记，用做发送提醒的标记
         SetUserConf(
+            "adjustConf",
             msg.fromQQ,
             {"favorTimePunishDownDDL", "favorTimePunishDownDDLFlag"},
-            {os.time() + 5 * 24 * 60 * 60 , 0}
+            {os.time() + 5 * 24 * 60 * 60, 0}
         )
 
         if (rate < 0.3) then
-            SetUserConf(msg.fromQQ, "favorTimePunishDownRate", 0.3)
+            SetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0.3)
         end
     elseif (item == "袋装曲奇") then
         -- ! 效果不会叠加,用os.time()秒级存储到期时间，更新为最新时间
         -- ! 打上标记，用做发送提醒的标记
         SetUserConf(
+            "adjustConf",
             msg.fromQQ,
             {"addFavorDDL_Cookie", "addFavorDDLFlag_Cookie"},
-            {os.time() + 3 * 24 * 60 * 60 , 0}
+            {os.time() + 3 * 24 * 60 * 60, 0}
         )
     end
-    SetUserConf(msg.fromQQ, item, GetUserConf(msg.fromQQ, item, 0) - num * 1)
+    SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - num * 1)
     return Gift_list[item].reply
 end
 msg_order[gift_order] = "GiveGift"
@@ -122,7 +123,7 @@ function UseCheck(msg, num, table)
         return false, false
     end
     -- 判断道具余量
-    if (GetUserConf(msg.fromQQ, item, 0) * 1 < num * 1) then
+    if (GetUserConf("itemConf", msg.fromQQ, item, 0) * 1 < num * 1) then
         return true, false
     end
     return true, true
@@ -132,7 +133,7 @@ end
 function UnlockStory(msg, entryStoryCheck, item)
     if (entryStoryCheck == 1) then
         if (string.find(item, "梦的开始") ~= nil) then
-            SetUserConf(msg.fromQQ, {"entryStoryCheck", "isStory1Unlocked"}, {-1, 1})
+            SetUserConf("storyConf", msg.fromQQ, {"entryStoryCheck", "isStory1Unlocked"}, {-1, 1})
             return "这把钥匙似乎和眼前的光芒产生了某种共鸣，倏忽间，光芒如同被某种强大的引力吸引般瞬间汇聚于钥匙上后逐渐稳定了下来...\f" .. "系统：注意，剧情模式第一章已经解锁！"
         else
             return "你小心翼翼地将它向那团光球接近，但就要在你触及之时，一股强大的斥力将你远远弹开了..."
@@ -164,7 +165,7 @@ function SearchItem(msg)
         return "该道具暂未被图鉴收录哦~"
     end
 
-    local res = GetUserConf(msg.fromQQ, item, 0)
+    local res = GetUserConf("itemConf", msg.fromQQ, item, 0)
     sendMsg("系统：正在检索..." .. ranint(20, 50) .. "%..." .. ranint(51, 80) .. "%...", msg.fromGroup, msg.fromQQ)
     sleepTime(1000)
     return "您目前的『" .. item .. "』数量为" .. string.format("%0.f", res) .. "\n(" .. Item[item] .. ")"

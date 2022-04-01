@@ -2,13 +2,13 @@
     @author 慕北_Innocent(RainChain)
     @version 1.3(Beta)
     @Create 2021/11/21 0:21
-    @Last Update 2022/01/30 21:09
+    @Last Modified 2022/03/31 23:36
     ]] msg_order = {}
 
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
-package.path = getDiceDir() .. "/plugin/dataSync/?.lua"
-require "dataSync"
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "IO"
 itemRequest = ""
 itemReceive = ""
 QQReceive = ""
@@ -18,9 +18,6 @@ itemRequestNum = ""
 -- //! 注意！同一用户只能有一次进行的交易，如果多次进行，只保留最后一次请求，之前的请求视作无效
 trade_order = "交易"
 function Trade(msg)
-    --!数据同步
-    DataSync(msg)
-    
     local content = ""
     -- //? 首先判断是不是被交易方的回复指令
     if
@@ -64,7 +61,7 @@ function Trade(msg)
         if (string.find(itemRequest, "好感") ~= nil or string.find(itemReceive, "好感") ~= nil) then
             return "重要数据不能进行交易哦？~"
         end
-        local itemRequestNow = GetUserConf(msg.fromQQ, itemRequest, 0)
+        local itemRequestNow = GetUserConf("itemConf", msg.fromQQ, itemRequest, 0)
         if (itemRequestNow - itemRequestNum * 1 < 0) then
             return "系统：您的" .. itemRequest .. "余量不足，无法发起交易"
         end
@@ -77,8 +74,18 @@ function Trade(msg)
             else
                 content = "系统：您收到来自" .. "用户编号为" .. msg.fromQQ .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
             end
-            SetUserConf(msg.fromQQ, itemRequest, GetUserConf(msg.fromQQ, itemRequest, 0) - itemRequestNum)
-            SetUserConf(QQReceive, itemRequest, GetUserConf(QQReceive, itemRequest, 0) + itemRequestNum)
+            SetUserConf(
+                "itemConf",
+                msg.fromQQ,
+                itemRequest,
+                GetUserConf("itemConf", msg.fromQQ, itemRequest, 0) - itemRequestNum
+            )
+            SetUserConf(
+                "itemConf",
+                QQReceive,
+                itemRequest,
+                GetUserConf("itemConf", QQReceive, itemRequest, 0) + itemRequestNum
+            )
             sendMsg(content, msg.fromGroup, QQReceive)
             return ""
         else
@@ -86,43 +93,15 @@ function Trade(msg)
                 return "系统：检测到您的参数输入有误哦~"
             end
         end
-        -- debug
-        -- return QQReceive.." "..itemRequestNum.." "..itemRequest.." "..itemReceiveNum.." "..itemReceive.." "..msg.fromQQ
         -- //? 记录下被交易方是否在同一个群内，用于被交易方回复时判断不同的处理方式
-        SetUserConf(QQReceive, "isInGroup", isInGroup)
-
+        SetUserConf("tradeConf", QQReceive, "isInGroup", isInGroup)
+        QQRequest = msg.fromQQ
         -- 交易双方在对方处留下记录作为交易进行的凭证
-        -- //! 注意！QQ号超出9位会爆UserConf #3 arg，必须分开存储！！！
-        local QQReceive1, QQReceive2, QQRequest1, QQRequest2 = "0", "0", "0", "0"
-        if (QQReceive * 1 > 999999999) then
-            QQReceive1 = string.sub(QQReceive, 1, 9)
-            QQReceive2 = string.sub(QQReceive, 10)
-        else
-            QQReceive1 = QQReceive
-        end
-        if (msg.fromQQ * 1 > 999999999) then
-            QQRequest1 = string.sub(msg.fromQQ, 1, 9)
-            QQRequest2 = string.sub(msg.fromQQ, 10)
-        else
-            QQRequest1 = msg.fromQQ
-        end
-        SetUserConf(msg.fromQQ, {"tradeReceive1", "tradeReceive2"}, {QQReceive1, QQReceive2})
-        SetUserConf(QQReceive, {"tradeRequest1", "tradeRequest2"}, {QQRequest1, QQRequest2})
-        if (QQReceive * 1 > 999999999) then
-            SetUserConf(msg.fromQQ, "isQQBiggerThanNine", "y")
-        else
-            SetUserConf(msg.fromQQ, "isQQBiggerThanNine", "n")
-        end
-        if (msg.fromQQ * 1 > 999999999) then
-            SetUserConf(QQReceive, "isQQBiggerThanNine", "y")
-        else
-            SetUserConf(QQReceive, "isQQBiggerThanNine", "n")
-        end
+        SetUserConf("tradeConf", msg.fromQQ, "tradeReceive", QQReceive)
+        SetUserConf("tradeConf", QQReceive, "tradeRequest", QQRequest)
         -- 双方各自记录交易物品
-        SetUserConf(msg.fromQQ, {"itemRequestNum", "itemRequest"}, {itemRequestNum * 1, itemRequest})
-        SetUserConf(QQReceive, {"itemReceiveNum", "itemReceive"}, {itemReceiveNum * 1, itemReceive})
-        -- debug
-        -- return string.format("%.0f",GetUserConf(msg.fromQQ,"tradeReceive1","0"))..string.format("%.0f",GetUserConf(msg.fromQQ,"tradeReceive2","0"))
+        SetUserConf("tradeConf", msg.fromQQ, {"itemRequestNum", "itemRequest"}, {itemRequestNum * 1, itemRequest})
+        SetUserConf("tradeConf", QQReceive, {"itemReceiveNum", "itemReceive"}, {itemReceiveNum * 1, itemReceive})
         -- 茉莉发送请求给被交易方
         if (isInGroup == 1) then
             content =
@@ -151,56 +130,32 @@ function Trade(msg)
         (string.find(msg.fromMsg, "同意") ~= nil or string.find(msg.fromMsg, "接受") ~= nil or
             string.find(msg.fromMsg, "拒绝") ~= nil)
      then
-        -- debug
-        -- return msg.fromQQ
         -- 记录获取交易发起方
         local reply = string.match(msg.fromMsg, "[%s]*(.*)", #trade_order + 1)
         local tradeRequest
-        if (GetUserConf(msg.fromQQ, "isQQBiggerThanNine", "n") == "y") then
-            tradeRequest =
-                string.format("%.0f", GetUserConf(msg.fromQQ, "tradeRequest1", 0)) ..
-                string.format("%.0f", GetUserConf(msg.fromQQ, "tradeRequest2", "0"))
-        else
-            tradeRequest = string.format("%.0f", GetUserConf(msg.fromQQ, "tradeRequest1", 0))
-        end
-        -- debug
-        -- return tradeRequest
+        tradeRequest = GetUserConf("tradeConf", msg.fromQQ, "tradeRequest", "0")
         -- //! 先判断交易是否成立
         -- //? 第一种 被请求方是否存在未处理的请求
-        if (tradeRequest * 1 == 0) then
+        if (tradeRequest == "0") then
             return "系统：您还未收到过交易请求哦~"
         end
         -- //? 第二种 交易发起方是否取消交易
         local tradeReceiveNow
-        if (GetUserConf(tradeRequest, "isQQBiggerThanNine", "n") == "y") then
-            tradeReceiveNow =
-                string.format("%.0f", GetUserConf(tradeRequest, "tradeReceive1", 0)) ..
-                string.format("%.0f", GetUserConf(tradeRequest, "tradeReceive2", "0"))
-        else
-            tradeReceiveNow = string.format("%.0f", GetUserConf(tradeRequest, "tradeReceive1", 0))
-        end
+        tradeReceiveNow = GetUserConf("tradeConf", tradeRequest, "tradeReceive", "0")
         if (tradeReceiveNow * 1 ~= msg.fromQQ * 1) then
             -- debug
             -- return tradeReceiveNow
-            SetUserConf(msg.fromQQ, {"tradeRequest1", "tradeRequest2"}, {0, 0})
+            SetUserConf("tradeConf", msg.fromQQ, "tradeRequest", "0")
             return "系统：对方已取消交易，本次交易已关闭"
         end
         if (reply == "同意" or reply == "接受") then
-            local itemReceive = GetUserConf(msg.fromQQ, "itemReceive", "nil")
+            local itemReceive = GetUserConf("tradeConf", msg.fromQQ, "itemReceive", "nil")
             local itemReceiveNow, itemReceiveNum =
-                GetUserConf(
-                msg.fromQQ,
-                {
-                    itemReceive,
-                    "itemReceiveNum"
-                },
-                {0, 0}
-            )
-            -- debug
-            -- breturn itemReceive.." "..itemReceiveNow.." "..itemReceiveNum
+                GetUserConf("itemConf", msg.fromQQ, itemReceive, 0),
+                GetUserConf("tradeConf", msg.fromQQ, "itemReceiveNum", 0)
             -- 余额不足，交易自动关闭
             if (itemReceiveNow - itemReceiveNum < 0) then
-                if (GetUserConf(msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
+                if (GetUserConf("tradeConf", msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
                     -- 交易结束，交易凭证清除
                     TradeEnd(tradeRequest, msg.fromQQ)
                 else
@@ -212,15 +167,27 @@ function Trade(msg)
             end
 
             -- 物品数量变更
-            SetUserConf(msg.fromQQ, itemReceive, itemReceiveNow - itemReceiveNum)
-            SetUserConf(tradeRequest, itemReceive, GetUserConf(tradeRequest, itemReceive, 0) + itemReceiveNum)
-            local itemRequest = GetUserConf(tradeRequest, "itemRequest", "nil")
-            local itemRequestNum, itemRequestNow = GetUserConf(tradeRequest, {"itemRequestNum", itemRequest}, {0, 0})
-            SetUserConf(msg.fromQQ, itemRequest, GetUserConf(msg.fromQQ, itemRequest, 0) + itemRequestNum)
-            SetUserConf(tradeRequest, itemRequest, itemRequestNow - itemRequestNum)
+            SetUserConf("itemConf", msg.fromQQ, itemReceive, itemReceiveNow - itemReceiveNum)
+            SetUserConf(
+                "itemConf",
+                tradeRequest,
+                itemReceive,
+                GetUserConf("itemConf", tradeRequest, itemReceive, 0) + itemReceiveNum
+            )
+            local itemRequest = GetUserConf("tradeConf", tradeRequest, "itemRequest", "nil")
+            local itemRequestNum, itemRequestNow =
+                GetUserConf("tradeConf", tradeRequest, "itemRequestNum", 0),
+                GetUserConf("itemConf", tradeRequest, itemRequest, 0)
+            SetUserConf(
+                "itemConf",
+                msg.fromQQ,
+                itemRequest,
+                GetUserConf("itemConf", msg.fromQQ, itemRequest, 0) + itemRequestNum
+            )
+            SetUserConf("itemConf", tradeRequest, itemRequest, itemRequestNow - itemRequestNum)
 
             -- 茉莉发送交易结束通知
-            if (GetUserConf(msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
+            if (GetUserConf("tradeConf", msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
                 -- 交易结束，交易凭证清除
                 TradeEnd(tradeRequest, msg.fromQQ)
             else
@@ -231,7 +198,7 @@ function Trade(msg)
             end
             return "系统：您同意了该交易，交易已成立"
         else
-            if (GetUserConf(msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
+            if (GetUserConf("tradeConf", msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
                 -- 交易结束，交易凭证清除
                 TradeEnd(tradeRequest, msg.fromQQ)
             else
@@ -247,8 +214,8 @@ end
 msg_order[trade_order] = "Trade"
 
 function TradeEnd(q1, q2)
-    SetUserConf(q1, {"tradeReceive1", "tradeReceive2"}, {0, 0})
-    SetUserConf(q2, {"tradeRequest1", "tradeRequest2"}, {0, 0})
+    SetUserConf("tradeConf", q1, "tradeReceive", "0")
+    SetUserConf("tradeConf", q2, "tradeRequest", "0")
 end
 
 -- 管理员发送奖励
@@ -263,7 +230,7 @@ function adminGift(msg)
     if (QQ == nil or QQ == "" or num == nil or item == nil or message == nil) then
         return "参数输入有误！"
     end
-    SetUserConf(QQ, item, GetUserConf(QQ * 1, item, 0) + num)
+    SetUserConf("itemConf", QQ, item, GetUserConf("itemConf", QQ * 1, item, 0) + num)
     -- 发送消息提醒对方
     -- ! 注意 一定要在对方是好友的前提下使用！
     local content = "系统邮件：" .. message .. "\n已接收附件：" .. item .. "x" .. string.format("%.0f", num) .. ",通过指令“查询 道具名”确认"
