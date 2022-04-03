@@ -80,6 +80,9 @@ function EnterStory(msg)
         Story = "元旦特典 预想此时应更好"
         SetUserConf("storyConf", msg.fromQQ, "SpecialReadNow", 0)
     elseif (string.find(StoryTemp, "第一章") ~= nil or string.find(StoryTemp, "夜未央") ~= nil) then
+        if (GetUserConf("favorConf", msg.fromQQ, "好感度", 0) <2000) then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
+        end
         if (GetUserConf("storyConf", msg.fromQQ, "isStory1Unlocked", 0) == 0) then
             SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", 1)
             return "眼前的记忆碎片被一股神秘的光芒所环绕，将它从外界隔绝开来，也许只有某些特定的物品才能将其解除。\n（输入“.u 道具名”使用道具，可输入“道具图鉴”以查询）"
