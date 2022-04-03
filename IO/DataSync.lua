@@ -29,7 +29,9 @@ function DataSync(msg)
         "hour_last",
         "year_last",
         "好感度",
-        "gifts"
+        "gifts",
+        "cohesion",  --亲密度
+        "affinity",  --亲和力
     }
     local storyConf = {
         "entryCheckStory",
