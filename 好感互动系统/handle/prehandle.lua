@@ -27,7 +27,7 @@ end
 function TrustChange(msg)
     local favor, trust_flag = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust_flag"}, {0, 0})
     local isStory0Read, isShopUnlocked =
-        GetUserConf("stroyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked"}, {0, 0})
+        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked"}, {0, 0})
     local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237"
     -- 关联信任度
     if (admin_judge) then
@@ -60,12 +60,14 @@ function TrustChange(msg)
     -- 调整亲密度
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
-    elseif (favor < 2000) then
+    end
+    if (favor > 1000) then
         if (isStory0Read == 1) then
             -- 通过第一章且好感度达到1000
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 1)
         end
-    elseif (favor < 3000) then
+    end
+    if (favor > 2000) then
         if (isShopUnlocked == 1) then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 2)
         end
@@ -76,17 +78,17 @@ function Notice(msg)
     local favorVersion = GetGroupConf(msg.fromGroup, "favorVersion", 0)
     local favorUVersion = GetUserConf("favorConf", msg.fromQQ, "favorVersion", 0)
     -- 修改版本号只需要将下面的数字修改为目前的版本号即可
-    if (favorUVersion ~= 45) then
-        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 45})
+    if (favorUVersion ~= 46) then
+        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 46})
     end
-    if (favorVersion ~= 45) then
-        SetGroupConf(msg.fromGroup, {"favorVersion", "notice"}, {45, 0})
+    if (favorVersion ~= 46) then
+        SetGroupConf(msg.fromGroup, {"favorVersion", "notice"}, {46, 0})
     end
     local notice = GetGroupConf(msg.fromGroup, "notice", 0)
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
     if (msg.fromGroup == "0" and noticeQQ == 0) then
         noticeQQ = noticeQQ + 1
-        local content = "【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
+        local content = "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
         SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
         sendMsg(content, 0, msg.fromQQ)
     end
@@ -95,7 +97,7 @@ function Notice(msg)
         if (notice <= 4 and noticeQQ == 0) then
             notice = notice + 1
             noticeQQ = noticeQQ + 1
-            local content = "【好感互动模块V4.5&其他功能更新通告】请“戳一戳”（双击头像）茉莉或@茉莉并紧跟含有“更新”的字眼（如“@茉莉 更新内容”)获得本次更新内容哦~"
+            local content = "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
             SetGroupConf(msg.fromGroup, "notice", notice)
             SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
             sendMsg(content, msg.fromGroup, msg.fromQQ)
@@ -105,10 +107,11 @@ end
 
 -- 每次交互道具增加的附加好感度
 function AddFavor_Item(msg)
-    local favor = 0
+    local favor_change = 0
+    local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "addFavorDDL_Cookie", 0)) then
         if (GetUserToday(msg.fromQQ, "addFavor_Cookie", 0) == 0) then
-            favor = favor + 30
+            favor_change = favor_change + 30
             SetUserToday(msg.fromQQ, "addFavor_Cookie", 1)
         end
     elseif (GetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1) == 0) then
@@ -116,7 +119,8 @@ function AddFavor_Item(msg)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1)
     end
-    SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor)
+    SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor_change)
+    CheckFavor(msg.fromQQ, favor_ori, favor_change + favor_ori, affinity)
 end
 
 -- 好感时间惩罚减免百分比计算
@@ -214,16 +218,14 @@ end
 -- 剧情模式解锁提示
 function StoryUnlocked(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local content, flag, res, storyUnlockedNotice, specialUnlockedNotice =
-        "",
-        "1",
-        "",
+    local storyUnlockedNotice, specialUnlockedNotice =
         GetUserConf(
-            "storyConf",
-            msg.fromQQ,
-            {"storyUnlockedNotice", "specialUnlockedNotice"},
-            {"0000000000000000000000000", "0000000000000000000000000"}
-        )
+        "storyConf",
+        msg.fromQQ,
+        {"storyUnlockedNotice", "specialUnlockedNotice"},
+        {"0000000000000000000000000", "0000000000000000000000000"}
+    )
+    local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
         flag = string.sub(storyUnlockedNotice, 1, 1)
         if (flag == "1") then
@@ -246,7 +248,7 @@ function StoryUnlocked(msg)
     elseif
         (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and
             GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0)
-    then
+     then
         flag = string.sub(storyUnlockedNotice, 2, 2)
         if (flag == "1") then
             return ""
