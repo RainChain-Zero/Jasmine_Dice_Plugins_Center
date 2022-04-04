@@ -48,6 +48,7 @@ msg_order[".U"] = "UseItem"
 gift_order = "赠送茉莉"
 function GiveGift(msg)
     local num = ""
+    local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.+)", #gift_order + 1)
     if (num == "" or num == nil) then
         num = 1
@@ -71,12 +72,9 @@ function GiveGift(msg)
     -- todo 完善排除特例的情况（采用遍历排除）
 
     if (item ~= "推理小说" and item ~= "袋装曲奇") then
-        SetUserConf(
-            "favorConf",
-            msg.fromQQ,
-            "好感度",
-            GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + num * 1 * Gift_list[item].favor
-        )
+        local favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, num * 1 * Gift_list[item].favor, affinity)
+        -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     elseif (item == "推理小说") then
         -- !时间惩罚降低的好感减少百分之多少，同类不覆盖
         local rate = GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
