@@ -13,8 +13,7 @@ calibration_limit = getUserConf(getDiceQQ(), "calibration_limit", 12)
 -- msg,当前好感，亲和力
 function ModifyLimit(msg, favor, affinity)
     if (calibration > calibration_limit) then
-        sendMsg("本轮时钟周期已结束，请进行『校准』", msg.fromGroup, msg.fromQQ)
-        os.exit()
+        return false,0,0,"本轮时钟周期已结束，请进行『校准』\n(指令为“茉莉校准”)"
     end
     -- 下限修订600*亲和力/100，上限修订100+好感/100*（校准值+1）
     local left_limit, right_limit = math.modf(600 * affinity / 100), math.modf(150 + favor / 100 * (calibration + 1))
@@ -101,8 +100,7 @@ end
 function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity)
     local res = 0
     if (calibration > calibration_limit) then
-        sendMsg("本轮时钟周期已结束，请进行『校准』", msg.fromGroup, msg.fromQQ)
-        os.exit()
+        return 0,"本轮时钟周期已结束，请进行『校准』\n(指令为“茉莉校准”)"
     end
     calibration = calibration + 1
     setUserConf(getDiceQQ(), "calibration", calibration)
@@ -115,7 +113,7 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity)
         else
             affinity = affinity - affinity_down
         end
-        SetUserConf(getDiceQQ(), "calibration_limit", calibration_limit)
+        setUserConf(getDiceQQ(), "calibration_limit", calibration_limit)
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity)
     else
         local affinity_up = ranint(2, 4)
