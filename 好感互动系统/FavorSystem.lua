@@ -33,7 +33,6 @@ today_interaction_limit = 3 -- 每日"互动-部位"增加好感次数上限
 today_cute_limit = 1
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
-
 -- 时间系统
 hour = os.date("*t").hour * 1
 minute = os.date("%M") * 1
@@ -95,13 +94,6 @@ function Calibrated()
 end
 msg_order["茉莉校准"] = "Calibrated"
 
-function calibration_show(msg)
-    if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596") then
-        return "当前校准值为——" .. calibration
-    end
-end
-
-msg_order["当前校准"] = "calibration_show"
 function topercent(num)
     if (num == nil) then
         return ""
@@ -110,8 +102,7 @@ function topercent(num)
 end
 
 function add_favor_food(msg, favor, affinity)
-    -- 单次固定好感上升
-    -- return 100
+
     -- 随机好感上升,低好感用户翻倍
     if (favor <= 1250) then
         return ModifyFavorChangeGift(msg, favor, ranint(40, 60), affinity)
@@ -150,8 +141,8 @@ function rcv_food(msg)
     -- 匹配喂食的次数
     if (cnt == 0) then
         cnt = string.match(msg.fromMsg, "[%s]*(%d+)", #food_order + 1)
-        if (cnt == nil) then
-            cnt = 0
+        if (cnt == nil or cnt == "") then
+            cnt = 1
         else
             cnt = cnt * 1
         end
@@ -161,19 +152,11 @@ function rcv_food(msg)
     end
     if (msg.fromQQ == "2677409596") then
         if ((today_rude >= 4 and today_sorry == 0) or today_sorry >= 2) then
-            flag_food = flag_food + 1 -- 判定爱酱道歉次数以及是否知错不改（today_sorry>=2）
-            if (flag_food == 1) then
-                flag_food = 0
-                return "哼，笨蛋主人，我才不吃你的东西呢"
-            end
+            return "哼，笨蛋主人，我才不吃你的东西呢"
         end
     else
         if ((today_rude >= 3 and today_sorry == 0) or today_sorry >= 2) then
-            flag_food = flag_food + 1 -- 判定其他用户道歉次数...
-            if (flag_food == 1) then
-                flag_food = 0
-                return "主人告诉我不要吃坏人给的东西！"
-            end
+            return "主人告诉我不要吃坏人给的东西！"
         end
     end
     -- 判定当日上限
@@ -181,8 +164,6 @@ function rcv_food(msg)
     if (today_gift >= today_food_limit) then
         return "对不起{nick}，茉莉今天...想换点别的口味呢呜QAQ"
     end
-    today_gift = today_gift + cnt
-    SetUserToday(msg.fromQQ, "gifts", today_gift)
     -- 计算今日/累计投喂，存取在骰娘用户记录上
     local DiceQQ = getDiceQQ()
     local gift_add = add_gift_once()
@@ -190,18 +171,21 @@ function rcv_food(msg)
     SetUserToday(DiceQQ, "gifts", self_today_gift)
     local self_total_gift = GetUserConf("favorConf", DiceQQ, "gifts", 0) + gift_add * cnt
     SetUserConf("favorConf", DiceQQ, "gifts", self_total_gift)
-    -- 更新好感度
     if (today_sorry == 0) then
         -- 循环调用
         while (cnt > 0) do
-            local favor_ori = favor
-            favor = favor_ori + add_favor_food(msg, favor, affinity)
+            local favor_ori, favor_add, calibration_message = favor, 0, nil
+            favor_add, calibration_message = add_favor_food(msg, favor, affinity)
+            if (calibration_message ~= nil) then
+                return calibration_message
+            end
+            today_gift = today_gift + 1
+            SetUserToday(msg.fromQQ, "gifts", today_gift)
+            favor = favor_ori + favor_add
             -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
             CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
             cnt = cnt - 1
         end
-
-        flag_food = flag_food + cnt
         return "你眼前一黑，手中的食物瞬间消失，再看的时候，眼前的烧酒口中还在咀嚼着什么，扭头躲开了你的目光\n今日已收到投喂" ..
             topercent(self_today_gift) .. "kg\n累计投喂" .. topercent(self_total_gift) .. "kg"
     else
@@ -258,18 +242,21 @@ function rcv_Ciallo_morning(msg)
     local favor_ori = favor
     today_morning = today_morning + 1
     SetUserToday(msg.fromQQ, "morning", today_morning)
-    if (favor < -600) then
-        return ""
-    end
     -- 用于判定成功/失败，增加校准
-    ModifyLimit(msg, favor, affinity)
+    local t1, t2, t3, calibration_message = ModifyLimit(msg, favor, affinity)
+    if (calibration_message ~= nil) then
+        return calibration_message
+    end
     -- 其他用户判定
     if (today_rude >= 3 or today_sorry >= 2) then
         return "Error!出现机体故障！没有听清！"
     else
         if (hour >= 5 and hour <= 10) then
             SetUserToday(msg.fromQQ, "morning", today_morning + 1)
-            local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+            local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+            if (calibration_message1 ~= nil) then
+                return calibration_message1
+            end
             if (succ == false) then
                 return "诶？早上好...那我先去准备早饭，有点心不在焉？不不，没有的事"
             end
@@ -365,7 +352,10 @@ function rcv_Ciallo_afternoon(msg)
     end
     if (today_rude <= 2 and today_sorry <= 1) then
         SetUserToday(msg.fromQQ, "noon", today_noon + 1)
-        local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+        local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+        if (calibration_message1 ~= nil) then
+            return calibration_message1
+        end
         if (succ == false) then
             return "啊...？嗯...{nick}午安，很抱歉，能让茉莉一个人待一会吗"
         end
@@ -434,7 +424,10 @@ function rcv_Ciallo_noon(msg)
         else
             if (hour >= 11 and hour <= 14) then
                 SetUserToday(msg.fromQQ, "today_noon", today_noon + 1)
-                local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+                local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+                if (calibration_message1 ~= nil) then
+                    return calibration_message1
+                end
                 if (succ == false) then
                     return "中午好。嗯...?你说就没有其他的话了...?"
                 end
@@ -514,7 +507,10 @@ function rcv_Ciallo_night(msg)
     else
         if (today_rude <= 2 and today_sorry <= 1) then
             if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
-                local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+                local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+                if (calibration_message1 ~= nil) then
+                    return calibration_message1
+                end
                 if (succ == false) then
                     return "那茉莉就回自己房间了，晚安，明早见"
                 end
@@ -603,7 +599,10 @@ function Ciallo_night_2(msg)
             end
         end
     else -- 其他用户根据好感判断回复
-        local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+        local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+        if (calibration_message1 ~= nil) then
+            return calibration_message1
+        end
         if (succ == false) then
             return ""
         end
@@ -884,7 +883,10 @@ function interaction(msg)
     if (not RS_judge) then
         return ""
     end
-    local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+    local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+    if (calibration_message1) then
+        return calibration_message1
+    end
     if (succ == false) then
         return "茉莉向后退了一步，并对你比了个“×”的手势×"
     end
@@ -1049,7 +1051,11 @@ function action(msg)
     elseif (blackReply == "已触发！") then
         return ""
     end
-    local succ, left_limit, right_limit = ModifyLimit(msg, favor, affinity)
+    local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+    if (calibration_message1~=nil) then
+        reply_main= calibration_message1
+        return ""
+    end
     -- action 抱
     local judge_hug = string.find(msg.fromMsg, "抱", 1) ~= nil
     if (judge_hug) then
@@ -1782,6 +1788,13 @@ function setCaribrationLimit(msg)
     end
 end
 msg_order[admin_order10] = "setCaribrationLimit"
+
+function calibration_show(msg)
+    if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596") then
+        return "当前校准值为——" .. calibration..";校准上限为——"..calibration_limit
+    end
+end
+msg_order["当前校准"] = "calibration_show"
 
 function table_draw(tab)
     return tab[ranint(1, #tab)]
