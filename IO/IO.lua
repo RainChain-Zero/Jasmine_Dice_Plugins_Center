@@ -8,7 +8,7 @@ package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
 -- UserConf.json的路径
-UserConfPath = getDiceDir() .. "\\user\\UserConf\\"
+UserConfPath = getDiceDir() .. "\\UserConf\\"
 -- UserToday.json的路径
 UserTodayPath = getDiceDir() .. "/user/UserToday.json"
 -- GroupConf.json的路径
@@ -48,7 +48,6 @@ function GetUserConf(filename,qq, key, default)
         --! 用户数据文件初始化
         UserInit(qq)
         -- 打开创建的文件
-        sendMsg("filename:"..filename.." 路径:"..UserConfPath..qq.."\\"..filename..".json",0,3032902237)
         f1=assert(io.open(UserConfPath..qq.."\\"..filename..".json","r"))
     end
     local str = f1:read("a")
