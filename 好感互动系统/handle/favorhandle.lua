@@ -8,7 +8,7 @@
 --! 校准值 使用Dice!函数
 calibration = getUserConf(getDiceQQ(), "calibration", 0)
 -- 校准值初始上限
-calibration_limit = getUserConf(getDiceQQ(), "calibration_limit", 16)
+calibration_limit = getUserConf(getDiceQQ(), "calibration_limit", 12)
 -- 好感阈值修正，返回是否成功、下限修正和上限修正值(修正非赠礼交互)
 -- msg,当前好感，亲和力
 function ModifyLimit(msg, favor, affinity)
@@ -40,8 +40,8 @@ function ModifyLimit(msg, favor, affinity)
 end
 
 -- 修正好感变化值(适用于非赠礼交互)
--- qq,原好感,当前好感变化值，亲和力
-function ModifyFavorChangeNormal(qq, favor_ori, favor_change, affinity)
+-- qq,原好感,当前好感变化值，亲和力,是否成功
+function ModifyFavorChangeNormal(qq, favor_ori, favor_change, affinity, succ)
     local res = 0
     if (favor_change < 0) then
         -- 校准上限+2，亲和力减少
@@ -62,14 +62,16 @@ function ModifyFavorChangeNormal(qq, favor_ori, favor_change, affinity)
             res = math.modf(calibration / 10 * favor_change)
         end
     else
-        -- 亲和度增加
-        local affinity_up = ranint(2, 4)
-        if (affinity + affinity_up > 100) then
-            affinity = 100
-        else
-            affinity = affinity + affinity_up
+        -- 判定成功，则亲和度增加
+        if (succ) then
+            local affinity_up = ranint(2, 4)
+            if (affinity + affinity_up > 100) then
+                affinity = 100
+            else
+                affinity = affinity + affinity_up
+            end
+            SetUserConf("favorConf", qq, "affinity", affinity)
         end
-        SetUserConf("favorConf", qq, "affinity", affinity)
         local favor_modify, div = 0, 1
         if (favor_ori < 3000) then
             div = 100
@@ -78,7 +80,7 @@ function ModifyFavorChangeNormal(qq, favor_ori, favor_change, affinity)
         else
             div = 160
         end
-        favor_modify = math.modf(-1 * (calibration * favor_ori / div / (affinity + 1)) + affinity / 10)
+        favor_modify = math.modf(-1 * ((calibration+1) * favor_ori / div / (affinity + 1)) + affinity / 10)
         -- 保底5
         if (favor_change + favor_modify < 5) then
             res = 5
@@ -115,6 +117,14 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity)
         end
         SetUserConf(getDiceQQ(), "calibration_limit", calibration_limit)
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity)
+    else
+        local affinity_up = ranint(2, 4)
+        if (affinity + affinity_up > 100) then
+            affinity = 100
+        else
+            affinity = affinity + affinity_up
+        end
+        SetUserConf("favorConf", msg.fromQQ, "affinity", affinity)
     end
     local favor_modify, div = 0, 1
     if (favor_ori < 3000) then
@@ -124,7 +134,7 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity)
     else
         div = 160
     end
-    favor_modify = math.modf(-1 * (calibration * favor_ori / div / (affinity + 1)) + affinity / 10)
+    favor_modify = math.modf(-1 * ((calibration+1) * favor_ori / div / (affinity + 1)) + affinity / 10)
     -- 保底5
     if (favor_change + favor_modify < 5) then
         res = 5
@@ -152,10 +162,9 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
     if (favor_now < 1000) then
         now = 0
     else
-        now = now % 10000
+        now = favor_now % 10000
         now = math.modf(now / 1000)
     end
-
     if (now == pre + 1) then
         if (affinity == 100) then
             SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})
