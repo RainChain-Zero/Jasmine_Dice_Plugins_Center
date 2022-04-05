@@ -167,9 +167,11 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         if (affinity == 100) then
             SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})
         else
-            SetUserConf("favorConf", qq, "好感度", math.modf(favor_ori / 10000) * 10000 + pre * 1000 + 999)
+            favor_now = math.modf(favor_ori / 10000) * 10000 + pre * 1000 + 999
+            SetUserConf("favorConf", qq, "好感度", favor_now)
         end
     else
         SetUserConf("favorConf", qq, "好感度", favor_now)
     end
+    return favor_now
 end

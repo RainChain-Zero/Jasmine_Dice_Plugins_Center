@@ -10,7 +10,6 @@ function preHandle(msg)
     -- 强制更新提示信息
     -- sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
     -- os.exit()
-
     -- 道具附加的额外好感追加
     AddFavor_Item(msg)
     -- 版本通告处
@@ -19,6 +18,7 @@ function preHandle(msg)
     FavorPunish(msg)
     -- 信任度和亲和度关联
     TrustChange(msg)
+    CohesionChange(msg)
     -- 剧情解锁提示
     StoryUnlocked(msg)
 end
@@ -26,8 +26,6 @@ end
 -- 调整信任度和亲和度
 function TrustChange(msg)
     local favor, trust_flag = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust_flag"}, {0, 0})
-    local isStory0Read, isShopUnlocked =
-        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked"}, {0, 0})
     local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237"
     -- 关联信任度
     if (admin_judge) then
@@ -57,7 +55,13 @@ function TrustChange(msg)
             SetUserConf("favorConf", msg.fromQQ, "trust_flag", 3)
         end
     end
-    -- 调整亲密度
+end
+
+-- 调整亲密度
+function CohesionChange(msg)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
+    local isStory0Read, isShopUnlocked =
+        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked"}, {0, 0})
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
     end
@@ -75,30 +79,25 @@ function TrustChange(msg)
 end
 
 function Notice(msg)
-    local favorVersion = GetGroupConf(msg.fromGroup, "favorVersion", 0)
     local favorUVersion = GetUserConf("favorConf", msg.fromQQ, "favorVersion", 0)
     -- 修改版本号只需要将下面的数字修改为目前的版本号即可
     if (favorUVersion ~= 46) then
         SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 46})
     end
-    if (favorVersion ~= 46) then
-        SetGroupConf(msg.fromGroup, {"favorVersion", "notice"}, {46, 0})
-    end
-    local notice = GetGroupConf(msg.fromGroup, "notice", 0)
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
     if (msg.fromGroup == "0" and noticeQQ == 0) then
         noticeQQ = noticeQQ + 1
-        local content = "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
+        local content =
+            "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
         SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
         sendMsg(content, 0, msg.fromQQ)
     end
     noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (notice ~= nil) then
-        if (notice <= 4 and noticeQQ == 0) then
-            notice = notice + 1
+    if (msg.fromGroup ~= "0") then
+        if (noticeQQ == 0) then
             noticeQQ = noticeQQ + 1
-            local content = "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
-            SetGroupConf(msg.fromGroup, "notice", notice)
+            local content =
+                "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
             SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
             sendMsg(content, msg.fromGroup, msg.fromQQ)
         end
@@ -119,7 +118,7 @@ function AddFavor_Item(msg)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1)
     end
-    SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor_change)
+    -- SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor_change)
     CheckFavor(msg.fromQQ, favor_ori, favor_change + favor_ori, affinity)
 end
 

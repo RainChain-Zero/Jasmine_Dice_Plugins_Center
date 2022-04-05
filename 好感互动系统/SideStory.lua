@@ -13,6 +13,9 @@ require "Story1"
 require "Story2"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
+package.path = getDiceDir() .. "/plugin/handle/?.lua"
+require "favorhandle"
+
 -- 主调入口
 function StoryMain(msg)
     local Reply = "系统：剧情出现未知错误，请报告系统管理员"

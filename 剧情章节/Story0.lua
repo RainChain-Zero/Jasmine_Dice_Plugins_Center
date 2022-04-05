@@ -53,7 +53,9 @@ function StoryZero(msg)
             return content
         elseif (Choice == 3) then
             if (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
-                SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + 200)
+                local favor_ori=GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
+                local favor_now=favor_ori+200
+                CheckFavor(msg.fromQQ,favor_ori,favor_now,GetUserConf("favorConf",msg.fromQQ,"affinity",0))
             end
             MainIndex = 6
             content = Story0[MainIndex][ChoiceIndex + 1]

@@ -102,7 +102,6 @@ function topercent(num)
 end
 
 function add_favor_food(msg, favor, affinity)
-
     -- 随机好感上升,低好感用户翻倍
     if (favor <= 1250) then
         return ModifyFavorChangeGift(msg, favor, ranint(40, 60), affinity)
@@ -175,7 +174,7 @@ function rcv_food(msg)
         -- 循环调用
         while (cnt > 0) do
             local favor_ori, favor_add, calibration_message = favor, 0, nil
-            favor_add, calibration_message = add_favor_food(msg, favor, affinity)
+            favor_add, calibration_message = add_favor_food(msg, favor_ori, affinity)
             if (calibration_message ~= nil) then
                 return calibration_message
             end
@@ -183,7 +182,7 @@ function rcv_food(msg)
             SetUserToday(msg.fromQQ, "gifts", today_gift)
             favor = favor_ori + favor_add
             -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
-            CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
+            favor = CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
             cnt = cnt - 1
         end
         return "你眼前一黑，手中的食物瞬间消失，再看的时候，眼前的烧酒口中还在咀嚼着什么，扭头躲开了你的目光\n今日已收到投喂" ..
@@ -497,7 +496,8 @@ function rcv_Ciallo_night(msg)
         if (today_rude <= 3 and today_sorry <= 1) then
             if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
                 if (today_night <= 1) then
-                    SetUserConf("favorConf", msg.fromQQ, "好感度", favor + 5)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor + 5)
+                    CheckFavor(msg.fromQQ, favor_ori, favor_ori + 5, affinity)
                 end
                 return "晚安哦我的主人，茉莉今天明天也会一直喜欢你的！"
             else
@@ -697,7 +697,6 @@ function punish_favor_rude(msg)
 
     -- 没有指明对茉莉的脏话
     if (string.find(msg.fromMsg, "茉莉", 1) == nil) then
-        sendMsg("success", 0, msg.fromQQ)
         favor = favor - 20
         SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
         today_rude = today_rude + 1
@@ -1052,8 +1051,8 @@ function action(msg)
         return ""
     end
     local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
-    if (calibration_message1~=nil) then
-        reply_main= calibration_message1
+    if (calibration_message1 ~= nil) then
+        reply_main = calibration_message1
         return ""
     end
     -- action 抱
@@ -1080,7 +1079,7 @@ function action(msg)
                     else
                         if (today_hug <= today_hug_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 25, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = "诶诶诶！主人你...#稍有惊讶后很快放松下来 以后也要一直和茉莉在一起哦#抱紧"
                     end
@@ -1112,19 +1111,19 @@ function action(msg)
                         elseif (favor <= ranint(3000 - left_limit, 3000 + right_limit)) then
                             if (today_hug <= today_hug_limit) then
                                 favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 8, affinity, succ)
-                                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                            --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                             end
                             reply_main = table_draw(reply_hug_low)
                         elseif (favor <= ranint(6000 - left_limit, 6000 + right_limit)) then
                             if (today_hug <= today_hug_limit) then
                                 favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                            -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                             end
                             reply_main = table_draw(reply_hug_high)
                         else
                             if (today_hug <= today_hug_limit) then
                                 favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 25, affinity, succ)
-                                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                            --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                             end
                             reply_main = table_draw(reply_hug_highest)
                         end
@@ -1153,7 +1152,7 @@ function action(msg)
                 else
                     if (today_touch <= today_touch_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 20, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = "唔唔唔，主、主人不要摸啦，头、头发会乱的...#闭眼缩起脖子"
                 end
@@ -1180,19 +1179,19 @@ function action(msg)
                     elseif (favor <= ranint(2000 - left_limit, 2000 + right_limit)) then
                         if (today_touch <= today_touch_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 8, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_touch_low)
                     elseif (favor <= ranint(4500 - left_limit, 4500 + right_limit)) then
                         if (today_touch <= today_touch_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 12, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_touch_high)
                     else
                         if (today_touch <= today_touch_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 16, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_touch_highest)
                     end
@@ -1218,7 +1217,7 @@ function action(msg)
                 if (today_rude <= 3 and today_sorry <= 1) then
                     if (today_lift <= today_lift_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = "啊主主主、主人 好、好高啊！再、再转几圈吧！#露出了开心的笑容"
                 else
@@ -1240,19 +1239,19 @@ function action(msg)
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         if (today_lift <= today_lift_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 10, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_lift_low)
                     elseif (favor <= ranint(6800 - left_limit, 6800 + right_limit)) then
                         if (today_lift <= today_lift_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 14, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_lift_high)
                     else
                         if (today_lift <= today_lift_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 18, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_lift_highest)
                     end
@@ -1286,7 +1285,7 @@ function action(msg)
                 if (today_rude <= 3 and today_sorry <= 1) then
                     if (today_kiss <= today_kiss_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 50, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = "啊...主、主人...你你你！#低头脸红 你讨厌死了！#捶胸口时埋到怀里"
                 else
@@ -1319,13 +1318,13 @@ function action(msg)
                     elseif (favor <= ranint(6700 - left_limit, 6700 + right_limit)) then
                         if (today_kiss <= today_kiss_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_kiss_high)
                     else
                         if (today_kiss <= today_kiss_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 20, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_kiss_highest)
                     end
@@ -1359,7 +1358,7 @@ function action(msg)
                 if (today_rude <= 3 and today_sorry <= 1) then
                     if (today_hand <= today_hand_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 10, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = "诶？要牵手吗...嗯...嗯 那 就不要放开了哦~主人——"
                 else
@@ -1378,19 +1377,19 @@ function action(msg)
                     elseif (favor <= ranint(3500 - left_limit, 3500 + right_limit)) then
                         if (today_hand <= today_hand_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 8, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_hand_low)
                     elseif (favor <= ranint(6000 - left_limit, 6000 + right_limit)) then
                         if (today_hand <= today_hand_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 10, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_hand_high)
                     else
                         if (today_hand <= today_hand_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 12, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_hand_highest)
                     end
@@ -1426,7 +1425,7 @@ function action(msg)
                 if (today_rude <= 3 and today_sorry <= 1) then
                     if (today_face <= today_face_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 7, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = "哎哎哎主人——别别这样，茉莉...茉莉感觉浑身发热了呜..."
                 else
@@ -1445,19 +1444,19 @@ function action(msg)
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         if (today_face <= today_face_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 5, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_face_low)
                     elseif (favor <= ranint(6000 - left_limit, 6000 + right_limit)) then
                         if (today_face <= today_face_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 10, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_face_high)
                     else
                         if (today_face <= today_face_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 14, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_face_highest)
                     end
@@ -1491,7 +1490,7 @@ function action(msg)
                 if (today_rude <= 3 and today_sorry <= 1) then
                     if (today_cute <= today_cute_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = "诶诶诶？主...主人夸我了！#惊喜 还..还有点不好意思呢...#傻笑"
                 else
@@ -1502,25 +1501,25 @@ function action(msg)
                     if (favor <= ranint(1050 - left_limit, 1050 + right_limit)) then
                         if (today_cute <= today_cute_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 8, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_cute_less)
                     elseif (favor <= ranint(3000 - left_limit, 3000 + right_limit)) then
                         if (today_cute <= today_cute_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 10, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_cute_low)
                     elseif (favor <= ranint(4000 - left_limit, 4000 + right_limit)) then
                         if (today_cute <= today_cute_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 12, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_cute_high)
                     else
                         if (today_cute <= today_cute_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_cute_highest)
                     end
@@ -1554,19 +1553,19 @@ function action(msg)
                     elseif (favor <= ranint(3500 - left_limit, 3500 + right_limit)) then
                         if (today_suki <= today_suki_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 12, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_suki_low)
                     elseif (favor <= ranint(5500 - left_limit, 5500 + right_limit)) then
                         if (today_suki <= today_suki_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_suki_high)
                     else
                         if (today_suki <= today_suki_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 20, affinity, succ)
-                            SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
                         reply_main = table_draw(reply_suki_highest)
                     end
@@ -1585,7 +1584,7 @@ function action(msg)
             if (today_rude <= 3 and today_sorry <= 1) then
                 if (today_love <= today_love_limit) then
                     favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 30, affinity, succ)
-                    SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 end
                 reply_main = "啊啊啊主主主主主人你你你突然说些什么啊...我我我...茉莉...茉莉当然...也爱你啦（逐渐小声）"
             else
@@ -1598,19 +1597,19 @@ function action(msg)
                 elseif (favor <= ranint(4500 - left_limit, 4500 + right_limit)) then
                     if (today_love <= today_love_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 15, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = table_draw(reply_love_low)
                 elseif (favor <= ranint(6500 - left_limit, 6500 + right_limit)) then
                     if (today_love <= today_love_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 20, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = table_draw(reply_love_high)
                 else
                     if (today_love <= today_love_limit) then
                         favor_now = favor + ModifyFavorChangeNormal(msg.fromQQ, favor, 25, affinity, succ)
-                        SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                    --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     end
                     reply_main = table_draw(reply_love_highest)
                 end
@@ -1791,10 +1790,36 @@ msg_order[admin_order10] = "setCaribrationLimit"
 
 function calibration_show(msg)
     if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596") then
-        return "当前校准值为——" .. calibration..";校准上限为——"..calibration_limit
+        return "当前校准值为——" .. calibration .. ";校准上限为——" .. calibration_limit
     end
 end
 msg_order["当前校准"] = "calibration_show"
+
+admin_order11 = "重置交互 "
+function resetInteraction(msg)
+    if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596") then
+        local QQ = string.match(msg.fromMsg, "%d*", #admin_order11 + 1)
+        SetUserToday(
+            QQ,
+            {
+                "rude",
+                "sorry",
+                "hug",
+                "touch",
+                "hug_needed_to_sorry",
+                "lift",
+                "kiss",
+                "hand",
+                "face",
+                "suki",
+                "love"
+            },
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        )
+        return "权限确认：已重置目标当日交互次数"
+    end
+end
+msg_order[admin_order11] = "resetInteraction"
 
 function table_draw(tab)
     return tab[ranint(1, #tab)]
