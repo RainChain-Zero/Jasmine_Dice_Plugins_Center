@@ -23,6 +23,53 @@ function preHandle(msg)
     StoryUnlocked(msg)
 end
 
+-- 好感查询计算
+function ShowFavorHandle(msg,favor,affinity)
+    local addFavorItem = AddFavor_Item(msg)
+    Notice(msg)
+    local isFavorTimePunish,isFavorTimePunishDown = FavorPunish(msg,true)
+    TrustChange(msg)
+    CohesionChange(msg)
+    StoryUnlocked(msg)
+    local state= ""
+    local div=1
+    if (favor < 3000) then
+        div = 100
+    elseif (favor < 8500) then
+        div = 140
+    elseif (favor<15000) then
+        div = 170
+    else
+        div = 200
+    end
+    local res="边际抵抗："..math.modf(favor/div).."%\n状态："
+    if (isFavorTimePunish==true) then
+        state=state.."\n遗忘：当前好感正随时间流逝。"
+    end
+    if (calibration_limit>16) then
+        state=state.."\n逻辑并发过载：某些安全隐患正在提升。"
+    end
+    if (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10)<0) then
+        state=state.."\n情感单元过载：当前好感获取量减少。"
+    else
+        state=state.."\n情感单元谐振：当前好感获取量增加。"
+    end
+    if (isFavorTimePunishDown) then
+        state=state.."\n心流：好感随时间流逝量减少。"
+    end
+    if (addFavorItem["addFavorEveryDay"]=="Cookie") then
+        state=state.."\n曲奇的余香：一天第一次交互额外增加20好感。"
+    end
+
+    -- 无状态返回
+    if (state=="") then
+        state="无"
+    end
+    state=state.."\n\n"
+
+    return res..state
+end
+
 -- 调整信任度和亲和度
 function TrustChange(msg)
     local favor, trust_flag = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust_flag"}, {0, 0})
@@ -108,9 +155,11 @@ end
 function AddFavor_Item(msg)
     local favor_change = 0
     local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
+    local addFavorItem,addFavorEveryDay,addFavorEveryAction={},"",""
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "addFavorDDL_Cookie", 0)) then
+        addFavor="Cookie"
         if (GetUserToday(msg.fromQQ, "addFavor_Cookie", 0) == 0) then
-            favor_change = favor_change + 30
+            favor_change = favor_change + ModifyFavorChangeGift(msg,favor_ori,20,affinity)
             SetUserToday(msg.fromQQ, "addFavor_Cookie", 1)
         end
     elseif (GetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1) == 0) then
@@ -120,10 +169,14 @@ function AddFavor_Item(msg)
     end
     -- SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor_change)
     CheckFavor(msg.fromQQ, favor_ori, favor_change + favor_ori, affinity)
+    -- 返回正在起效的道具表用户好感状态栏
+    addFavorItem["addFavorEveryDay"]=addFavorEveryDay
+    addFavorItem["addFavorEveryAction"]=addFavorEveryAction
+    return addFavorItem
 end
 
 -- 好感时间惩罚减免百分比计算
-function favorTimePunishDownRate(msg)
+function FavorTimePunishDownRate(msg)
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDL", 0)) then
         return GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
     elseif (GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDLFlag", 1) == 0) then
@@ -135,9 +188,10 @@ function favorTimePunishDownRate(msg)
 end
 
 -- 一定时间不交互将会降低好感度
-function FavorPunish(msg)
+function FavorPunish(msg,show_favor)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local flag = false
+    local isFavorTimePunishDown,isFavorTimePunish=false,false
     -- 初始时间记为编写该程序段的时间
     local _year, _month, _day, _hour =
         GetUserConf(
@@ -163,16 +217,14 @@ function FavorPunish(msg)
         subday = 1000 -- 超过两年的直接设为1000天
     end
 
-    SetUserConf("favorConf", msg.fromQQ, {"month_last", "day_last", "hour_last", "year_last"}, {month, day, hour, year})
-
+    if (show_favor~=true) then
+        SetUserConf("favorConf", msg.fromQQ, {"month_last", "day_last", "hour_last", "year_last"}, {month, day, hour, year})
+    end
     -- flag用于标记是否是从>500的favor降到500以下的
     if (favor >= 500) then
         flag = true
     else
         return "" -- 本身<500的用户不会触发
-    end
-    if (subday == 0) then
-        return ""
     end
 
     -- ! 好感度锁定列表
@@ -184,16 +236,32 @@ function FavorPunish(msg)
     end
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
-    if (subday <= 3) then
-        if (subday == 1 and subhour <= -15) then
-            return ""
-        end
-        if (favor < 8500 and favor > 1250) then
-            Llimit, Rlimit = 80 * math.log(2 * subday, 2), 90 * math.log(2 * subday, 2)
-        elseif (favor >= 8500) then
-            Llimit, Rlimit = 90 * math.log(2 * subday, 2), 100 * math.log(2 * subday, 2)
+    -- 一天之内
+    if (subday==0) then
+        -- 一天内 间隔小于15h
+        if(subhour<15)then
+            Llimit,RLimit=0,0
+        --一天内  间隔大于15h
         else
-            Llimit, Rlimit = 30 * math.log(2 * subday, 2), 35 * math.log(2 * subday, 2)
+            if (favor < 8500 and favor > 2000) then
+                Llimit, Rlimit = 30,40
+            elseif (favor >= 8500) then
+                Llimit, Rlimit = 50,60
+            else
+                Llimit, Rlimit = 20,30
+            end
+        end
+    elseif (subday <= 3) then
+        if (subday == 1 and subhour <= -15) then
+            Llimit,Rlimit=0,0
+        else
+            if (favor < 8500 and favor > 2000) then
+                Llimit, Rlimit = 50 * math.log(2 * subday, 2), 60 * math.log(2 * subday, 2)
+            elseif (favor >= 8500) then
+                Llimit, Rlimit = 80 * math.log(2 * subday, 2), 90 * math.log(2 * subday, 2)
+            else
+                Llimit, Rlimit = 30 * math.log(2 * subday, 2), 35 * math.log(2 * subday, 2)
+            end
         end
     elseif (subday <= 8) then
         Llimit, Rlimit = 160 * subday, 180 * subday
@@ -204,14 +272,25 @@ function FavorPunish(msg)
     end
     --
     -- ! 道具减免
-    Llimit, Rlimit = Llimit * (1 - favorTimePunishDownRate(msg)), Rlimit * (1 - favorTimePunishDownRate(msg))
+    local itemDownRate = 1-FavorTimePunishDownRate(msg)
+    if (itemDownRate<1) then
+        isFavorTimePunishDown=true
+    end
+    Llimit, Rlimit = Llimit * itemDownRate , Rlimit * itemDownRate
     -- //todo 将左右端点取整才可带入ranint
     Llimit, Rlimit = math.modf(Llimit), math.modf(Rlimit)
+    if(Rlimit>0)then
+        isFavorTimePunish=true
+    end
     favor = favor - ranint(Llimit, Rlimit)
     if (favor < 500 and flag == true) then
         favor = 500
     end
-    SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
+    if (show_favor~=true) then
+        SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
+    end
+    -- 返回是否处于好感流逝状态，是否存在道具修正状态
+    return isFavorTimePunish,isFavorTimePunishDown
 end
 
 -- 剧情模式解锁提示

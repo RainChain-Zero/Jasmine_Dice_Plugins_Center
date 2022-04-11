@@ -63,7 +63,10 @@ function ModifyFavorChangeNormal(qq, favor_ori, favor_change, affinity, succ)
     else
         -- 判定成功，则亲和度增加
         if (succ) then
-            local affinity_up = ranint(2, 3)
+            local affinity_up = ranint(3, 4)
+            if (favor_ori<2000) then
+                affinity_up=ranint(5,6)
+            end
             if (affinity + affinity_up > 100) then
                 affinity = 100
             else
@@ -75,9 +78,11 @@ function ModifyFavorChangeNormal(qq, favor_ori, favor_change, affinity, succ)
         if (favor_ori < 3000) then
             div = 100
         elseif (favor_ori < 8500) then
-            div = 130
+            div = 140
+        elseif (favor_ori<15000) then
+            div = 170
         else
-            div = 160
+            div = 190
         end
         favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
         -- 保底5
@@ -116,7 +121,10 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity)
         setUserConf(getDiceQQ(), "calibration_limit", calibration_limit)
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity)
     else
-        local affinity_up = ranint(2, 3)
+        local affinity_up = ranint(3, 4)
+        if(favor_ori<2000)then
+            affinity_up=ranint(5,6)
+        end
         if (affinity + affinity_up > 100) then
             affinity = 100
         else
@@ -128,9 +136,11 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity)
     if (favor_ori < 3000) then
         div = 100
     elseif (favor_ori < 8500) then
-        div = 130
+        div = 140
+    elseif (favor_ori<15000) then
+        div = 170
     else
-        div = 160
+        div = 190
     end
     favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
     -- 保底5
@@ -163,7 +173,7 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         now = favor_now % 10000
         now = math.modf(now / 1000)
     end
-    if (now == pre + 1) then
+    if (now == (pre + 1)%10 ) then
         if (affinity == 100) then
             SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})
         else
