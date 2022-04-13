@@ -10,8 +10,14 @@ function preHandle(msg)
     -- 强制更新提示信息
     -- sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
     -- os.exit()
-    -- 道具附加的额外好感追加
+    -- 打工终止
+    if (JudgeWorking(msg)) then
+        return "『✖Error』“打工期间不准调情！”你就这样被常青抓了个正着（打工期间无法进行喂食以及交互）"
+    end
+    -- 道具附加好感
     AddFavor_Item(msg)
+    -- 道具附加亲和度
+    AddAffinity_Item(msg)
     -- 版本通告处
     Notice(msg)
     -- ! 好感时间惩罚
@@ -24,52 +30,80 @@ function preHandle(msg)
 end
 
 -- 好感查询计算
-function ShowFavorHandle(msg,favor,affinity)
-    local addFavorItem = AddFavor_Item(msg)
+function ShowFavorHandle(msg, favor, affinity)
+    local addFavorItem, addAffinityItem = AddFavor_Item(msg), AddAffinity_Item(msg)
     Notice(msg)
-    local isFavorTimePunish,isFavorTimePunishDown = FavorPunish(msg,true)
+    local isFavorTimePunish, isFavorTimePunishDown = FavorPunish(msg, true)
     TrustChange(msg)
     CohesionChange(msg)
     StoryUnlocked(msg)
-    local state= ""
-    local div=1
+    local state = ""
+    local div = 1
+    -- 判断打工
+    if (JudgeWorking(msg)) then
+        state = state .. "\n打工人：打工期间无法进行喂食以及交互。"
+    end
     if (favor < 3000) then
         div = 100
     elseif (favor < 8500) then
         div = 140
-    elseif (favor<15000) then
+    elseif (favor < 15000) then
         div = 170
     else
         div = 200
     end
-    local res="边际抵抗："..math.modf(favor/div).."%\n状态："
-    if (isFavorTimePunish==true) then
-        state=state.."\n遗忘：当前好感正随时间流逝。"
+    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n状态："
+    if (isFavorTimePunish == true) then
+        state = state .. "\n遗忘：当前好感正随时间流逝。"
     end
-    if (calibration_limit>16) then
-        state=state.."\n逻辑并发过载：某些安全隐患正在提升。"
+    if (calibration_limit > 16) then
+        state = state .. "\n逻辑并发过载：某些安全隐患正在提升。"
     end
-    if (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10)<0) then
-        state=state.."\n情感单元过载：当前好感获取量减少。"
+    if (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10) < 0) then
+        state = state .. "\n情感单元过载：当前好感获取量减少。"
     else
-        state=state.."\n情感单元谐振：当前好感获取量增加。"
+        state = state .. "\n情感单元谐振：当前好感获取量增加。"
     end
     if (isFavorTimePunishDown) then
-        state=state.."\n心流：好感随时间流逝量减少。"
+        state = state .. "\n心流：好感随时间流逝量减少。"
     end
-    if (addFavorItem["addFavorEveryDay"]=="Cookie") then
-        state=state.."\n曲奇的余香：一天第一次交互额外增加20好感。"
+    if (addFavorItem["addFavorEveryDay"] == "Cookie") then
+        state = state .. "\n曲奇的余香：一天第一次交互额外增加20好感。"
     end
-
-    -- 无状态返回
-    if (state=="") then
-        state="无"
+    if (addAffinityItem["addAffinityEveryDay"] == "Sushi") then
+        state = state .. "\n软糯的？：一天第一次交互额外增加4点亲和度。"
     end
-    state=state.."\n\n"
-
-    return res..state
+    if (addFavorItem["addFavorEveryAction"] == "Hairpin") then
+        state = state .. "\n不只是发簪：每次未超出当日限制次数的交互额外增加10好感。"
+    end
+    state = state .. "\n\n"
+    return res .. state
 end
 
+-- 打工状态判断
+function JudgeWorking(msg)
+    local work = GetUserConf("favorConf", msg.fromQQ, "work", {["working"] = false})
+    if (work["working"] == true) then
+        -- 未进入打工状态
+        -- 已经结束了打工
+        if (os.time() > work["DDL"]) then
+            -- 处于工作状态
+            SetUserConf("itemConf", msg.fromQQ, "FL", GetUserConf("itemConf", msg.fromQQ, "FL", 0) + work["profit"])
+            work["working"] = false
+            SetUserConf("favorConf", msg.fromQQ, "work", work)
+            sendMsg(
+                "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "FL",
+                msg.fromGroup,
+                msg.fromQQ
+            )
+            return false
+        else
+            return true
+        end
+    else
+        return false
+    end
+end
 -- 调整信任度和亲和度
 function TrustChange(msg)
     local favor, trust_flag = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust_flag"}, {0, 0})
@@ -107,8 +141,8 @@ end
 -- 调整亲密度
 function CohesionChange(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local isStory0Read, isShopUnlocked =
-        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked"}, {0, 0})
+    local isStory0Read, isShopUnlocked, story2Choice =
+        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked", "story2Choice"}, {0, 0, 0})
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
     end
@@ -123,19 +157,24 @@ function CohesionChange(msg)
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 2)
         end
     end
+    if (favor > 3000) then
+        if (story2Choice ~= 0) then
+            SetUserConf("favorConf", msg.fromQQ, "cohesion", 3)
+        end
+    end
 end
 
 function Notice(msg)
     local favorUVersion = GetUserConf("favorConf", msg.fromQQ, "favorVersion", 0)
     -- 修改版本号只需要将下面的数字修改为目前的版本号即可
-    if (favorUVersion ~= 46) then
-        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 46})
+    if (favorUVersion ~= 47) then
+        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 47})
     end
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
     if (msg.fromGroup == "0" and noticeQQ == 0) then
         noticeQQ = noticeQQ + 1
         local content =
-            "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
+            "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
         SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
         sendMsg(content, 0, msg.fromQQ)
     end
@@ -144,22 +183,23 @@ function Notice(msg)
         if (noticeQQ == 0) then
             noticeQQ = noticeQQ + 1
             local content =
-                "【好感互动模块V4.6更新通告】本次为4.12更新的预更新，大幅修改了好感机制，如有疑问请务必仔细阅读。\n文档:https://rainchain-zero.github.io/JasmineDoc/appendix/favormechanism.html"
+                "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
             SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
             sendMsg(content, msg.fromGroup, msg.fromQQ)
         end
     end
 end
 
--- 每次交互道具增加的附加好感度
+-- 每天道具增加的附加好感度
 function AddFavor_Item(msg)
     local favor_change = 0
     local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
-    local addFavorItem,addFavorEveryDay,addFavorEveryAction={},"",""
+    local addFavorItem, addFavorEveryDay, addFavorEveryAction = {}, "", ""
+    -- 袋装曲奇
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "addFavorDDL_Cookie", 0)) then
-        addFavor="Cookie"
+        addFavor = "Cookie"
         if (GetUserToday(msg.fromQQ, "addFavor_Cookie", 0) == 0) then
-            favor_change = favor_change + ModifyFavorChangeGift(msg,favor_ori,20,affinity)
+            favor_change = favor_change + ModifyFavorChangeGift(msg, favor_ori, 20, affinity)
             SetUserToday(msg.fromQQ, "addFavor_Cookie", 1)
         end
     elseif (GetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1) == 0) then
@@ -170,9 +210,45 @@ function AddFavor_Item(msg)
     -- SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor_change)
     CheckFavor(msg.fromQQ, favor_ori, favor_change + favor_ori, affinity)
     -- 返回正在起效的道具表用户好感状态栏
-    addFavorItem["addFavorEveryDay"]=addFavorEveryDay
-    addFavorItem["addFavorEveryAction"]=addFavorEveryAction
+    addFavorItem["addFavorEveryDay"] = addFavorEveryDay
+
+    -- 检查每次交互增加好感的道具
+    local hairpinDDL = GetUserConf("adjustConf", msg.fromQQ, "addFavorPerActionDDL_Hairpin", 0)
+    if (os.time() < hairpinDDL) then
+        addFavorEveryAction = "Hairpin"
+    end
+    addFavorItem["addFavorEveryAction"] = addFavorEveryAction
     return addFavorItem
+end
+
+-- 每天道具附带的亲和度
+function AddAffinity_Item(msg)
+    local addAffinityEveryDay, addAffinityEveryAction, affinity_change, addAffinityItem = "", "", 0, {}
+    -- 寿司
+    local sushiDDL, sushiDDLFlag =
+        GetUserConf("adjustConf", msg.fromQQ, {"addAffinityDDL_Sushi", "addAffinityDDLFlag_Sushi"}, {0, 0})
+    if (os.time() < sushiDDL) then
+        addAffinityEveryDay = "Sushi"
+        if (GetUserToday(msg.fromQQ, "addAffinity_Sushi", 0) == 0) then
+            affinity_change = 3
+            SetUserToday(msg.fromQQ, "addAffinity_Sushi", 1)
+        end
+    elseif (sushiDDLFlag == 0) then
+        if (sushiDDL ~= 0) then
+            sendMsg("注意，您的『寿司』道具效果已消失", msg.fromGroup, msg.fromQQ)
+        end
+        -- 更新标记，下次不做提醒
+        SetUserConf("adjustConf", msg.fromQQ, "addAffinityDDLFlag_Sushi", 1)
+    end
+    SetUserConf(
+        "favorConf",
+        msg.fromQQ,
+        "affinity",
+        GetUserConf("favorConf", msg.fromQQ, "affinity", 0) + affinity_change
+    )
+    addAffinityItem["addAffinityEveryDay"] = addAffinityEveryDay
+    addAffinityItem["addAffinityEveryAction"] = addAffinityEveryAction
+    return addAffinityItem
 end
 
 -- 好感时间惩罚减免百分比计算
@@ -188,10 +264,10 @@ function FavorTimePunishDownRate(msg)
 end
 
 -- 一定时间不交互将会降低好感度
-function FavorPunish(msg,show_favor)
+function FavorPunish(msg, show_favor)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local flag = false
-    local isFavorTimePunishDown,isFavorTimePunish=false,false
+    local isFavorTimePunishDown, isFavorTimePunish = false, false
     -- 初始时间记为编写该程序段的时间
     local _year, _month, _day, _hour =
         GetUserConf(
@@ -217,8 +293,13 @@ function FavorPunish(msg,show_favor)
         subday = 1000 -- 超过两年的直接设为1000天
     end
 
-    if (show_favor~=true) then
-        SetUserConf("favorConf", msg.fromQQ, {"month_last", "day_last", "hour_last", "year_last"}, {month, day, hour, year})
+    if (show_favor ~= true) then
+        SetUserConf(
+            "favorConf",
+            msg.fromQQ,
+            {"month_last", "day_last", "hour_last", "year_last"},
+            {month, day, hour, year}
+        )
     end
     -- flag用于标记是否是从>500的favor降到500以下的
     if (favor >= 500) then
@@ -237,23 +318,23 @@ function FavorPunish(msg,show_favor)
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
     -- 一天之内
-    if (subday==0) then
+    if (subday == 0) then
         -- 一天内 间隔小于15h
-        if(subhour<15)then
-            Llimit,RLimit=0,0
-        --一天内  间隔大于15h
+        if (subhour < 15) then
+            --一天内  间隔大于15h
+            Llimit, RLimit = 0, 0
         else
             if (favor < 8500 and favor > 2000) then
-                Llimit, Rlimit = 30,40
+                Llimit, Rlimit = 30, 40
             elseif (favor >= 8500) then
-                Llimit, Rlimit = 50,60
+                Llimit, Rlimit = 50, 60
             else
-                Llimit, Rlimit = 20,30
+                Llimit, Rlimit = 20, 30
             end
         end
     elseif (subday <= 3) then
         if (subday == 1 and subhour <= -15) then
-            Llimit,Rlimit=0,0
+            Llimit, Rlimit = 0, 0
         else
             if (favor < 8500 and favor > 2000) then
                 Llimit, Rlimit = 50 * math.log(2 * subday, 2), 60 * math.log(2 * subday, 2)
@@ -272,25 +353,25 @@ function FavorPunish(msg,show_favor)
     end
     --
     -- ! 道具减免
-    local itemDownRate = 1-FavorTimePunishDownRate(msg)
-    if (itemDownRate<1) then
-        isFavorTimePunishDown=true
+    local itemDownRate = 1 - FavorTimePunishDownRate(msg)
+    if (itemDownRate < 1) then
+        isFavorTimePunishDown = true
     end
-    Llimit, Rlimit = Llimit * itemDownRate , Rlimit * itemDownRate
+    Llimit, Rlimit = Llimit * itemDownRate, Rlimit * itemDownRate
     -- //todo 将左右端点取整才可带入ranint
     Llimit, Rlimit = math.modf(Llimit), math.modf(Rlimit)
-    if(Rlimit>0)then
-        isFavorTimePunish=true
+    if (Rlimit > 0) then
+        isFavorTimePunish = true
     end
     favor = favor - ranint(Llimit, Rlimit)
     if (favor < 500 and flag == true) then
         favor = 500
     end
-    if (show_favor~=true) then
+    if (show_favor ~= true) then
         SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
     end
     -- 返回是否处于好感流逝状态，是否存在道具修正状态
-    return isFavorTimePunish,isFavorTimePunishDown
+    return isFavorTimePunish, isFavorTimePunishDown
 end
 
 -- 剧情模式解锁提示
@@ -312,7 +393,7 @@ function StoryUnlocked(msg)
         if (msg.fromGroup ~= "0") then
             content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n"
         end
-        content = content .. "『✔提示』剧情模式 序章,已经解锁,输入“进入剧情 序章”可浏览剧情"
+        content = content .. "『✔提示』剧情模式 序章『惊蛰』,已经解锁,输入“进入剧情 序章”可浏览剧情"
         res = "1" .. string.sub(storyUnlockedNotice, 2)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
     elseif (favor >= 1500 and GetUserConf("storyConf", msg.fromQQ, "isSpecial0Read", 0) == 0) then
@@ -320,7 +401,7 @@ function StoryUnlocked(msg)
         if (flag == "1") then
             return ""
         end
-        content = content .. "『✔提示』剧情模式 元旦特典,已经解锁,输入“进入剧情 元旦特典”可浏览剧情"
+        content = content .. "『✔提示』剧情模式 元旦特典『预想此时应更好』,已经解锁,输入“进入剧情 元旦特典”可浏览剧情"
         res = "1" .. string.sub(specialUnlockedNotice, 2)
         SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
     elseif
@@ -334,10 +415,23 @@ function StoryUnlocked(msg)
         if (msg.fromGroup ~= "0") then
             content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n"
         end
-        content = content .. "『✔提示』剧情模式 第一章,已经解锁,输入“进入剧情 第一章”可浏览剧情"
+        content = content .. "『✔提示』剧情模式 第一章『夜未央』,已经解锁,输入“进入剧情 第一章”可浏览剧情"
         res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    --todo 第二章提示
+    elseif
+        (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 1 and
+            GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0)
+     then
+        flag = string.sub(storyUnlockedNotice, 3, 3)
+        if (flag == "1") then
+            return ""
+        end
+        if (msg.fromGroup ~= "0") then
+            content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n"
+        end
+        content = content .. "『✔提示』剧情模式 第二章『难以言明的选择』,已经解锁,输入“进入剧情 第二章”可浏览剧情"
+        res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
+        SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
     end
     sendMsg(content, msg.fromGroup, msg.fromQQ)
 end

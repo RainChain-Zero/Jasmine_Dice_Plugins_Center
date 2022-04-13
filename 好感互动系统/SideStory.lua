@@ -102,10 +102,6 @@ function EnterStory(msg)
         )
         Story = "第一章 夜未央"
     elseif (string.find(StoryTemp, "第二章") ~= nil or string.find(StoryTemp, "难以言明的选择") ~= nil) then
-        --! 暂未对外开放
-        if (msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "2677409596") then
-            return "『✖权限不足』该章节暂未对外开放！"
-        end
         if (GetUserConf("storyConf", msg.fromQQ, "isStory1Unlocked", 0) == 0) then
             return "『✖条件未满足』您需要在第一章中解锁『商店』功能"
         elseif (GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 3000) then
