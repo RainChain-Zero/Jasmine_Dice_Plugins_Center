@@ -50,6 +50,10 @@ function StoryTwo(msg)
 end
 
 function StoryTwoChoose(msg, res)
+    if (GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0) then
+        sendMsg("『✔提示』『打工模式』已解锁！\n开启打工状态指令:“/开始打工 6”或“/开始打工 9”（打工6或9小时）\n一旦开始将无法进行喂食及交互且无法中途停止\n结束后可以得到50或100FL",msg.fromGroup,msg.fromQQ)
+    end
+    sleepTime(1000)
     SetUserConf("storyConf", msg.fromQQ, {"Choice", "story2Choice", "NextOption"}, {res * 1, res * 1, -1})
     return "您选中了选项" .. res .. " 输入.f以确认选择"
 end

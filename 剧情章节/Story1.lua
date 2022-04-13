@@ -165,7 +165,8 @@ function StoryOne(msg)
             -- 第一次解锁商店
             if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
                 content = content .. "\f{FormFeed}{FormFeed}" .. "重要消息：『商店』已经解锁！输入指令“进入商店”来进入商品界面\f系统消息：您得到了500FL"
-                SetUserConf("storyConf", msg.fromQQ, {"isShopUnlocked", "FL"}, {10, 500})
+                SetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 10 )
+                SetUserConf("itemConf",msg.fromQQ,"FL",500)
             end
         end
         if (ChoiceIndex == 7) then
@@ -228,7 +229,7 @@ function ReturnLastOption(msg, MainIndex, ChoiceIndex, Border, OptionReturn)
             return content
         elseif (OptionReturn == 1) then
             -- 添加第三选项不可选中标记
-            content = Story1[5][3] .. "(不可选)"
+            content = Story1[5][2] .. "(不可选)"
             SetUserConf("storyConf", msg.fromQQ, {"Option", "ChoiceIndex", "Choice"}, {11, 1, 0})
             return content
         elseif (OptionReturn == 2) then

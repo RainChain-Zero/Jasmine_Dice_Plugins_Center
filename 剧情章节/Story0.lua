@@ -100,7 +100,7 @@ function StoryZero(msg)
             Init(msg)
             if (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
                 SetUserConf("storyConf", msg.fromQQ, "isStory0Read", 1)
-                SetUserConf("itemConf", "梦的开始", 1)
+                SetUserConf("itemConf", msg.fromQQ,"梦的开始", 1)
                 sendMsg(content, 0, msg.fromQQ)
                 sleepTime(2000)
                 return "系统：您得到了道具『梦的开始』x1（一把象牙白的钥匙，晶莹剔透，不知道是用什么制作的，或许能开启什么）"
