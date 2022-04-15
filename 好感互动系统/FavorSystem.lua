@@ -566,10 +566,10 @@ msg_order["茉莉哦呀斯密"] = "rcv_Ciallo_night"
 -- end
 -- 爱酱特殊晚安问候程序
 function night_master(msg)
-    local preReply=preHandle(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local today_rude, today_sorry = GetUserToday(msg.fromQQ, {"rude", "sorry"}, {0, 0})
     if (tostring(msg.fromQQ) == "2677409596") then
+        preHandle(msg)
         if (today_rude <= 3 and today_sorry <= 1) then
             if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
                 return "主人晚安！！诶...主人你说不是对我说的...？呜...#委屈"
@@ -579,6 +579,7 @@ function night_master(msg)
         end
     else
         if (favor >= 2000) then
+            preHandle(msg)
             if (today_rude <= 2 and today_sorry <= 1) then
                 if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
                     return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
@@ -1023,6 +1024,9 @@ function _Ciallo_normal(msg)
 end
 
 function action(msg)
+    if(Actionprehandle(msg.fromMsg)==false)then
+        return ""
+    end
     local preReply=preHandle(msg)
     if (preReply~=nil) then
         reply_main = preReply
@@ -1082,6 +1086,7 @@ function action(msg)
                 "好感度",
                 favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
             )
+            return ""
         else
             today_hug = today_hug + 1
             SetUserToday(msg.fromQQ, "hug", today_hug)
@@ -1106,9 +1111,10 @@ function action(msg)
                         "favorConf",
                         msg.fromQQ,
                         "好感度",
-                        favor + ModifyFavorChangeNormal(msg, favor, -300, affinity, succ)
+                        favor + ModifyFavorChangeNormal(msg, favor, -100, affinity, succ)
                     )
                     reply_main = "哼！做了这种事的坏孩子不要碰茉莉！#有力挣开"
+                    return ""
                 else
                     if (hugtosorry == 1) then
                         SetUserToday(msg.fromQQ, {"rude", "hug_needed_to_sorry"}, {0, 0})
@@ -1124,6 +1130,7 @@ function action(msg)
                                 )
                             end
                             reply_main = table_draw(reply_hug_less)
+                            return ""
                         elseif (favor <= ranint(3000 - left_limit, 3000 + right_limit)) then
                             if (today_hug <= today_hug_limit) then
                                 favor_now = favor + ModifyFavorChangeNormal(msg, favor, 8, affinity, succ)
@@ -1159,6 +1166,7 @@ function action(msg)
                 "好感度",
                 favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
             )
+            return ""
         else
             today_touch = today_touch + 1
             SetUserToday(msg.fromQQ, "touch", today_touch)
@@ -1181,6 +1189,7 @@ function action(msg)
                         favor + ModifyFavorChangeNormal(msg, favor, -90, affinity, succ)
                     )
                     reply_main = "不 不要！你是坏人，茉莉的头才不会让你摸呢！"
+                    return ""
                 else
                     if (favor <= ranint(1000 - left_limit, 1000 + right_limit)) then
                         if (today_touch <= today_touch_limit) then
@@ -1191,7 +1200,8 @@ function action(msg)
                                 favor + ModifyFavorChangeNormal(msg, favor, -30, affinity, succ)
                             )
                         end
-                        reply_main = table_draw(reply_touch_less) 
+                        reply_main = table_draw(reply_touch_less)
+                        return ""
                     elseif (favor <= ranint(2000 - left_limit, 2000 + right_limit)) then
                         if (today_touch <= today_touch_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 8, affinity, succ)
@@ -1226,6 +1236,7 @@ function action(msg)
                 "好感度",
                 favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
             )
+            return ""
         else
             today_lift = today_lift + 1
             SetUserToday(msg.fromQQ, "lift", today_lift)
@@ -1237,8 +1248,9 @@ function action(msg)
                     end
                     reply_main = "啊主主主、主人 好、好高啊！再、再转几圈吧！#露出了开心的笑容"
                 else
-                    SetUserConf("favorConf", msg.fromQQ, "好感度", favor - 100)
+                    SetUserConf("favorConf", msg.fromQQ, "好感度", favor - 80)
                     reply_main = "笨、笨蛋主人...！快放我下来！啊！"
+                    return ""
                 end
             else
                 if (today_rude <= 2 and today_sorry <= 1) then
@@ -1248,10 +1260,11 @@ function action(msg)
                                 "favorConf",
                                 msg.fromQQ,
                                 "好感度",
-                                favor + ModifyFavorChangeNormal(msg, favor, -90, affinity, succ)
+                                favor + ModifyFavorChangeNormal(msg, favor, -80, affinity, succ)
                             )
                         end
                         reply_main = table_draw(reply_lift_less)
+                        return ""
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         if (today_lift <= today_lift_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
@@ -1276,9 +1289,10 @@ function action(msg)
                         "favorConf",
                         msg.fromQQ,
                         "好感度",
-                        favor + ModifyFavorChangeNormal(msg, favor, -100, affinity, succ)
+                        favor + ModifyFavorChangeNormal(msg, favor, -90, affinity, succ)
                     )
                     reply_main = "主人教过茉莉，笨蛋不能这样做！"
+                    return ""
                 end
             end
         end
@@ -1294,6 +1308,7 @@ function action(msg)
                 "好感度",
                 favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
             )
+            return ""
         else
             today_kiss = today_kiss + 1
             SetUserToday(msg.fromQQ, "kiss", today_kiss)
@@ -1312,6 +1327,7 @@ function action(msg)
                         favor + ModifyFavorChangeNormal(msg, favor, -150, affinity, succ)
                     )
                     reply_main = "笨蛋主人！#快速扭过头然后看你 茉莉原谅你之前绝对不会让你亲的！"
+                    return ""
                 end
             else
                 if (today_rude <= 2 and today_sorry <= 1) then
@@ -1320,9 +1336,10 @@ function action(msg)
                             "favorConf",
                             msg.fromQQ,
                             "好感度",
-                            favor + ModifyFavorChangeNormal(msg, favor, -130, affinity, succ)
+                            favor + ModifyFavorChangeNormal(msg, favor, -100, affinity, succ)
                         )
                         reply_main = table_draw(reply_kiss_less)
+                        return ""
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         SetUserConf(
                             "favorConf",
@@ -1331,6 +1348,7 @@ function action(msg)
                             favor + ModifyFavorChangeNormal(msg, favor, -20, affinity, succ)
                         )
                         reply_main = table_draw(reply_kiss_low)
+                        return ""
                     elseif (favor <= ranint(6700 - left_limit, 6700 + right_limit)) then
                         if (today_kiss <= today_kiss_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 15, affinity, succ)
@@ -1349,9 +1367,10 @@ function action(msg)
                         "favorConf",
                         msg.fromQQ,
                         "好感度",
-                        favor + ModifyFavorChangeNormal(msg, favor, -180, affinity, succ)
+                        favor + ModifyFavorChangeNormal(msg, favor, -130, affinity, succ)
                     )
                     reply_main = "哼，才不想理笨蛋呢"
+                    return ""
                 end
             end
         end
@@ -1367,6 +1386,7 @@ function action(msg)
                 "好感度",
                 favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
             )
+            return ""
         else
             today_hand = today_hand + 1
             SetUserToday(msg.fromQQ, "hand", today_hand)
@@ -1390,6 +1410,7 @@ function action(msg)
                             favor + ModifyFavorChangeNormal(msg, favor, -40, affinity, succ)
                         )
                         reply_main = table_draw(reply_hand_less)
+                        return ""
                     elseif (favor <= ranint(2800 - left_limit, 2800 + right_limit)) then
                         if (today_hand <= today_hand_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 8, affinity, succ)
@@ -1417,6 +1438,7 @@ function action(msg)
                         favor + ModifyFavorChangeNormal(msg, favor, -80, affinity, succ)
                     )
                     reply_main = "在茉莉原谅你之前，才不会让笨蛋这么做"
+                    return ""
                 end
             end
         end
@@ -1434,6 +1456,7 @@ function action(msg)
                 "好感度",
                 favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
             )
+            return ""
         else
             today_face = today_face + 1
             SetUserToday(msg.fromQQ, "face", today_face)
@@ -1457,6 +1480,7 @@ function action(msg)
                             favor + ModifyFavorChangeNormal(msg, favor, -40, affinity, succ)
                         )
                         reply_main = table_draw(reply_face_less)
+                        return ""
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         if (today_face <= today_face_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5, affinity, succ)
@@ -1484,6 +1508,7 @@ function action(msg)
                         favor + ModifyFavorChangeNormal(msg, favor, -70, affinity, succ)
                     )
                     reply_main = "不要随便碰我！你这个坏人！大笨蛋！#耍脾气"
+                    return ""
                 end
             end
         end
