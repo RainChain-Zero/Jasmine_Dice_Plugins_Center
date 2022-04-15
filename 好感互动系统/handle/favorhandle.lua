@@ -76,15 +76,15 @@ function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
         end
         local favor_modify, div = 0, 1
         if (favor_ori < 3000) then
-            div = 100
+            div = 90
         elseif (favor_ori < 8500) then
-            div = 140
+            div = 130
         elseif (favor_ori < 12000) then
-            div = 170
+            div = 150
         elseif (favor_ori < 15000) then
-            div = 190
+            div = 180
         else
-            div = 220
+            div = 200
         end
         favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
         -- 保底5
@@ -118,6 +118,7 @@ function AddFavorPerAction(msg, favor_ori, affinity)
         {0, 0}
     )
     if (os.time() < hairpinDDL) then
+        res = res + ModifyFavorChangeSpecial(favor_ori, 10, affinity)
     elseif (hairpinDDLFlag == 0) then
         if (hairpinDDL ~= 0) then
             sendMsg("注意，您的『发簪』道具效果已消失", msg.fromGroup, msg.fromQQ)
@@ -125,7 +126,6 @@ function AddFavorPerAction(msg, favor_ori, affinity)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorPerActionDDLFlag_Hairpin", 1)
     end
-    res = res + ModifyFavorChangeSpecial(favor_ori, 10, affinity)
     return res
 end
 
@@ -175,12 +175,11 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity, lock)
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity)
     else
         if (lock == false) then
-
             local affinity_up = 0
-            if (favor_ori<2000) then
-                affinity_up= ranint(3,4)
+            if (favor_ori < 2000) then
+                affinity_up = ranint(3, 4)
             else
-                affinity_up= ranint(1,2)
+                affinity_up = ranint(1, 2)
             end
             if (favor_ori < 2000) then
                 affinity_up = ranint(3, 4)
