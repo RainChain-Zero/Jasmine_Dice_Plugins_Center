@@ -88,7 +88,7 @@ function EnterStory(msg)
         end
         if (GetUserConf("storyConf", msg.fromQQ, "isStory1Unlocked", 0) == 0) then
             SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", 1)
-            return "眼前的记忆碎片被一股神秘的光芒所环绕，将它从外界隔绝开来，也许只有某些特定的物品才能将其解除。\n（输入“.u 道具名”使用道具，可输入“道具图鉴”以查询）"
+            return "眼前的记忆碎片被一股神秘的光芒所环绕，将它从外界隔绝开来，也许只有某些特定的物品才能将其解除。\n（输入“/u 道具名”使用道具，可输入“道具图鉴”以查询）"
         end
         SetUserConf(
             "storyConf",

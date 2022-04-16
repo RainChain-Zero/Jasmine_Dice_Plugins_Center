@@ -51,8 +51,8 @@ function UseItem(msg)
 
     return reply
 end
-msg_order[".u"] = "UseItem"
-msg_order[".U"] = "UseItem"
+msg_order["/u"] = "UseItem"
+msg_order["/U"] = "UseItem"
 
 -- 赠送茉莉礼物
 gift_order = "赠送茉莉"
@@ -89,11 +89,11 @@ function GiveGift(msg)
     -- 固定属性
     local favor_now
     if (Gift_list[item].favor ~= nil) then
-        favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity)
+        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity)
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     end
     if (Gift_list[item].affinity ~= nil) then
-        SetUserConf("favorConf", msg.fromQQ, "affinity", affinity + Gift_list[item].affinity)
+        SetUserConf("favorConf", msg.fromQQ, "affinity", num * affinity + Gift_list[item].affinity)
     end
 
     -- 持续性道具处理

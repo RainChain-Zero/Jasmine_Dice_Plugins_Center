@@ -178,6 +178,9 @@ function rcv_food(msg)
             end
             today_gift = today_gift + 1
             SetUserToday(msg.fromQQ, "gifts", today_gift)
+            if (today_gift > today_food_limit) then
+                break
+            end
             favor = favor_ori + favor_add
             -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
             favor = CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
@@ -1331,7 +1334,7 @@ function action(msg)
                 end
             else
                 if (today_rude <= 2 and today_sorry <= 1) then
-                    if (favor <= ranint(1700 - left_limit, 1700 + right_limit)) then
+                    if (favor <= ranint(2000 - left_limit, 2000 + right_limit)) then
                         SetUserConf(
                             "favorConf",
                             msg.fromQQ,

@@ -78,11 +78,11 @@ function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
         if (favor_ori < 3000) then
             div = 90
         elseif (favor_ori < 8500) then
-            div = 130
+            div = 110
         elseif (favor_ori < 12000) then
-            div = 150
+            div = 130
         elseif (favor_ori < 15000) then
-            div = 180
+            div = 150
         else
             div = 200
         end
