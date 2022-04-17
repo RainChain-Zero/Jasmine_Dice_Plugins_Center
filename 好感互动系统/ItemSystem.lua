@@ -119,9 +119,27 @@ function CustomizeReply(msg)
         getUserConf(msg.fromQQ, "nick", "用户名获取失败") .. "(" .. msg.fromQQ .. ")\n内容：" .. content
     sendMsg(content, 0, 3032902237)
     sendMsg(content, 0, 2677409596)
-    return "已经成功将请求发送至管理员~请耐心等待答复哦~"
+    return "已经成功将请求发送至管理员~请耐心等待答复哦~\n为了能正常接收提示消息，请添加茉莉为好友w"
 end
 msg_order[reply_order] = "CustomizeReply"
+
+-- 完成reply定制
+finish_reply_order = "完成定制reply"
+function FinishtCustomizedReply(msg)
+    if (msg.fromQQ~="3032902237" and msg.fromQQ~="2677409596") then
+        return "『✖权限不足』只有管理员才可确认定制reply完成"
+    end
+    local QQ =string.match(msg.fromMsg,"[%s]*(%d+)",#finish_reply_order+1)
+    if (QQ==nil or QQ =="") then
+        return "『✖参数不足』请输入确认完成reply的目标QQ"
+    end
+    local content = "【系统邮件】您的定制reply已经完成，如有问题请通过“.send [消息内容]”进行反馈哦~"
+    SetUserConf("itemConf",QQ,"定制reply",GetUserConf("itemConf",QQ,"定制reply",0)-1)
+    sendMsg(content,0,QQ)
+    return "已确认完成该reply定制"
+end
+msg_order[finish_reply_order]="FinishtCustomizedReply"
+
 -- 道具使用合理性判断
 function UseCheck(msg, num, table, item)
     local flag1 = false
