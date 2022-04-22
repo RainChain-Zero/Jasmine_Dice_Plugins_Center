@@ -10,7 +10,6 @@ function ShowFavorHandle(msg, favor, affinity)
     StoryUnlocked(msg)
     local state = ""
     local div = 1
-    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n状态："
     -- 判断打工
     if (JudgeWorking(msg)) then
         state = state .. "\n打工人：打工期间无法进行喂食以及交互。"
@@ -24,6 +23,7 @@ function ShowFavorHandle(msg, favor, affinity)
     else
         div = 200
     end
+    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n状态："
     if (isFavorTimePunish == true) then
         state = state .. "\n遗忘：当前好感正随时间流逝。"
     end

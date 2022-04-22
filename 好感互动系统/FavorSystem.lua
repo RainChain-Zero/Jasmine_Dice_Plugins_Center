@@ -13,7 +13,7 @@ require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
 require "prehandle"
 require "favorhandle"
-
+require "showfavorhandle"
 msg_order = {}
 
 -- 各类上限
