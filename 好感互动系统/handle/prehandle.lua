@@ -29,57 +29,6 @@ function preHandle(msg)
     StoryUnlocked(msg)
 end
 
--- 好感查询计算
-function ShowFavorHandle(msg, favor, affinity)
-    local addFavorItem, addAffinityItem = AddFavor_Item(msg), AddAffinity_Item(msg)
-    Notice(msg)
-    local isFavorTimePunish, isFavorTimePunishDown = FavorPunish(msg, true)
-    TrustChange(msg)
-    CohesionChange(msg)
-    StoryUnlocked(msg)
-    local state = ""
-    local div = 1
-    -- 判断打工
-    if (JudgeWorking(msg)) then
-        state = state .. "\n打工人：打工期间无法进行喂食以及交互。"
-    end
-    if (favor < 3000) then
-        div = 100
-    elseif (favor < 8500) then
-        div = 140
-    elseif (favor < 15000) then
-        div = 170
-    else
-        div = 200
-    end
-    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n状态："
-    if (isFavorTimePunish == true) then
-        state = state .. "\n遗忘：当前好感正随时间流逝。"
-    end
-    if (calibration_limit > 16) then
-        state = state .. "\n逻辑并发过载：某些安全隐患正在提升。"
-    end
-    if (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10) < 0) then
-        state = state .. "\n情感单元过载：当前好感获取量减少。"
-    else
-        state = state .. "\n情感单元谐振：当前好感获取量增加。"
-    end
-    if (isFavorTimePunishDown) then
-        state = state .. "\n心流：好感随时间流逝量减少。"
-    end
-    if (addFavorItem["addFavorEveryDay"] == "Cookie") then
-        state = state .. "\n曲奇的余香：一天第一次交互额外增加20好感。"
-    end
-    if (addAffinityItem["addAffinityEveryDay"] == "Sushi") then
-        state = state .. "\n软糯的？：一天第一次交互额外增加4点亲和度。"
-    end
-    if (addFavorItem["addFavorEveryAction"] == "Hairpin") then
-        state = state .. "\n不只是发簪：每次未超出当日限制次数的交互额外增加10好感。"
-    end
-    state = state .. "\n\n"
-    return res .. state
-end
-
 -- 打工状态判断
 function JudgeWorking(msg)
     local work = GetUserConf("favorConf", msg.fromQQ, "work", {["working"] = false})
@@ -240,12 +189,11 @@ function AddAffinity_Item(msg)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addAffinityDDLFlag_Sushi", 1)
     end
-    SetUserConf(
-        "favorConf",
-        msg.fromQQ,
-        "affinity",
-        GetUserConf("favorConf", msg.fromQQ, "affinity", 0) + affinity_change
-    )
+    local affinity_now = GetUserConf("favorConf", msg.fromQQ, "affinity", 0) + affinity_change
+    if (affinity_now > 100) then
+        affinity_now = 100
+    end
+    SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
     addAffinityItem["addAffinityEveryDay"] = addAffinityEveryDay
     addAffinityItem["addAffinityEveryAction"] = addAffinityEveryAction
     return addAffinityItem
@@ -265,6 +213,19 @@ end
 
 -- 一定时间不交互将会降低好感度
 function FavorPunish(msg, show_favor)
+    -- ! 好感度锁定列表
+    if
+        (msg.fromQQ == "2720577231" or msg.fromQQ == "1550506144" or msg.fromQQ == "2908078197" or
+            msg.fromQQ == "751766424" or
+            msg.fromQQ == "3578788465" or
+            msg.fromQQ == "3082228533")
+     then
+        return ""
+    end
+    --! 是否在回归保护期
+    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
+        return ""
+    end
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local flag = false
     local isFavorTimePunishDown, isFavorTimePunish = false, false
@@ -307,14 +268,6 @@ function FavorPunish(msg, show_favor)
     else
         return "" -- 本身<500的用户不会触发
     end
-
-    -- ! 好感度锁定列表
-    if
-        (msg.fromQQ == "2720577231" or msg.fromQQ == "1550506144" or msg.fromQQ == "2908078197" or
-            msg.fromQQ == "751766424")
-     then
-        return ""
-    end
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
     -- 一天之内
@@ -351,24 +304,40 @@ function FavorPunish(msg, show_favor)
             720 + 200 * (subday - 5) * math.log(2 * (subday - 5), 2),
             780 + 225 * (subday - 5) * math.log(2 * (subday - 5), 2)
     end
-    --
     -- ! 道具减免
     local itemDownRate = 1 - FavorTimePunishDownRate(msg)
     if (itemDownRate < 1) then
         isFavorTimePunishDown = true
     end
-    Llimit, Rlimit = Llimit * itemDownRate, Rlimit * itemDownRate
-    -- //todo 将左右端点取整才可带入ranint
+    -- 将左右端点取整才可带入ranint
     Llimit, Rlimit = math.modf(Llimit), math.modf(Rlimit)
     if (Rlimit > 0) then
         isFavorTimePunish = true
     end
-    favor = favor - ranint(Llimit, Rlimit)
+    local favor_down = math.modf(ranint(Llimit, Rlimit) * itemDownRate)
+    favor = favor - favor_down
     if (favor < 500 and flag == true) then
         favor = 500
     end
     if (show_favor ~= true) then
-        SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
+        -- 一次降低好感超过200，获得回归标记
+        if (favor_down < 200) then
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
+        else
+            SetUserConf(
+                "favorConf",
+                msg.fromQQ,
+                {"好感度", "regression"},
+                {
+                    favor,
+                    {
+                        ["favor_ori"] = favor + favor_down,
+                        ["flag"] = true,
+                        ["protection"] = os.time() + 2 * 24 * 60 * 60   --保护期两天
+                    }
+                }
+            )
+        end
     end
     -- 返回是否处于好感流逝状态，是否存在道具修正状态
     return isFavorTimePunish, isFavorTimePunishDown
@@ -406,6 +375,7 @@ function StoryUnlocked(msg)
         SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
     elseif
         (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and
+            GetUserConf("favorConf", msg.fromQQ, "好感度", 0) >= 2000 and
             GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0)
      then
         flag = string.sub(storyUnlockedNotice, 2, 2)
@@ -436,12 +406,11 @@ function StoryUnlocked(msg)
     sendMsg(content, msg.fromGroup, msg.fromQQ)
 end
 
-
 -- 动作类交互预处理
 function Actionprehandle(str)
-    local list={"抱","摸","举高","亲","牵手","捏","揉","可爱","萌","kawa","喜欢","suki","爱","love"}
-    for _,v in pairs(list)do
-        if (string.find(str,v)~=nil) then
+    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love"}
+    for _, v in pairs(list) do
+        if (string.find(str, v) ~= nil) then
             return true
         end
     end
