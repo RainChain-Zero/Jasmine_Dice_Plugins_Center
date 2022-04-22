@@ -8,7 +8,7 @@ package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
 -- UserConf.json的路径
-UserConfPath = getDiceDir() .. "\\UserConf\\"
+UserConfPath = getDiceDir() .. "/UserConfDir/"
 -- UserToday.json的路径
 UserTodayPath = getDiceDir() .. "/user/UserToday.json"
 -- GroupConf.json的路径
@@ -25,19 +25,19 @@ function SetUserConf(filename,qq, key, value)
         error("spelling mistake in SetUserConf arg#1 filename")
     end
     -- 读取json文件
-    local f1 = io.open(UserConfPath..qq.."\\"..filename..".json", "r")
+    local f1 = io.open(UserConfPath..qq.."/"..filename..".json", "r")
     if (not f1) then
         --! 用户数据文件初始化
         UserInit(qq)
         -- 打开创建的文件
-        f1=assert(io.open(UserConfPath..qq.."\\"..filename..".json","r"))
+        f1=assert(io.open(UserConfPath..qq.."/"..filename..".json","r"))
     end
     local str = f1:read("a")
     if (#str == 0) then str = "{}" end
     local j = Json.decode(str)
     f1:close()
 
-    local f2 = assert(io.open(UserConfPath..qq.."\\"..filename..".json", "w"))
+    local f2 = assert(io.open(UserConfPath..qq.."/"..filename..".json", "w"))
     -- 对密集的写入支持列表以提高效率
     if (type(key) == "table" and type(value) == "table") then
         -- 按顺序遍历表，写入
@@ -59,12 +59,12 @@ function GetUserConf(filename,qq, key, default)
     if (filename=="stroyConf") then
         error("spelling mistake in GetUserConf arg#1 filename")
     end
-    local f1 = io.open(UserConfPath..qq.."\\"..filename..".json", "r")
+    local f1 = io.open(UserConfPath..qq.."/"..filename..".json", "r")
     if (not f1) then
         --! 用户数据文件初始化
         UserInit(qq)
         -- 打开创建的文件
-        f1=assert(io.open(UserConfPath..qq.."\\"..filename..".json","r"))
+        f1=assert(io.open(UserConfPath..qq.."/"..filename..".json","r"))
     end
     local str = f1:read("a")
     if (#str == 0) then str = "{}" end
@@ -208,10 +208,10 @@ end
 
 -- 用户数据文件初始化
 function UserInit(qq)
-    os.execute("mkdir "..UserConfPath..qq.."\\")
-    os.execute("cd.> "..UserConfPath..qq.."\\favorConf.json")
-    os.execute("cd.> "..UserConfPath..qq.."\\storyConf.json")
-    os.execute("cd.> "..UserConfPath..qq.."\\itemConf.json")
-    os.execute("cd.> "..UserConfPath..qq.."\\tradeConf.json")
-    os.execute("cd.> "..UserConfPath..qq.."\\adjustConf.json")
+    os.execute("mkdir "..UserConfPath..qq.."/")
+    os.execute("touch "..UserConfPath..qq.."/favorConf.json")
+    os.execute("touch "..UserConfPath..qq.."/storyConf.json")
+    os.execute("touch "..UserConfPath..qq.."/itemConf.json")
+    os.execute("touch "..UserConfPath..qq.."/tradeConf.json")
+    os.execute("touch "..UserConfPath..qq.."/adjustConf.json")
 end
