@@ -1,10 +1,4 @@
---[[
-    @author 慕北_Innocent(RainChain)
-    @version 1.1
-    @Create 2022/01/19 11:30
-    @Last Modified 2022/03/31 23:36
-    ]] package.path =
-    getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
+package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
@@ -43,10 +37,13 @@ function UseItem(msg)
     end
 
     -- ? 是否用于解锁剧情章节
+    local succ = false
     local entryStoryCheck = GetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
     if (entryStoryCheck ~= -1) then
-        reply = UnlockStory(msg, entryStoryCheck, item)
-        SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
+        reply, succ = UnlockStory(msg, entryStoryCheck, item)
+        if (succ == true) then
+            SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
+        end
     end
 
     return reply
@@ -77,7 +74,7 @@ function GiveGift(msg)
         return "『✖余量不足』好像该物品的剩余数量不足哦"
     end
     -- 检验是否是礼物
-    if (Gift_list[item] == false) then
+    if (Gift_list[item].gift == false) then
         return "『✖Error』这可不能送给茉莉哦~（小声提示）"
     end
 
@@ -93,7 +90,11 @@ function GiveGift(msg)
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     end
     if (Gift_list[item].affinity ~= nil) then
-        SetUserConf("favorConf", msg.fromQQ, "affinity", num * affinity + Gift_list[item].affinity)
+        local affinity_now = affinity + num * Gift_list[item].affinity
+        if (affinity_now > 100) then
+            affinity_now = 100
+        end
+        SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
     end
 
     -- 持续性道具处理
@@ -126,19 +127,19 @@ msg_order[reply_order] = "CustomizeReply"
 -- 完成reply定制
 finish_reply_order = "完成定制reply"
 function FinishtCustomizedReply(msg)
-    if (msg.fromQQ~="3032902237" and msg.fromQQ~="2677409596") then
+    if (msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "2677409596") then
         return "『✖权限不足』只有管理员才可确认定制reply完成"
     end
-    local QQ =string.match(msg.fromMsg,"[%s]*(%d+)",#finish_reply_order+1)
-    if (QQ==nil or QQ =="") then
+    local QQ = string.match(msg.fromMsg, "[%s]*(%d+)", #finish_reply_order + 1)
+    if (QQ == nil or QQ == "") then
         return "『✖参数不足』请输入确认完成reply的目标QQ"
     end
     local content = "【系统邮件】您的定制reply已经完成，如有问题请通过“.send [消息内容]”进行反馈哦~"
-    SetUserConf("itemConf",QQ,"定制reply",GetUserConf("itemConf",QQ,"定制reply",0)-1)
-    sendMsg(content,0,QQ)
+    SetUserConf("itemConf", QQ, "定制reply", GetUserConf("itemConf", QQ, "定制reply", 0) - 1)
+    sendMsg(content, 0, QQ)
     return "已确认完成该reply定制"
 end
-msg_order[finish_reply_order]="FinishtCustomizedReply"
+msg_order[finish_reply_order] = "FinishtCustomizedReply"
 
 -- 道具使用合理性判断
 function UseCheck(msg, num, table, item)
@@ -166,10 +167,13 @@ end
 function UnlockStory(msg, entryStoryCheck, item)
     if (entryStoryCheck == 1) then
         if (string.find(item, "梦的开始") ~= nil) then
+            if (GetUserConf("itemConf", msg.fromQQ, "梦的开始", 0) == 0) then
+                return "『✖余量不足』您的『梦的开始』余量不足", false
+            end
             SetUserConf("storyConf", msg.fromQQ, {"entryStoryCheck", "isStory1Unlocked"}, {-1, 1})
-            return "这把钥匙似乎和眼前的光芒产生了某种共鸣，倏忽间，光芒如同被某种强大的引力吸引般瞬间汇聚于钥匙上后逐渐稳定了下来...\f" .. "系统：注意，剧情模式第一章已经解锁！"
+            return "这把钥匙似乎和眼前的光芒产生了某种共鸣，倏忽间，光芒如同被某种强大的引力吸引般瞬间汇聚于钥匙上后逐渐稳定了下来...\f" .. "系统：注意，剧情模式第一章已经解锁！", true
         else
-            return "你小心翼翼地将它向那团光球接近，但就要在你触及之时，一股强大的斥力将你远远弹开了..."
+            return "你小心翼翼地将它向那团光球接近，但就要在你触及之时，一股强大的斥力将你远远弹开了...", false
         end
     end
 end
@@ -245,9 +249,7 @@ function JudgeSpecialItemNum(msg, num)
 end
 -- 持续性道具
 function LastingItem(msg, item)
-    -- 降低好感流逝类
     if (item == "推理小说") then
-        -- 每天第一次交互增加好感类
         -- !时间惩罚降低的好感减少百分之多少，同类不覆盖
         local rate = GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
         -- 更新时间，取最新时间
@@ -263,7 +265,6 @@ function LastingItem(msg, item)
             SetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0.3)
         end
     elseif (item == "袋装曲奇") then
-        -- 每天第一几次交互增加亲和类
         -- ! 效果不会叠加,用os.time()秒级存储到期时间，更新为最新时间
         -- ! 打上标记，用做发送提醒的标记
         SetUserConf(
@@ -273,7 +274,6 @@ function LastingItem(msg, item)
             {os.time() + 3 * 24 * 60 * 60, 0}
         )
     elseif (item == "寿司") then
-        -- 每天交互均增加好感类
         --! 同类效果不叠加，打标记用于发送提醒
         SetUserConf(
             "adjustConf",

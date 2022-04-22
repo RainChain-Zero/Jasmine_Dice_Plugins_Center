@@ -73,7 +73,7 @@ function Calibrated()
                 if (v > 0) then
                     SetUserConf("favorConf", k, "好感度", favor - (v + (calibration_limit - 12)))
                 else
-                    SetUserConf("favorConf", k, favor + v - (calibration_limit - 12))
+                    SetUserConf("favorConf", k, "好感度", favor + v - (calibration_limit - 12))
                 end
             end
             reply = "校准...失败了！茉莉似乎忘记了一些事情，但愿不要发生糟糕的事...新的周期已经开始"
@@ -89,6 +89,12 @@ function Calibrated()
 end
 msg_order["茉莉校准"] = "Calibrated"
 
+function ClearCalibratedBlock(msg)
+    setUserConf(getDiceQQ(),"blockCalibration",0)
+    return "成功清除校准阻塞"
+end
+msg_order["清除校准阻塞"]="ClearCalibratedBlock"
+
 function topercent(num)
     if (num == nil) then
         return ""
@@ -99,9 +105,14 @@ end
 function add_favor_food(msg, favor, affinity)
     -- 随机好感上升,低好感用户翻倍
     if (favor <= 1500) then
-        return ModifyFavorChangeGift(msg, favor, ranint(40, 60), affinity,false)
+        return ModifyFavorChangeGift(msg, favor, ranint(30, 50), affinity, false)
+    elseif (favor<=4000) then
+        return ModifyFavorChangeGift(msg, favor, ranint(20, 30), affinity, false)
+    elseif (favor<=10000) then
+        return ModifyFavorChangeGift(msg, favor, ranint(15, 20), affinity, false)
+    else
+        return ModifyFavorChangeGift(msg, favor, ranint(20, 30), affinity, false)
     end
-    return ModifyFavorChangeGift(msg, favor, ranint(20, 30), affinity,false)
 end
 function add_gift_once() -- 单次计数上升
     return 5
@@ -129,8 +140,8 @@ end
 
 function rcv_food(msg)
     -- rude值判定是否接受喂食
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         return preReply
     end
     local today_rude, today_sorry = GetUserToday(msg.fromQQ, {"rude", "sorry"}, {0, 0})
@@ -208,10 +219,10 @@ msg_order[food_order] = "rcv_food"
 
 function show_favor(msg)
     local favor, cohesion, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "cohesion", "affinity"}, {0, 0, 0})
-    local state=ShowFavorHandle(msg,favor,affinity)
+    local state = ShowFavorHandle(msg, favor, affinity)
     local header =
         "[CQ:image,url=http://q1.qlogo.cn/g?b=qq&nk=" ..
-        msg.fromQQ .. "&s=640]\n\n亲密度：" .. cohesion .. " | 亲和度：" .. affinity .. " | "..state
+        msg.fromQQ .. "&s=640]\n\n亲密度：" .. cohesion .. " | 亲和度：" .. affinity .. " | " .. state
     if (favor < 3000) then
         return header ..
             "对{nick}的好感度只有" ..
@@ -235,8 +246,8 @@ msg_order["茉莉好感"] = "show_favor"
 -- 早安问候互动程序
 function rcv_Ciallo_morning(msg)
     -- 每天第一次早安加5好感度
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         return preReply
     end
     local today_morning, today_rude, today_sorry = GetUserToday(msg.fromQQ, {"morning", "rude", "sorry"}, {0, 0, 0})
@@ -333,8 +344,8 @@ msg_order["早"] = "rcv_Ciallo_morning_master"
 
 -- 午安问候程序（不触发好感事件）
 function rcv_Ciallo_afternoon(msg)
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         return preReply
     end
     local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
@@ -409,8 +420,8 @@ msg_order["午安"] = "afternoon_special"
 
 -- 指代性中午好
 function rcv_Ciallo_noon(msg)
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         return preReply
     end
     local today_rude, today_sorry, today_noon = GetUserToday(msg.fromQQ, {"rude", "sorry", "noon"}, {0, 0, 0})
@@ -495,8 +506,8 @@ msg_order["中午好"] = "Ciallo_noon_normal"
 
 -- 晚安问候程序
 function rcv_Ciallo_night(msg)
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         return preReply
     end
     local today_night, today_rude, today_sorry = GetUserToday(msg.fromQQ, {"night", "rude", "sorry"}, {0, 0, 0})
@@ -811,7 +822,7 @@ rude_table = {
 
 -- 道歉相关判断程序
 function say_sorry(msg)
-    local preReply=preHandle(msg)
+    local preReply = preHandle(msg)
     local today_rude, today_sorry = GetUserToday(msg.fromQQ, {"rude", "sorry"}, {0, 0})
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor < -600) then
@@ -873,8 +884,8 @@ msg_order["我错了茉莉"] = "say_sorry"
 interaction_order = "茉莉 互动 "
 normal_order_old = "茉莉 "
 function interaction(msg)
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         return preReply
     end
     local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
@@ -1027,11 +1038,11 @@ function _Ciallo_normal(msg)
 end
 
 function action(msg)
-    if(Actionprehandle(msg.fromMsg)==false)then
+    if (Actionprehandle(msg.fromMsg) == false) then
         return ""
     end
-    local preReply=preHandle(msg)
-    if (preReply~=nil) then
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
         reply_main = preReply
         return preReply
     end
@@ -1083,12 +1094,7 @@ function action(msg)
     if (judge_hug) then
         if (succ == false) then
             reply_main = "茉莉突然加快了脚步，你和空气紧紧相拥×"
-            SetUserConf(
-                "favorConf",
-                msg.fromQQ,
-                "好感度",
-                favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
-            )
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
             today_hug = today_hug + 1
@@ -1163,12 +1169,7 @@ function action(msg)
     if (judge_touch) then
         if (succ == false) then
             reply_main = "你伸出手去，什么也没碰到，只见她缩了下脖子接一大步走到了你前面×"
-            SetUserConf(
-                "favorConf",
-                msg.fromQQ,
-                "好感度",
-                favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
-            )
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
             today_touch = today_touch + 1
@@ -1233,12 +1234,7 @@ function action(msg)
     if (judge_lift) then
         if (succ == false) then
             reply_main = "你就这样顺势把茉莉举了起来...是假的，她好像发现了什么正弯下腰端详着，只有你高举双臂不知道在干什么×"
-            SetUserConf(
-                "favorConf",
-                msg.fromQQ,
-                "好感度",
-                favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
-            )
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
             today_lift = today_lift + 1
@@ -1305,12 +1301,7 @@ function action(msg)
     if (judge_kiss) then
         if (succ == false) then
             reply_main = "正当你鼓起勇气凑进她的脸庞，却被她有力的手给推开了×"
-            SetUserConf(
-                "favorConf",
-                msg.fromQQ,
-                "好感度",
-                favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
-            )
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
             today_kiss = today_kiss + 1
@@ -1383,12 +1374,7 @@ function action(msg)
     if (judge_hand) then
         if (succ == false) then
             reply_main = "你试探性地触碰了一下她的手，可她却把手缩到胸前，嘴唇微张却没有说话×"
-            SetUserConf(
-                "favorConf",
-                msg.fromQQ,
-                "好感度",
-                favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
-            )
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
             today_hand = today_hand + 1
@@ -1453,12 +1439,7 @@ function action(msg)
     if (judge_face) then
         if (succ == false) then
             reply_main = "你的手还在空中之际，对上了她眨巴眨巴的眼睛，你尴尬地缩回了手×"
-            SetUserConf(
-                "favorConf",
-                msg.fromQQ,
-                "好感度",
-                favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
-            )
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
             today_face = today_face + 1
@@ -1700,10 +1681,10 @@ msg_order[normal_order] = "action_main"
 
 --! 生日快乐
 function HappyBirthday(msg)
-    if (string.find(msg.fromMsg,"茉莉")~=nil) then
-        if (GetUserToday(msg.fromQQ,"生日快乐",0)==0) then
-            SetUserConf("favorConf",msg.fromQQ,"好感度",GetUserConf("favorConf",msg.fromQQ,"好感度",0)+200)
-            SetUserToday(msg.fromQQ,"生日快乐",1)
+    if (string.find(msg.fromMsg, "茉莉") ~= nil) then
+        if (GetUserToday(msg.fromQQ, "生日快乐", 0) == 0) then
+            SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + 200)
+            SetUserToday(msg.fromQQ, "生日快乐", 1)
         end
         return table_draw(birthday)
     end
