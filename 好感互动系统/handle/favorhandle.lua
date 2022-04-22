@@ -64,8 +64,8 @@ function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
         -- 判定成功，则亲和度增加
         if (succ) then
             local affinity_up = ranint(2, 3)
-            if (favor_ori < 2000) then
-                affinity_up = ranint(5, 6)
+            if (favor_ori < 1500) then
+                affinity_up = ranint(4, 5)
             end
             if (affinity + affinity_up > 100) then
                 affinity = 100
@@ -78,11 +78,11 @@ function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
         if (favor_ori < 3000) then
             div = 90
         elseif (favor_ori < 8500) then
-            div = 110
+            div = 95
         elseif (favor_ori < 12000) then
-            div = 130
+            div = 110
         elseif (favor_ori < 15000) then
-            div = 150
+            div = 130
         else
             div = 200
         end
@@ -133,15 +133,15 @@ end
 function ModifyFavorChangeSpecial(favor_ori, favor_change, affinity)
     local favor_modify, div, res = 0, 1, 0
     if (favor_ori < 3000) then
-        div = 100
+        div = 90
     elseif (favor_ori < 8500) then
-        div = 140
+        div = 95
     elseif (favor_ori < 12000) then
-        div = 170
+        div = 110
     elseif (favor_ori < 15000) then
-        div = 190
+        div = 130
     else
-        div = 220
+        div = 200
     end
     favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
     -- 保底5
@@ -176,13 +176,10 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity, lock)
     else
         if (lock == false) then
             local affinity_up = 0
-            if (favor_ori < 2000) then
-                affinity_up = ranint(3, 4)
+            if (favor_ori < 1500) then
+                affinity_up = ranint(2, 3)
             else
                 affinity_up = ranint(1, 2)
-            end
-            if (favor_ori < 2000) then
-                affinity_up = ranint(3, 4)
             end
             if (affinity + affinity_up > 100) then
                 affinity = 100
@@ -194,13 +191,15 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity, lock)
     end
     local favor_modify, div = 0, 1
     if (favor_ori < 3000) then
-        div = 100
+        div = 90
     elseif (favor_ori < 8500) then
-        div = 140
+        div = 95
+    elseif (favor_ori < 12000) then
+        div = 110
     elseif (favor_ori < 15000) then
-        div = 190
+        div = 130
     else
-        div = 220
+        div = 200
     end
     favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
     -- 保底5
@@ -221,6 +220,8 @@ end
 -- qq,原好感度,现好感度,亲和力
 function CheckFavor(qq, favor_ori, favor_now, affinity)
     local pre, now = 0, 0
+    -- 回归修正
+    favor_now = CheckRegression(qq, favor_now, affinity)
     if (favor_ori < 1000) then
         pre = 0
     else
@@ -242,6 +243,32 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         end
     else
         SetUserConf("favorConf", qq, "好感度", favor_now)
+    end
+    return favor_now
+end
+
+-- 检验回归加成
+function CheckRegression(qq, favor_now, affinity)
+    local regression = GetUserConf("favorConf", qq, "regression", {["flag"] = false})
+    if (regression["flag"] == true) then
+        local affinity_now = affinity + ranint(1, 2)
+        if (affinity_now > 100) then
+            affinity_now = 100
+        end
+        SetUserConf("favorConf", qq, "affinity", affinity_now)
+        local favor_add, favor_diff = 0, regression["favor_ori"] - favor_now
+        if (favor_diff > 500) then
+            favor_add = ranint(10, 13)
+        elseif (favor_diff > 200) then
+            favor_add = ranint(5, 8)
+        elseif (favor_diff > 0) then
+            favor_add = ranint(3, 4)
+        end
+        favor_now = favor_now + favor_add
+        -- 达到原先好感，效果结束
+        if (favor_now > regression["favor_ori"]) then
+            SetUserConf("favorConf", qq, "regression", {["flag"] = false, ["protection"] = 0})
+        end
     end
     return favor_now
 end
