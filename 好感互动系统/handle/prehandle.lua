@@ -227,7 +227,6 @@ function FavorPunish(msg, show_favor)
         return ""
     end
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local flag = false
     local isFavorTimePunishDown, isFavorTimePunish = false, false
     -- 初始时间记为编写该程序段的时间
     local _year, _month, _day, _hour =
@@ -262,11 +261,8 @@ function FavorPunish(msg, show_favor)
             {month, day, hour, year}
         )
     end
-    -- flag用于标记是否是从>500的favor降到500以下的
-    if (favor >= 500) then
-        flag = true
-    else
-        return "" -- 本身<500的用户不会触发
+    if (favor<=500) then
+        return ""
     end
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
@@ -315,9 +311,11 @@ function FavorPunish(msg, show_favor)
         isFavorTimePunish = true
     end
     local favor_down = math.modf(ranint(Llimit, Rlimit) * itemDownRate)
-    favor = favor - favor_down
-    if (favor < 500 and flag == true) then
+    if (favor - favor_down< 500) then
+        favor_down = favor - 500
         favor = 500
+    else
+        favor = favor - favor_down
     end
     if (show_favor ~= true) then
         -- 一次降低好感超过200，获得回归标记
