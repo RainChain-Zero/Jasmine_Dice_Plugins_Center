@@ -213,19 +213,6 @@ end
 
 -- 一定时间不交互将会降低好感度
 function FavorPunish(msg, show_favor)
-    -- ! 好感度锁定列表
-    if
-        (msg.fromQQ == "2720577231" or msg.fromQQ == "1550506144" or msg.fromQQ == "2908078197" or
-            msg.fromQQ == "751766424" or
-            msg.fromQQ == "3578788465" or
-            msg.fromQQ == "3082228533")
-     then
-        return ""
-    end
-    --! 是否在回归保护期
-    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
-        return ""
-    end
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local isFavorTimePunishDown, isFavorTimePunish = false, false
     -- 初始时间记为编写该程序段的时间
@@ -261,7 +248,21 @@ function FavorPunish(msg, show_favor)
             {month, day, hour, year}
         )
     end
-    if (favor<=500) then
+    -- ! 好感度锁定列表
+    if
+        (msg.fromQQ == "2720577231" or msg.fromQQ == "1550506144" or msg.fromQQ == "2908078197" or
+            msg.fromQQ == "751766424" or
+            msg.fromQQ == "3578788465" or
+            msg.fromQQ == "3082228533" or
+            msg.fromQQ == "1298754454")
+     then
+        return ""
+    end
+    --! 是否在回归保护期
+    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
+        return ""
+    end
+    if (favor <= 500) then
         return ""
     end
     local Llimit, Rlimit = 0, 0
@@ -311,7 +312,7 @@ function FavorPunish(msg, show_favor)
         isFavorTimePunish = true
     end
     local favor_down = math.modf(ranint(Llimit, Rlimit) * itemDownRate)
-    if (favor - favor_down< 500) then
+    if (favor - favor_down < 500) then
         favor_down = favor - 500
         favor = 500
     else
@@ -331,7 +332,7 @@ function FavorPunish(msg, show_favor)
                     {
                         ["favor_ori"] = favor + favor_down,
                         ["flag"] = true,
-                        ["protection"] = os.time() + 2 * 24 * 60 * 60   --保护期两天
+                        ["protection"] = os.time() + 2 * 24 * 60 * 60 --保护期两天
                     }
                 }
             )
