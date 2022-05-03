@@ -1,3 +1,5 @@
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "IO"
 msg_order = {}
 Trade_order = "禁言"
 function Mute(msg)
@@ -12,6 +14,9 @@ end
 msg_order[Trade_order] = "Mute"
 
 function picture(msg)
+    if (GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 1000) then
+        return "『✖条件未满足』此功能需要好感度≥1000"
+    end
     local num = string.match(msg.fromMsg, "%d+")
     if (num == nil or num == "") then
         num = 1
