@@ -123,11 +123,11 @@ end
 function blackList(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor <= -300 and favor > -500) then
-        sendMsg("Warning:检测到{nick}的好感度过低，即将触发机体下限保护机制！", msg.fromGroup, msg.fromQQ)
-        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "好感度过低" .. "在群" .. msg.fromGroup, 0, 2677409596)
+        sendMsg("Warning:检测到你的好感度过低，即将触发机体下限保护机制！", msg.fromGroup, msg.fromQQ)
     end
     if (favor < -500) then
-        eventMsg(".admin blackqq " .. "违反人机和谐共处条例 " .. msg.fromQQ, 0, 2677409596)
+        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.fromGroup, 0, 2677409596)
+        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.fromGroup, 0, 3032902237)
         eventMsg(
             ".group " .. msg.fromGroup .. " ban " .. msg.fromQQ .. " " .. tostring(-favor),
             msg.fromGroup,
