@@ -70,9 +70,9 @@ function Trade(msg)
             if (isInGroup == 1) then
                 content =
                     "[CQ:at,qq=" ..
-                    QQReceive .. "]\n" .. "系统：您收到来自用户编号为" .. msg.fromQQ .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
+                    QQReceive .. "]\n" .. "系统：您收到来自用户" .. getUserConf(msg.fromQQ,"nick","用户名获取失败") .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
             else
-                content = "系统：您收到来自" .. "用户编号为" .. msg.fromQQ .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
+                content = "系统：您收到来自" .. "用户编号为" .. getUserConf(msg.fromQQ,"nick","用户名获取失败") .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
             end
             SetUserConf(
                 "itemConf",
