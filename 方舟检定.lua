@@ -1,15 +1,99 @@
 ---@diagnostic disable: lowercase-global
 msg_order = {}
 order_kng = ".rk"
-msg_order[order_kng] = "ark_check"
+msg_order[order_kng] = "ark_main"
 
 objTemp, obj, num, sign, add = "", "", "", "", ""
-function ark_check(msg)
+
+function ark_main(msg)
    --将前缀符号均统一为"."
    local str = string.gsub(msg.fromMsg, "。", ".")
+   local res, round = "", 1
+   str, round = ark_multi(str)
+   if round > 10 then
+      return "诶诶诶？茉莉这可要丢到什么时候呀..."
+   end
+   for i = 1, round do
+      local res_now = ark_check(msg, str)
+      -- 去掉多次检定的剩余结果抬头
+      if i ~= 1 then
+         res_now = string.gsub(res_now, "{pc}进行ark的(.*)检定", "")
+      end
+      res = res .. res_now
+   end
+   return res
+end
+
+-- 处理多轮检定,返回处理后的指令内容和多轮检定轮数
+function ark_multi(str)
+   local round = string.match(str, "(%d+)%s*#")
+   if not round then
+      return str, 1
+   end
+   return string.gsub(str, "%d+%s*#", ""), round * 1
+end
+
+-- 处理修正值,格式为xdy+z
+function ark_mod(str)
+   -- 通过+、-号分割字符串
+   local num, op = split(str, "[%+%-]")
+   local res = cal_mod(num[1])
+   for i = 1, #num - 1 do
+      if op[i] == "+" then
+         res = res + cal_mod(num[i + 1])
+      else
+         res = res - cal_mod(num[i + 1])
+      end
+   end
+   return res
+end
+
+-- 字符串分割函数
+function split(szFullString, szSeparator)
+   local nFindStartIndex = 1
+   local nSplitIndex = 1
+   local nSplitArray, nSeparatorArray = {}, {}
+   while true do
+      local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)
+      if not nFindLastIndex then
+         nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))
+         break
+      end
+      nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)
+      --nFindStartIndex = nFindLastIndex + string.len(szSeparator)
+      nFindStartIndex = nFindLastIndex + 1
+      nSeparatorArray[nSplitIndex] = string.sub(szFullString, nFindLastIndex, nFindLastIndex)
+      nSplitIndex = nSplitIndex + 1
+   end
+   return nSplitArray, nSeparatorArray
+end
+
+-- 计算各个修正项的值
+function cal_mod(mod)
+   local mod_now = 0
+   if not string.find(mod, "[dD]") then
+      mod_now = tonumber(mod)
+      --log(type(mod_now))
+      if type(mod_now) == "number" then
+         return mod_now
+      else
+         return 0
+      end
+   end
+   local x, y = string.match(mod, "(%d+)[dD]+(%d+)")
+   if not x or not y then
+      return 0
+   end
+   for i = 1, x do
+      mod_now = mod_now + ranint(1, y)
+   end
+   return mod_now
+end
+
+function ark_check(msg, str)
    --提取参数
-   objTemp, num, sign, add =
-      string.match(str, "[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)[%s]*(%d*)", #order_kng + 1)
+   objTemp, num, sign =
+      string.match(str, "[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)", #order_kng + 1)
    --判断合法性
    if (objTemp == "" or objTemp == nil) then
       return "请输入正确的检定条目哦"
@@ -28,8 +112,14 @@ function ark_check(msg)
    if (obj == "侦查") then
       obj = "侦察"
    end
+   local sign_judge = type(sign) == "string" and (sign ~= "" and sign ~= nil)
+   -- 处理修正值
+   if sign_judge then
+      add = ark_mod(string.match(str,sign.."(.*)"))
+   end
+   
    --不存在即时检定也无修订值
-   if ((type(num) == "string" and (num == "" or num == nil)) and (type(add) == "string" and (add == "" or add == nil))) then
+   if ((type(num) == "string" and (num == "" or num == nil)) and not sign_judge) then
       --存在即时检定但无修订值
       --! 已知问题：如果检定条目为“力量”，将会取出nil
       num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0)
@@ -43,12 +133,12 @@ function ark_check(msg)
          return "未设定" .. obj .. "技能值×"
       end
    elseif
-      (type(num) == "string" and (num ~= "" and num ~= nil) and (type(add) == "string" and (add == "" or add == nil)))
+      (type(num) == "string" and (num ~= "" and num ~= nil) and not sign_judge)
     then
       --不存在即时检定但有修订值
       num = num * 1 + SpecialItem()
    elseif
-      (type(num) == "string" and (num == "" or num == nil) and (type(add) == "string" and (add ~= "" and add ~= nil)))
+      (type(num) == "string" and (num == "" or num == nil) and sign_judge)
     then
       --既有即时检定又有修订值
       if (sign == "+") then
@@ -65,7 +155,7 @@ function ark_check(msg)
          return "Error，错误的修订符"
       end
    elseif
-      (type(num) == "string" and (num ~= "" or num ~= nil) and (type(add) == "string" and (add ~= "" and add ~= nil)))
+      (type(num) == "string" and (num ~= "" or num ~= nil) and sign_judge)
     then
       if (sign == "+") then
          num = num * 1 + SpecialItem() + add * 1
