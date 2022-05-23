@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 --[[
     @author 慕北_Innocent(RainChain)
     @version 1.3(Beta)
@@ -9,6 +10,7 @@ package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
+require "itemIO"
 itemRequest = ""
 itemReceive = ""
 QQReceive = ""
@@ -242,6 +244,7 @@ msg_order[admin_order_gift] = "adminGift"
 -- 判断输入的道具是否合法
 function Check()
     local flag1, flag2 = true, true
+    local Item = ReadItem()
     for k, _ in pairs(Item) do
         if (string.find(k, itemRequest) ~= nil) then
             flag1 = true
