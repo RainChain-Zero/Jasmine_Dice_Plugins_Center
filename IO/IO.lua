@@ -2,7 +2,7 @@
     @author RainChain-Zero
     @version 1.0
     @Created 2022/03/31 22:04
-    @Last Modified 2022/04/01 00:45
+    @Last Modified 2022/04/10 00:45
     ]] -- json.lua的路径
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
@@ -32,9 +32,13 @@ function SetUserConf(filename,qq, key, value)
         -- 打开创建的文件
         f1=assert(io.open(UserConfPath..qq.."/"..filename..".json","r"))
     end
-    local str = f1:read("a")
-    if (#str == 0) then str = "{}" end
-    local j = Json.decode(str)
+    Str = f1:read("a")
+    if (#Str == 0) then Str = "{}" end
+    --! 捕获异常
+    local succ,j = pcall(Json_decode)
+    if not succ then
+        error("『×警告！』用户"..qq.."数据文件"..filename.."出错!")
+    end
     f1:close()
 
     local f2 = assert(io.open(UserConfPath..qq.."/"..filename..".json", "w"))
@@ -66,9 +70,13 @@ function GetUserConf(filename,qq, key, default)
         -- 打开创建的文件
         f1=assert(io.open(UserConfPath..qq.."/"..filename..".json","r"))
     end
-    local str = f1:read("a")
-    if (#str == 0) then str = "{}" end
-    local j = Json.decode(str)
+    Str = f1:read("a")
+    if (#Str == 0) then Str = "{}" end
+    --! 捕获异常
+    local succ,j = pcall(Json_decode)
+    if not succ then
+        error("『×警告！』用户"..qq.."数据文件"..filename.."出错!")
+    end
     f1:close()
     -- 多值传入
     if (type(key) == "table" and type(default) == "table") then
@@ -214,4 +222,9 @@ function UserInit(qq)
     os.execute("touch "..UserConfPath..qq.."/itemConf.json")
     os.execute("touch "..UserConfPath..qq.."/tradeConf.json")
     os.execute("touch "..UserConfPath..qq.."/adjustConf.json")
+end
+
+-- 异常处理封装
+function Json_decode()
+    return Json.decode(Str)
 end
