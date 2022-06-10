@@ -33,15 +33,13 @@ function SetUserConf(filename,qq, key, value)
         f1=assert(io.open(UserConfPath..qq.."/"..filename..".json","r"))
     end
     Str = f1:read("a")
+    f1:close()
     if (#Str == 0) then Str = "{}" end
     --! 捕获异常
     local succ,j = pcall(Json_decode)
     if not succ then
         error("『×警告！』用户"..qq.."数据文件"..filename.."出错!")
     end
-    f1:close()
-
-    local f2 = assert(io.open(UserConfPath..qq.."/"..filename..".json", "w"))
     -- 对密集的写入支持列表以提高效率
     if (type(key) == "table" and type(value) == "table") then
         -- 按顺序遍历表，写入
@@ -49,7 +47,9 @@ function SetUserConf(filename,qq, key, value)
     else
         j[key] = value
     end
-    f2:write(Json.encode(j))
+    local json_encode=Json.encode(j)
+    local f2 = assert(io.open(UserConfPath..qq.."/"..filename..".json", "w"))
+    f2:write(json_encode)
     f2:close()
 end
 
@@ -71,13 +71,13 @@ function GetUserConf(filename,qq, key, default)
         f1=assert(io.open(UserConfPath..qq.."/"..filename..".json","r"))
     end
     Str = f1:read("a")
+    f1:close()
     if (#Str == 0) then Str = "{}" end
     --! 捕获异常
     local succ,j = pcall(Json_decode)
     if not succ then
         error("『×警告！』用户"..qq.."数据文件"..filename.."出错!")
     end
-    f1:close()
     -- 多值传入
     if (type(key) == "table" and type(default) == "table") then
         -- 存放返回值表
@@ -108,10 +108,9 @@ function GetGroupConf(group, key, default)
     group = tostring(group)
     local f1 = assert(io.open(GroupConfPath, "r"))
     local str = f1:read("a")
+    f1:close()
     if (#str == 0) then str = "{}" end
     local j = Json.decode(str)
-    f1:close()
-
     if (type(key) == "table" and type(default) == "table") then
         -- 存放返回值表
         local res = key
@@ -142,11 +141,9 @@ function SetGroupConf(group, key, value)
     if (group == "0") then return "" end
     local f1 = assert(io.open(GroupConfPath, "r"))
     local str = f1:read("a")
+    f1:close()
     if (#str == 0) then str = "{}" end
     local j = Json.decode(str)
-    f1:close()
-
-    local f2 = assert(io.open(GroupConfPath, "w"))
     if (j[group] == nil) then j[group] = {} end
     -- 对密集的写入支持列表以提高效率
     if (type(key) == "table" and type(value) == "table") then
@@ -155,7 +152,9 @@ function SetGroupConf(group, key, value)
     else
         j[group][key] = value
     end
-    f2:write(Json.encode(j))
+    local json_encode=Json.encode(j)
+    local f2 = assert(io.open(GroupConfPath, "w"))
+    f2:write(json_encode)
     f2:close()
 end
 
@@ -164,9 +163,9 @@ function GetUserToday(qq, key, default)
     qq = tostring(qq)
     local f1 = assert(io.open(UserTodayPath, "r"))
     local str = f1:read("a")
+    f1:close()
     if (#str == 0) then str = "{}" end
     local j = Json.decode(str)
-    f1:close()
     -- 对密集读取支持列表以提高效率
     if (type(key) == "table" and type(default) == "table") then
         -- 存放返回值表
@@ -196,11 +195,9 @@ function SetUserToday(qq, key, value)
     qq = tostring(qq)
     local f1 = assert(io.open(UserTodayPath, "r"))
     local str = f1:read("a")
+    f1:close()
     if (#str == 0) then str = "{}" end
     local j = Json.decode(str)
-    f1:close()
-
-    local f2 = assert(io.open(UserTodayPath, "w"))
     -- 若不存在当前qq配置项
     if (j[qq] == nil) then j[qq] = {} end
     -- 对密集的写入支持列表以提高效率
@@ -210,7 +207,9 @@ function SetUserToday(qq, key, value)
     else
         j[qq][key] = value
     end
-    f2:write(Json.encode(j))
+    local json_encode=Json.encode(j)
+    local f2 = assert(io.open(UserTodayPath, "w"))
+    f2:write(json_encode)
     f2:close()
 end
 
