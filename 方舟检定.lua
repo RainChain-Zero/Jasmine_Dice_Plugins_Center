@@ -17,7 +17,7 @@ function ark_main(msg)
       local res_now = ark_check(msg, str)
       -- 去掉多次检定的剩余结果抬头
       if i ~= 1 then
-         res_now = string.gsub(res_now, "{pc}进行ark的(.*)检定", "")
+         res_now = string.gsub(res_now, "{pc}进行ark的(.*)检定:", "")
       end
       res = res .. res_now
    end
@@ -92,8 +92,7 @@ end
 
 function ark_check(msg, str)
    --提取参数
-   objTemp, num, sign =
-      string.match(str, "[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)", #order_kng + 1)
+   objTemp, num, sign = string.match(str, "[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)", #order_kng + 1)
    --判断合法性
    if (objTemp == "" or objTemp == nil) then
       return "请输入正确的检定条目哦"
@@ -115,9 +114,9 @@ function ark_check(msg, str)
    local sign_judge = type(sign) == "string" and (sign ~= "" and sign ~= nil)
    -- 处理修正值
    if sign_judge then
-      add = ark_mod(string.match(str,sign.."(.*)"))
+      add = ark_mod(string.match(str, sign .. "(.*)"))
    end
-   
+
    --不存在即时检定也无修订值
    if ((type(num) == "string" and (num == "" or num == nil)) and not sign_judge) then
       --存在即时检定但无修订值
@@ -132,14 +131,10 @@ function ark_check(msg, str)
       if (num * 1 == 0) then
          return "未设定" .. obj .. "技能值×"
       end
-   elseif
-      (type(num) == "string" and (num ~= "" and num ~= nil) and not sign_judge)
-    then
+   elseif (type(num) == "string" and (num ~= "" and num ~= nil) and not sign_judge) then
       --不存在即时检定但有修订值
       num = num * 1 + SpecialItem()
-   elseif
-      (type(num) == "string" and (num == "" or num == nil) and sign_judge)
-    then
+   elseif (type(num) == "string" and (num == "" or num == nil) and sign_judge) then
       --既有即时检定又有修订值
       if (sign == "+") then
          num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + SpecialItem() + add * 1
@@ -154,9 +149,7 @@ function ark_check(msg, str)
       else
          return "Error，错误的修订符"
       end
-   elseif
-      (type(num) == "string" and (num ~= "" or num ~= nil) and sign_judge)
-    then
+   elseif (type(num) == "string" and (num ~= "" or num ~= nil) and sign_judge) then
       if (sign == "+") then
          num = num * 1 + SpecialItem() + add * 1
          if (num <= 0) then
@@ -287,7 +280,8 @@ Hardness = {
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strCriticalSuccess}"
+                     "=" ..
+                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 10) .. "{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
             "{pc}进行ark的较难" ..
@@ -336,7 +330,8 @@ Hardness = {
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strCriticalSuccess}"
+                     "=" ..
+                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
             "{pc}进行ark的困难" ..
@@ -378,7 +373,8 @@ Hardness = {
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strCriticalSuccess}"
+                     "=" ..
+                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 40) .. "{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
             "{pc}进行ark的极难" ..
