@@ -44,3 +44,10 @@ picture_api = {
     [4] = "https://www.dmoe.cc/random.php",
     [5] = "https://api.ixiaowai.cn/api/api.php"
 }
+
+-- 摸鱼人日历
+function TouchFish(msg)
+    
+	return "[CQ:image,url=https://api.vvhan.com/api/moyu]"
+end
+msg_order["/摸鱼人日历"] = "moyu"
