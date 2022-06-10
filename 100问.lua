@@ -8,7 +8,7 @@ function draw(msg)
         setGroupConf(msg.fromGroup,"100questionsAnswerNow", 0)
         return "嗯嗯，感谢"..getUserConf(msg.fromQQ,"nick",getGroupConf(msg.fromGroup,"100questionsQQ","0")).."的精彩回答!!"
     end
-    if(msg.fromMsg=="终止问答" and getGroupConf(msg.fromGroup,"100questionsQQ","0")~="0")then
+    if(msg.fromMsg==".q end" and getGroupConf(msg.fromGroup,"100questionsQQ","0")~="0")then
         setGroupConf(msg.fromGroup,"100questionsQQ","0")
         setGroupConf(msg.fromGroup, "100questionsAnswerNow", 0)
         return "本次问答已结束"
