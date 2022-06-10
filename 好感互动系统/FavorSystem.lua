@@ -986,9 +986,14 @@ normal_order = "茉莉"
 function _Ciallo_normal(msg)
     -- return "Warning！好感组件强制更新中 相关功能已停用"
     -- local preReply=preHandle(msg)
-    --! 千音暂时不回复
+    --! 千音暂时不回复，以及定制reply
     if (msg.fromQQ == "959686587") then
         return ""
+    end
+    if (msg.fromQQ=="839968342") then
+        if (string.find(msg.fromMsg,"茉莉？")~=nil or string.find(msg.fromMsg,"茉莉?")~=nil) then
+            return ""
+        end
     end
     local str = string.match(msg.fromMsg, "(.*)", #normal_order + 1)
     local deepjudge = {

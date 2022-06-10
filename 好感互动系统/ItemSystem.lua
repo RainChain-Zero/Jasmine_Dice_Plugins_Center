@@ -54,6 +54,13 @@ msg_order["/U"] = "UseItem"
 -- 赠送茉莉礼物
 gift_order = "赠送茉莉"
 function GiveGift(msg)
+    --! 防止校准时使用物品导致物品在无提示的情况下失效
+    local calibration = getUserConf(getDiceQQ(), "calibration", 0)
+    local calibration_limit = getUserConf(getDiceQQ(), "calibration_limit", 12)
+    if (calibration > calibration_limit) then
+        return "本轮时钟周期已结束，请进行『校准』\n(指令为“茉莉校准”)"
+    end
+
     local Gift_list = ReadItem()
     local num, item, flag1, flag2 = "", "", false, false
     local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
@@ -85,16 +92,17 @@ function GiveGift(msg)
     end
     -- 固定属性
     local favor_now
-    if (Gift_list[item].favor ~= nil) then
-        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity)
-        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
-    end
+    --! 先调整亲和度，不然可能破千不清空亲和
     if (Gift_list[item].affinity ~= nil) then
         local affinity_now = affinity + num * Gift_list[item].affinity
         if (affinity_now > 100) then
             affinity_now = 100
         end
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
+    end
+    if (Gift_list[item].favor ~= nil) then
+        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     end
 
     -- 持续性道具处理

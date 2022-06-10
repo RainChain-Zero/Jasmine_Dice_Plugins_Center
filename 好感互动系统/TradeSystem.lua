@@ -243,7 +243,7 @@ msg_order[admin_order_gift] = "adminGift"
 
 -- 判断输入的道具是否合法
 function Check()
-    local flag1, flag2 = true, true
+    local flag1, flag2 = false, false
     local Item = ReadItem()
     for k, _ in pairs(Item) do
         if (string.find(k, itemRequest) ~= nil) then
