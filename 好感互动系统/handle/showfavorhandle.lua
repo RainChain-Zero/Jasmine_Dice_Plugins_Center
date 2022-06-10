@@ -3,7 +3,7 @@ require "prehandle"
 -- 好感查询计算
 function ShowFavorHandle(msg, favor, affinity)
     local addFavorItem, addAffinityItem = AddFavor_Item(msg), AddAffinity_Item(msg)
-    Notice(msg)
+    --Notice(msg)
     local isFavorTimePunish, isFavorTimePunishDown = FavorPunish(msg, true)
     TrustChange(msg)
     CohesionChange(msg)
@@ -50,7 +50,7 @@ function ShowFavorHandle(msg, favor, affinity)
         state = state .. "\n曲奇的余香：一天第一次交互额外增加20好感。"
     end
     if (addAffinityItem["addAffinityEveryDay"] == "Sushi") then
-        state = state .. "\n软糯的？：一天第一次交互额外增加4点亲和度。"
+        state = state .. "\n软糯的？：一天第一次交互额外增加2点亲和度。"
     end
     if (addFavorItem["addFavorEveryAction"] == "Hairpin") then
         state = state .. "\n不只是发簪：每次未超出当日限制次数的交互额外增加10好感。"

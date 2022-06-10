@@ -19,7 +19,7 @@ function preHandle(msg)
     -- 道具附加亲和度
     AddAffinity_Item(msg)
     -- 版本通告处
-    Notice(msg)
+    --Notice(msg)
     -- ! 好感时间惩罚
     FavorPunish(msg)
     -- 信任度和亲和度关联
@@ -179,7 +179,7 @@ function AddAffinity_Item(msg)
     if (os.time() < sushiDDL) then
         addAffinityEveryDay = "Sushi"
         if (GetUserToday(msg.fromQQ, "addAffinity_Sushi", 0) == 0) then
-            affinity_change = 3
+            affinity_change = 2
             SetUserToday(msg.fromQQ, "addAffinity_Sushi", 1)
         end
     elseif (sushiDDLFlag == 0) then
@@ -249,13 +249,7 @@ function FavorPunish(msg, show_favor)
         )
     end
     -- ! 好感度锁定列表
-    if
-        (msg.fromQQ == "2720577231" or msg.fromQQ == "1550506144" or msg.fromQQ == "2908078197" or
-            msg.fromQQ == "751766424" or
-            msg.fromQQ == "3578788465" or
-            msg.fromQQ == "3082228533" or
-            msg.fromQQ == "1298754454")
-     then
+    if (msg.fromQQ == "4786515" or msg.fromQQ == "3082228533" or msg.fromQQ == "3133390669") then
         return ""
     end
     --! 是否在回归保护期
