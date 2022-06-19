@@ -13,13 +13,44 @@ function ark_main(msg)
    if round > 10 then
       return "诶诶诶？茉莉这可要丢到什么时候呀..."
    end
+   -- 联合检定判定(用&分割)
+   local ark_union = split(str,"&")
+   local isunion = #ark_union > 1
    for i = 1, round do
-      local res_now = ark_check(msg, str)
-      -- 去掉多次检定的剩余结果抬头
-      if i ~= 1 then
-         res_now = string.gsub(res_now, "{pc}进行ark的(.*)检定:", "")
+      if isunion then
+         if i~=1 then
+            res = res .. "\n\n"
+         end
+         res = res .. "{pc}进行ark的联合检定——\n"
       end
-      res = res .. res_now
+      local res_final = true
+      for j = 1, #ark_union do
+         local union_item = ark_union[j]
+         if j~=1 then
+            union_item = ".rk " .. union_item
+         end
+         local res_now = ark_check(msg, union_item)
+         -- 修改多次检定的剩余结果抬头
+         if not isunion and i ~= 1 then
+            res_now = string.gsub(res_now, "{pc}进行ark的(.*)检定:", "")
+         elseif isunion then
+            res_now = "\n" .. res_now
+         end
+         -- 有一项检定失败则最终结果为失败
+         if string.find(res_now,"Failure")~=nil or string.find(res_now,"Fumble")~=nil then
+            res_final = false
+         end
+         res = res .. res_now
+         -- 判断联合检定最终结果
+         if isunion and j == #ark_union then
+            res = res .. "\n\n"
+            if not res_final then
+               res = res .. "最终结果为——失败了...没有关系的哦~相信你一定能找到解决办法的！"
+            else
+               res = res .. "最终结果...成功啦!茉莉就相信{nick}一定没问题的！"
+            end
+         end
+      end
    end
    return res
 end
@@ -268,7 +299,8 @@ ItemsNeed2D10 = {
    "炮术",
    "爆破",
    "兵械操作",
-   "无人机操作"
+   "无人机操作",
+   "铳械"
 }
 
 --增加了难度条目的检定
