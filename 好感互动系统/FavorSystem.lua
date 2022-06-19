@@ -90,10 +90,10 @@ end
 msg_order["茉莉校准"] = "Calibrated"
 
 function ClearCalibratedBlock(msg)
-    setUserConf(getDiceQQ(),"blockCalibration",0)
+    setUserConf(getDiceQQ(), "blockCalibration", 0)
     return "成功清除校准阻塞"
 end
-msg_order["清除校准阻塞"]="ClearCalibratedBlock"
+msg_order["清除校准阻塞"] = "ClearCalibratedBlock"
 
 function topercent(num)
     if (num == nil) then
@@ -106,9 +106,9 @@ function add_favor_food(msg, favor, affinity)
     -- 随机好感上升,低好感用户翻倍
     if (favor <= 1500) then
         return ModifyFavorChangeGift(msg, favor, ranint(30, 50), affinity, false)
-    elseif (favor<=4000) then
+    elseif (favor <= 4000) then
         return ModifyFavorChangeGift(msg, favor, ranint(20, 30), affinity, false)
-    elseif (favor<=10000) then
+    elseif (favor <= 10000) then
         return ModifyFavorChangeGift(msg, favor, ranint(15, 20), affinity, false)
     else
         return ModifyFavorChangeGift(msg, favor, ranint(20, 30), affinity, false)
@@ -986,12 +986,15 @@ normal_order = "茉莉"
 function _Ciallo_normal(msg)
     -- return "Warning！好感组件强制更新中 相关功能已停用"
     -- local preReply=preHandle(msg)
+    local ignore_qq = {2595928998,751766424,959686587}
     --! 千音暂时不回复，以及定制reply
-    if (msg.fromQQ == "959686587") then
-        return ""
+    for _,v in pairs(ignore_qq)do
+        if msg.fromQQ*1==v then
+            return ""
+        end
     end
-    if (msg.fromQQ=="839968342") then
-        if (string.find(msg.fromMsg,"茉莉？")~=nil or string.find(msg.fromMsg,"茉莉?")~=nil) then
+    if (msg.fromQQ == "839968342") then
+        if (string.find(msg.fromMsg, "茉莉？") ~= nil or string.find(msg.fromMsg, "茉莉?") ~= nil) then
             return ""
         end
     end
@@ -1570,7 +1573,7 @@ function action(msg)
             if (msg.fromQQ == "2677409596") then
                 if (today_rude <= 3 and today_sorry <= 1) then
                     if (today_suki <= today_suki_limit) then
-                        favor_now = SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                        favor_now = favor + ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
                     end
                     reply_main = "啊..#呆住 Error！检测到机体温度迅速升高，要主人抱抱才能缓解！"
                 else
