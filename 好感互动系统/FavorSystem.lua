@@ -504,6 +504,50 @@ function Ciallo_noon_normal(msg)
 end
 msg_order["中午好"] = "Ciallo_noon_normal"
 
+-- 晚上好
+function rcv_Ciallo_evening(msg)
+    local preReply = preHandle(msg)
+    if (preReply ~= nil) then
+        return preReply
+    end
+    local today_evening, today_rude, today_sorry = GetUserToday(msg.fromQQ, {"evening", "rude", "sorry"}, {0, 0, 0})
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
+    local favor_ori = favor
+    today_evening = today_evening + 1
+    SetUserToday(msg.fromQQ, "evening", today_evening)
+
+    if (today_rude <= 2 and today_sorry <= 1) then
+        if ((hour >= 18 and hour <= 24) or (hour >= 0 and hour <= 4)) then
+            local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
+            if (calibration_message1 ~= nil) then
+                return calibration_message1
+            end
+            if (succ == false) then
+                return "女孩似乎没有理睬你的意思，只是怔怔望着窗外，若有所思×"
+            end
+            if (today_evening <= 1) then
+                local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5, affinity, succ)
+                CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+            end
+            if (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
+                return table_draw(reply_evening_less)
+            elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
+                return table_draw(reply_evening_low)
+            elseif (favor < ranint(6000 - left_limit, 6000 + right_limit)) then
+                return table_draw(reply_evening_high)
+            else
+                return table_draw(reply_evening_highest)
+            end
+        elseif (hour >= 5 and hour <= 12) then
+            return table_draw(reply_evening_morningWrong)
+        else
+            return table_draw(reply_evening_normalWrong)
+        end
+    end
+end
+msg_order["茉莉晚上好"]="rcv_Ciallo_evening"
+msg_order["晚上好茉莉"]="rcv_Ciallo_evening"
+
 -- 晚安问候程序
 function rcv_Ciallo_night(msg)
     local preReply = preHandle(msg)
