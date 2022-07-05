@@ -236,6 +236,7 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
     end
     if (now == (pre + 1) % 10) then
         if (affinity == 100) then
+            affinity = 0
             SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})
         else
             favor_now = math.modf(favor_ori / 10000) * 10000 + pre * 1000 + 999
@@ -244,7 +245,7 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
     else
         SetUserConf("favorConf", qq, "好感度", favor_now)
     end
-    return favor_now
+    return favor_now, affinity
 end
 
 -- 检验回归加成

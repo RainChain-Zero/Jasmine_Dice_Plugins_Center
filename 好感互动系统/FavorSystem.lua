@@ -194,7 +194,7 @@ function rcv_food(msg)
             end
             favor = favor_ori + favor_add
             -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
-            favor = CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
+            favor, affinity = CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
             cnt = cnt - 1
         end
         return "你眼前一黑，手中的食物瞬间消失，再看的时候，眼前的烧酒口中还在咀嚼着什么，扭头躲开了你的目光\n今日已收到投喂" ..
@@ -545,8 +545,8 @@ function rcv_Ciallo_evening(msg)
         end
     end
 end
-msg_order["茉莉晚上好"]="rcv_Ciallo_evening"
-msg_order["晚上好茉莉"]="rcv_Ciallo_evening"
+msg_order["茉莉晚上好"] = "rcv_Ciallo_evening"
+msg_order["晚上好茉莉"] = "rcv_Ciallo_evening"
 
 -- 晚安问候程序
 function rcv_Ciallo_night(msg)
@@ -1030,10 +1030,10 @@ normal_order = "茉莉"
 function _Ciallo_normal(msg)
     -- return "Warning！好感组件强制更新中 相关功能已停用"
     -- local preReply=preHandle(msg)
-    local ignore_qq = {2595928998,751766424,959686587}
+    local ignore_qq = {2595928998, 751766424, 959686587}
     --! 千音暂时不回复，以及定制reply
-    for _,v in pairs(ignore_qq)do
-        if msg.fromQQ*1==v then
+    for _, v in pairs(ignore_qq) do
+        if msg.fromQQ * 1 == v then
             return ""
         end
     end
