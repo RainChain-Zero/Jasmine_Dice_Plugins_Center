@@ -401,7 +401,7 @@ end
 
 -- 动作类交互预处理
 function Actionprehandle(str)
-    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love"}
+    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love","贴贴"}
     for _, v in pairs(list) do
         if (string.find(str, v) ~= nil) then
             return true

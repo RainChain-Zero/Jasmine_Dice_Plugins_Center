@@ -31,6 +31,7 @@ today_suki_limit = 1 -- 每日喜欢加好感次数上限
 today_love_limit = 1 -- 每日爱加好感次数上限
 today_interaction_limit = 3 -- 每日"互动-部位"增加好感次数上限
 today_cute_limit = 1
+today_tietie_limit = 1
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
 -- 时间系统
@@ -1110,7 +1111,8 @@ function action(msg)
         today_hand,
         today_face,
         today_suki,
-        today_love =
+        today_love,
+        today_tietie =
         GetUserToday(
         msg.fromQQ,
         {
@@ -1124,9 +1126,10 @@ function action(msg)
             "hand",
             "face",
             "suki",
-            "love"
+            "love",
+            "tietie"
         },
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
 
     local blackReply = blackList(msg)
@@ -1695,6 +1698,36 @@ function action(msg)
             end
         end
     end
+    local judge_tietie = string.find(msg.fromMsg,"贴贴",1)~=nil
+    if judge_tietie then
+        today_tietie = today_tietie + 1
+        SetUserToday(msg.fromQQ,"tietie",today_tietie)
+        if today_rude <= 2 and today_sorry <= 1 then
+            if favor<= ranint(1500 - left_limit, 1500 + right_limit) then
+                favor_now = favor + ModifyFavorChangeNormal(msg,favor,-40,affinity,succ)
+                reply_main = table_draw(reply_tietie_less)
+            elseif favor<= ranint(3500 - left_limit, 3500 + right_limit) then
+                if today_tietie <= today_tietie_limit then
+                    favor_now = favor + ModifyFavorChangeNormal(msg,favor,10,affinity,succ)
+                end
+                reply_main = table_draw(reply_tietie_low)
+            elseif favor <= ranint(5500 - left_limit,5500 + left_limit) then
+                if today_tietie <= today_tietie_limit then
+                    favor_now = favor + ModifyFavorChangeNormal(msg,favor,13,affinity,succ)
+                end
+                reply_main = table_draw(reply_tietie_high)
+            else
+                if today_tietie <= today_tietie_limit then
+                    favor_now = favor + ModifyFavorChangeNormal(msg,favor,15,affinity,succ)
+                end
+                if ranint(1,2)==1 then
+                    reply_main = table_draw(reply_tietie_high)
+                else
+                    reply_main = table_draw(reply_tietie_highest)
+                end
+            end
+        end
+    end
     CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     -- 最后判断是否是“互动--部位”格式
     -- interaction(msg)
@@ -1704,14 +1737,6 @@ end
 reply_main = ""
 -- 执行函数相应“茉莉”
 function action_main(msg)
-    --! 生日快乐
-    -- if (string.find(msg.fromMsg,"生快")~=nil or string.find(msg.fromMsg,"生日快乐")~=nil) then
-    --     if (GetUserToday(msg.fromQQ,"生日快乐",0)==0) then
-    --         SetUserConf("favorConf",msg.fromQQ,"好感度",GetUserConf("favorConf",msg.fromQQ,"好感度",0)+200)
-    --         SetUserToday(msg.fromQQ,"生日快乐",1)
-    --     end
-    --     return table_draw(birthday)
-    -- end
 
     for _, v in pairs(rude_table) do
         if (string.find(msg.fromMsg, v) ~= nil) then
@@ -1730,23 +1755,6 @@ function action_main(msg)
     return reply_main
 end
 msg_order[normal_order] = "action_main"
-
---! 生日快乐
-function HappyBirthday(msg)
-    if (string.find(msg.fromMsg, "茉莉") ~= nil) then
-        if (GetUserToday(msg.fromQQ, "生日快乐", 0) == 0) then
-            SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + 200)
-            SetUserToday(msg.fromQQ, "生日快乐", 1)
-        end
-        return table_draw(birthday)
-    end
-end
---msg_order["生日快乐"]="HappyBirthday"
-
--- function picture(msg)
---     return "[CQ:image,url=https://img.paulzzh.com/touhou/konachan/image/2491526e5dce044efea57ef29e6a9999.jpg]"
--- end
--- msg_order["图片"]="picture"
 
 -- 管理员测试权限
 function setfavor(msg)
