@@ -123,7 +123,7 @@ end
 -- 下限黑名单判定
 function blackList(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    if (favor <= -300 and favor > -500) then
+    if (favor <= -200 and favor > -500) then
         sendMsg("Warning:检测到你的好感度过低，即将触发机体下限保护机制！", msg.fromGroup, msg.fromQQ)
     end
     if (favor < -500) then
@@ -497,7 +497,7 @@ function Ciallo_noon_normal(msg)
                 if (hour >= 11 and hour <= 14) then
                     return "诶，中午好？是…在和茉莉说吗，应该……是吧"
                 else
-                    return "唔..可现在不是中午哦？不过 茉莉也向你问号哦~#踮起脚尖打招呼"
+                    return "唔..可现在不是中午哦？不过 茉莉也向你问好哦~#踮起脚尖打招呼"
                 end
             end
         end
@@ -641,7 +641,7 @@ function night_master(msg)
             preHandle(msg)
             if (today_rude <= 2 and today_sorry <= 1) then
                 if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
-                    return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
+                    return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会在你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
                 else
                     return "嗯...{nick}现在好像还没到晚安的时间呢..."
                 end
@@ -1355,7 +1355,7 @@ function action(msg)
     local judge_kiss = string.find(msg.fromMsg, "亲", 1) ~= nil
     if (judge_kiss) then
         if (succ == false) then
-            reply_main = "正当你鼓起勇气凑进她的脸庞，却被她有力的手给推开了×"
+            reply_main = "正当你鼓起勇气凑近她的脸庞，却被她有力的手给推开了×"
             SetUserConf("favorConf", msg.fromQQ, "好感度", favor - ModifyFavorChangeNormal(msg, favor, 10, affinity, succ))
             return ""
         else
@@ -1694,7 +1694,7 @@ function action(msg)
                     reply_main = table_draw(reply_love_highest)
                 end
             else
-                reply_main = "哼，茉莉可不想被茉莉说爱我，不、不然...不然茉莉不也是笨蛋了吗..."
+                reply_main = "哼，茉莉可不想被笨蛋说爱我，不、不然...不然茉莉不也是笨蛋了吗..."
             end
         end
     end

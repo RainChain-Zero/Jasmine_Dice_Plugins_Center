@@ -181,7 +181,7 @@ function UnlockStory(msg, entryStoryCheck, item)
             SetUserConf("storyConf", msg.fromQQ, {"entryStoryCheck", "isStory1Unlocked"}, {-1, 1})
             return "这把钥匙似乎和眼前的光芒产生了某种共鸣，倏忽间，光芒如同被某种强大的引力吸引般瞬间汇聚于钥匙上后逐渐稳定了下来...\f" .. "系统：注意，剧情模式第一章已经解锁！", true
         else
-            return "你小心翼翼地将它向那团光球接近，但就要在你触及之时，一股强大的斥力将你远远弹开了...", false
+            return "你小心翼翼地将它向那团光球接近，但就在你要触及之时，一股强大的斥力将你远远弹开了...", false
         end
     end
 end

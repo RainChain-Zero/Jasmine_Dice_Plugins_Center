@@ -249,7 +249,7 @@ function FavorPunish(msg, show_favor)
         )
     end
     -- ! 好感度锁定列表
-    if (msg.fromQQ == "4786515" or msg.fromQQ == "3082228533" or msg.fromQQ == "3133390669" or msg.fromQQ == "3272364628") then
+    if (msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197") then
         return ""
     end
     --! 是否在回归保护期
