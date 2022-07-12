@@ -14,6 +14,7 @@ package.path = getDiceDir() .. "/plugin/handle/?.lua"
 require "prehandle"
 require "favorhandle"
 require "showfavorhandle"
+require "CustomizedReply"
 msg_order = {}
 
 -- 各类上限
@@ -594,6 +595,10 @@ function rcv_Ciallo_night(msg)
                 elseif (favor < ranint(6000 - left_limit, 6000 + right_limit)) then
                     return table_draw(reply_night_high)
                 else
+                    --! 1298754454 晚安定制
+                    if msg.fromQQ == "1298754454" then
+                        return table_draw(merge_reply(reply_night_highest,evening_1298754454))
+                    end
                     return table_draw(reply_night_highest)
                 end
             elseif (hour >= 5 and hour <= 11) then
