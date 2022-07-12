@@ -32,6 +32,12 @@ end
 
 function StoryThreeChoose(msg, res)
     SetUserConf("storyConf", msg.fromQQ, {"Choice", "story2Choice", "NextOption"}, {res * 1, res * 1, -1})
+    local isStory3Read = GetUserConf("storyConf", msg.fromQQ, "isStory3Read", 0)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
+    -- 选择2 初次阅读增加100好感
+    if res == 2 and isStory3Read == 0 then
+        SetUserConf("favorConf", msg.fromQQ, "好感度", favor + 100)
+    end
     return "您选中了选项" .. res .. " 输入.f以确认选择"
 end
 
