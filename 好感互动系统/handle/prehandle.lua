@@ -90,8 +90,8 @@ end
 -- 调整亲密度
 function CohesionChange(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local isStory0Read, isShopUnlocked, story2Choice =
-        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked", "story2Choice"}, {0, 0, 0})
+    local isStory0Read, isShopUnlocked, story2Choice ,isStory3Read=
+        GetUserConf("storyConf", msg.fromQQ, {"isStory0Read", "isShopUnlocked", "story2Choice","isStory3Read"}, {0, 0, 0,0})
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
     end
@@ -109,6 +109,11 @@ function CohesionChange(msg)
     if (favor > 3000) then
         if (story2Choice ~= 0) then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 3)
+        end
+    end
+    if favor > 4000 then
+        if isStory3Read == 1 then
+            SetUserConf("favorConf", msg.fromQQ, "cohesion", 4)
         end
     end
 end
