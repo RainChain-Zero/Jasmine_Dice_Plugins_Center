@@ -10,7 +10,7 @@ evening_1298754454 = {
 
 function merge_reply(ori, new)
     for _, v in pairs(new) do
-        ori:insert(v)
+        table.insert(ori,v)
     end
     return ori
 end
