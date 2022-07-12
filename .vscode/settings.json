@@ -1,0 +1,17 @@
+{
+    "Lua.diagnostics.globals": [
+        "sendMsg",
+        "eventMsg",
+        "ranint",
+        "setUserConf",
+        "getDiceQQ",
+        "getUserConf",
+        "getDiceDir",
+        "sleepTime",
+        "getPlayerCardAttr",
+        "log"
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
+    ]
+}
