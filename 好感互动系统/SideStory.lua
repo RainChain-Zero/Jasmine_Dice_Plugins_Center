@@ -1,9 +1,4 @@
---[[
-    @author 慕北_Innocent(RainChain)
-    @version 1.7
-    @Created 2021/12/05 00:04
-    @Last Modified 2022/03/31 23:36
-    ]] msg_order = {}
+msg_order = {}
 
 package.path = getDiceDir() .. "/plugin/Story/?.lua"
 require "Story"
@@ -11,6 +6,7 @@ require "Story0"
 require "Special0"
 require "Story1"
 require "Story2"
+require "Story3"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
@@ -48,6 +44,8 @@ function StoryMain(msg)
             Reply = StoryOne(msg)
         elseif (StoryNormal == 2) then
             Reply = StoryTwo(msg)
+        elseif StoryNormal == 3 then
+            Reply = StoryThree(msg)
         end
     else
         if (StorySpecial == 0) then
@@ -83,7 +81,7 @@ function EnterStory(msg)
         Story = "元旦特典 预想此时应更好"
         SetUserConf("storyConf", msg.fromQQ, "SpecialReadNow", 0)
     elseif (string.find(StoryTemp, "第一章") ~= nil or string.find(StoryTemp, "夜未央") ~= nil) then
-        if (GetUserConf("favorConf", msg.fromQQ, "好感度", 0) <2000) then
+        if (favor < 2000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
         if (GetUserConf("storyConf", msg.fromQQ, "isStory1Unlocked", 0) == 0) then
@@ -104,11 +102,20 @@ function EnterStory(msg)
     elseif (string.find(StoryTemp, "第二章") ~= nil or string.find(StoryTemp, "难以言明的选择") ~= nil) then
         if (GetUserConf("storyConf", msg.fromQQ, "isStory1Unlocked", 0) == 0) then
             return "『✖条件未满足』您需要在第一章中解锁『商店』功能"
-        elseif (GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 3000) then
+        elseif (favor < 3000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3000)"
         else
             SetUserConf("storyConf", msg.fromQQ, "StoryReadNow", 2)
             Story = "第二章 难以言明的选择"
+        end
+    elseif (string.find(StoryTemp, "第三章") or string.find(StoryTemp, "此般景致")) then
+        if (GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0) then
+            return "『✖条件未满足』您需要通过第二章 难以言明的选择"
+        elseif (favor < 4000) then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足4000)"
+        else
+            SetUserConf("storyConf", msg.fromQQ, "StoryReadNow", 3)
+            Story = "第三章 此般景致"
         end
     end
     -- 是否存在章节
@@ -165,6 +172,8 @@ function Choose(msg)
             Reply = StoryOneChoose(msg, res)
         elseif (StoryNormal == 2) then
             Reply = StoryTwoChoose(msg, res)
+        elseif StoryNormal == 3 then
+            Reply = StoryThreeChoose(msg, res)
         end
     else
         if (StorySpecial == 0) then
@@ -209,6 +218,8 @@ function Skip(msg)
             Reply = SkipStory1()
         elseif (StoryNormal == 2) then
             Reply = SkipStory2(msg)
+        elseif StoryNormal == 3 then
+            Reply = SkipStory3(msg)
         end
     else
         if (StorySpecial == 0) then
@@ -220,4 +231,4 @@ function Skip(msg)
     end
     return Reply
 end
-msg_order["跳过"] = "Skip"
+msg_order[".skip"] = "Skip"

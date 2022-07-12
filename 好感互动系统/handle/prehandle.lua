@@ -367,8 +367,7 @@ function StoryUnlocked(msg)
         res = "1" .. string.sub(specialUnlockedNotice, 2)
         SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
     elseif
-        (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and
-            GetUserConf("favorConf", msg.fromQQ, "好感度", 0) >= 2000 and
+        (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and favor >= 2000 and
             GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0)
      then
         flag = string.sub(storyUnlockedNotice, 2, 2)
@@ -382,18 +381,23 @@ function StoryUnlocked(msg)
         res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
     elseif
-        (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 1 and
+        (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 1 and favor >= 3000 and
             GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0)
      then
         flag = string.sub(storyUnlockedNotice, 3, 3)
         if (flag == "1") then
             return ""
         end
-        if (msg.fromGroup ~= "0") then
-            content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n"
-        end
-        content = content .. "『✔提示』剧情模式 第二章『难以言明的选择』,已经解锁,输入“进入剧情 第二章”可浏览剧情"
+        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第二章『难以言明的选择』,已经解锁,输入“进入剧情 第二章”可浏览剧情"
         res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
+        SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
+    elseif GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) ~= 0 and favor >= 4000 then
+        flag = string.sub(storyUnlockedNotice, 4, 4)
+        if (flag == "1") then
+            return ""
+        end
+        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第三章『此般景致』,已经解锁,输入“进入剧情 第三章”可浏览剧情"
+        res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
     end
     sendMsg(content, msg.fromGroup, msg.fromQQ)
@@ -401,7 +405,7 @@ end
 
 -- 动作类交互预处理
 function Actionprehandle(str)
-    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love","贴贴"}
+    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love", "贴贴"}
     for _, v in pairs(list) do
         if (string.find(str, v) ~= nil) then
             return true
