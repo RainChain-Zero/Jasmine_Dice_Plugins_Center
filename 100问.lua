@@ -4,6 +4,9 @@ package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
 function draw(msg)
+    if (msg.fromGroup ~= "921454429" and msg.fromGroup ~= "1007561501" and msg.fromGroup ~= "384144009") then
+        return ""
+    end
     if msg.fromMsg == "end" then
         setGroupConf(msg.fromGroup, "100questionsAnswerNow", 0)
         return "嗯嗯，感谢" ..
@@ -17,9 +20,6 @@ function draw(msg)
     -- 上一位未回答结束
     if (getGroupConf(msg.fromGroup, "100questionsAnswerNow", 0) == 1) then
         return "请耐心等待上一位回答结束哦~"
-    end
-    if (msg.fromGroup ~= "921454429" and msg.fromGroup ~= "1007561501" and msg.fromGroup ~= "384144009") then
-        return ""
     end
     local reply = read_item()
     setGroupConf(msg.fromGroup, "100questionsQQ", msg.fromQQ)
