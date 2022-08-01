@@ -117,7 +117,14 @@ function action_del(msg)
                 break
             end
         end
+        -- 从等待栈中移除玩家
+        for k3, v3 in pairs(actionBar.waiting_stack) do
+            if v1 == v3 then
+                table.remove(actionBar.waiting_stack, k3)
+            end
+        end
     end
+
     setGroupConf(msg.fromGroup, "actionBar", actionBar)
     return "『SUCCESS』茉莉已将" .. #players .. "位玩家移出本群先攻列表"
 end

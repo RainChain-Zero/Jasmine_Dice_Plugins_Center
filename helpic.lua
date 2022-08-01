@@ -9,6 +9,6 @@ end
 msg_order["/help petpet"] = "Help_petpet"
 
 function help_ark()
-    return "明日方舟泰拉TRPG：\n人物做成：http://localhost:8080/JasmineDoc/manual/dice!/ark/ark.html\n检定：http://localhost:8080/JasmineDoc/manual/dice!/ark/rk.html\n先攻：http://localhost:8080/JasmineDoc/manual/dice!/ark/ac.html"
+    return "明日方舟泰拉TRPG：\n人物做成：https://rainchain-zero.github.io/JasmineDoc/manual/dice!/ark/ark.html\n检定：https://rainchain-zero.github.io/JasmineDoc/manual/dice!/ark/rk.html\n先攻：https://rainchain-zero.github.io/JasmineDoc/manual/dice!/ark/ac.html"
 end
 msg_order["/help ark"] = "help_ark"
