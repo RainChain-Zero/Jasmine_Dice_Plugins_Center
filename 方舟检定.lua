@@ -131,9 +131,10 @@ end
 
 function ark_check(msg, str, isrka)
    -- 如果是.rka进行攻击，检定条目+2d10
-   local attack = 0
+   local attack, res_2d10 = 0, ""
    if isrka then
       attack = ranint(1, 10) + ranint(1, 10)
+      res_2d10 = "\n（2D10=" .. string.format("%.0f）", attack)
    end
    --提取参数
    objTemp, num, sign = string.match(str, "[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)", #order_kng + 1)
@@ -215,10 +216,10 @@ function ark_check(msg, str, isrka)
    res = ranint(1, 100)
    --如果没有添加难度条目
    if (hardness == "") then
-      return NormalJudge()
+      return NormalJudge() .. res_2d10
    else
       --设定了难度条目的情况
-      return Hardness[hardness]()
+      return Hardness[hardness]() .. res_2d10
    end
 end
 
