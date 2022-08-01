@@ -7,18 +7,26 @@ objTemp, obj, num, sign, add = "", "", "", "", ""
 
 function ark_main(msg)
    --将前缀符号均统一为"."
-   local str = string.gsub(msg.fromMsg, "。", ".")
+   local str = string.gsub(msg.fromMsg, "^。", ".")
+   -- 判断是.rk还是.rka
+   local isrka = true
+   if not string.match(msg.fromMsg, "^.rka") then
+      isrka = false
+   else
+      --去掉"a"
+      str = string.gsub(str, "^.rka", ".rk")
+   end
    local res, round = "", 1
    str, round = ark_multi(str)
    if round > 10 then
       return "诶诶诶？茉莉这可要丢到什么时候呀..."
    end
    -- 联合检定判定(用&分割)
-   local ark_union = split(str,"&")
+   local ark_union = split(str, "&")
    local isunion = #ark_union > 1
    for i = 1, round do
       if isunion then
-         if i~=1 then
+         if i ~= 1 then
             res = res .. "\n\n"
          end
          res = res .. "{pc}进行ark的联合检定——\n"
@@ -26,10 +34,10 @@ function ark_main(msg)
       local res_final = true
       for j = 1, #ark_union do
          local union_item = ark_union[j]
-         if j~=1 then
+         if j ~= 1 then
             union_item = ".rk " .. union_item
          end
-         local res_now = ark_check(msg, union_item)
+         local res_now = ark_check(msg, union_item, isrka)
          -- 修改多次检定的剩余结果抬头
          if not isunion and i ~= 1 then
             res_now = string.gsub(res_now, "{pc}进行ark的(.*)检定:", "")
@@ -37,7 +45,7 @@ function ark_main(msg)
             res_now = "\n" .. res_now
          end
          -- 有一项检定失败则最终结果为失败
-         if string.find(res_now,"Failure")~=nil or string.find(res_now,"Fumble")~=nil then
+         if string.find(res_now, "Failure") ~= nil or string.find(res_now, "Fumble") ~= nil then
             res_final = false
          end
          res = res .. res_now
@@ -121,7 +129,13 @@ function cal_mod(mod)
    return mod_now
 end
 
-function ark_check(msg, str)
+function ark_check(msg, str, isrka)
+   -- 如果是.rka进行攻击，检定条目+2d10
+   local attack, res_2d10 = 0, ""
+   if isrka then
+      attack = ranint(1, 10) + ranint(1, 10)
+      res_2d10 = "\n（2D10=" .. string.format("%.0f）", attack)
+   end
    --提取参数
    objTemp, num, sign = string.match(str, "[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)", #order_kng + 1)
    --判断合法性
@@ -158,22 +172,22 @@ function ark_check(msg, str)
          return ""
       end
       --特殊条目判定
-      num = num + SpecialItem()
+      num = num + attack
       if (num * 1 == 0) then
          return "未设定" .. obj .. "技能值×"
       end
    elseif (type(num) == "string" and (num ~= "" and num ~= nil) and not sign_judge) then
       --不存在即时检定但有修订值
-      num = num * 1 + SpecialItem()
+      num = num * 1 + attack
    elseif (type(num) == "string" and (num == "" or num == nil) and sign_judge) then
       --既有即时检定又有修订值
       if (sign == "+") then
-         num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + SpecialItem() + add * 1
+         num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + attack + add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
       elseif (sign == "-") then
-         num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + SpecialItem() - add * 1
+         num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + attack - add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
@@ -182,12 +196,12 @@ function ark_check(msg, str)
       end
    elseif (type(num) == "string" and (num ~= "" or num ~= nil) and sign_judge) then
       if (sign == "+") then
-         num = num * 1 + SpecialItem() + add * 1
+         num = num * 1 + attack + add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
       elseif (sign == "-") then
-         num = num * 1 + SpecialItem() - add * 1
+         num = num * 1 + attack - add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
@@ -202,10 +216,10 @@ function ark_check(msg, str)
    res = ranint(1, 100)
    --如果没有添加难度条目
    if (hardness == "") then
-      return NormalJudge()
+      return NormalJudge() .. res_2d10
    else
       --设定了难度条目的情况
-      return Hardness[hardness]()
+      return Hardness[hardness]() .. res_2d10
    end
 end
 
@@ -219,15 +233,16 @@ function HardnessCheck()
    return false, ""
 end
 
---特殊条目+2D10判定
-function SpecialItem()
-   for _, v in pairs(ItemsNeed2D10) do
-      if (obj == v) then
-         return ranint(1, 10) + ranint(1, 10)
-      end
-   end
-   return 0
-end
+--! V3.0 仅有进行攻击时才会进行2d10
+-- --特殊条目+2D10判定
+-- function attack
+--    for _, v in pairs(ItemsNeed2D10) do
+--       if (obj == v) then
+--          return ranint(1, 10) + ranint(1, 10)
+--       end
+--    end
+--    return 0
+-- end
 
 --没有增加难度条目的情况
 function NormalJudge()
@@ -244,21 +259,19 @@ function NormalJudge()
          obj ..
             "检定:" ..
                "\nD100" ..
-                  "=" ..
-                     string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 40) .. "{strRollExtremeSuccess}"
+                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollExtremeSuccess}"
    elseif (res <= num - 25) then
       reply =
          "{pc}进行ark的" ..
          obj ..
             "检定:" ..
                "\nD100" ..
-                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strRollHardSuccess} "
+                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollHardSuccess} "
    elseif (res <= num - 10) then
       reply =
          "{pc}进行ark的" ..
          obj ..
-            "检定:" ..
-               "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 10) .. "是较难成功，还可以吧"
+            "检定:" .. "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "是较难成功，还可以吧"
    elseif (res <= num) then
       reply =
          "{pc}进行ark的" ..
@@ -282,26 +295,27 @@ function NormalJudge()
    return reply
 end
 
+--! V3.0 仅有进行攻击时才会进行2d10
 --需要2d10加值的检定项
-ItemsNeed2D10 = {
-   "搏斗",
-   "拳术",
-   "暗器",
-   "刀剑",
-   "杖术",
-   "枪术",
-   "软兵",
-   "盾术",
-   "重钝器",
-   "弓弩",
-   "投掷",
-   "射击",
-   "炮术",
-   "爆破",
-   "兵械操作",
-   "无人机操作",
-   "铳械"
-}
+-- ItemsNeed2D10 = {
+--    "搏斗",
+--    "拳术",
+--    "暗器",
+--    "刀剑",
+--    "杖术",
+--    "枪术",
+--    "软兵",
+--    "盾术",
+--    "重钝器",
+--    "弓弩",
+--    "投掷",
+--    "射击",
+--    "炮术",
+--    "爆破",
+--    "兵械操作",
+--    "无人机操作",
+--    "铳械"
+-- }
 
 --增加了难度条目的检定
 Hardness = {
@@ -312,46 +326,41 @@ Hardness = {
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 10) .. "{strCriticalSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
             "{pc}进行ark的较难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) ..
-                           "/" .. string.format("%.0f", num - 40) .. "{strRollExtremeSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollExtremeSuccess}"
       elseif (res <= num - 25) then
          reply =
             "{pc}进行ark的较难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strRollHardSuccess} "
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollHardSuccess} "
       elseif (res <= num - 10) then
          reply =
             "{pc}进行ark的较难" ..
             obj ..
                "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 10) .. "是较难成功，还可以吧"
+                  "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "是较难成功，还可以吧"
       elseif (res <= 95) then
          reply =
             "{pc}进行ark的较难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 10) .. "{strRollFailure}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollFailure}"
       else
          reply =
             "{pc}进行ark的较难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 10) .. "{strRollFumble}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollFumble}"
       end
       return reply
    end,
@@ -362,39 +371,35 @@ Hardness = {
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strCriticalSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
             "{pc}进行ark的困难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) ..
-                           "/" .. string.format("%.0f", num - 40) .. "{strRollExtremeSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollExtremeSuccess}"
       elseif (res <= num - 25) then
          reply =
             "{pc}进行ark的困难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strRollHardSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollHardSuccess}"
       elseif (res <= 95) then
          reply =
             "{pc}进行ark的困难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strRollFailure}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollFailure}"
       else
          reply =
             "{pc}进行ark的困难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 25) .. "{strRollFumble}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollFumble}"
       end
       return reply
    end,
@@ -405,31 +410,28 @@ Hardness = {
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 40) .. "{strCriticalSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
             "{pc}进行ark的极难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) ..
-                           "/" .. string.format("%.0f", num - 40) .. "{strRollExtremeSuccess}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollExtremeSuccess}"
       elseif (res <= 95) then
          reply =
             "{pc}进行ark的极难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 40) .. "{strRollFailure}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollFailure}"
       else
          reply =
             "{pc}进行ark的极难" ..
             obj ..
                "检定:" ..
                   "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num - 40) .. "{strRollFumble}"
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "{strRollFumble}"
       end
       return reply
    end,

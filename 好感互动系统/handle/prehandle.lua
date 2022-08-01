@@ -56,7 +56,7 @@ end
 -- 调整信任度和亲和度
 function TrustChange(msg)
     local favor, trust_flag = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust_flag"}, {0, 0})
-    local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237"
+    local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587"
     -- 关联信任度
     if (admin_judge) then
         if (favor < 1000) then
