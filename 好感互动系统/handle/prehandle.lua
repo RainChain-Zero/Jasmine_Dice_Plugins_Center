@@ -259,7 +259,10 @@ function FavorPunish(msg, show_favor)
         )
     end
     -- ! 好感度锁定列表
-    if (msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or msg.fromQQ=="614671889") then
+    if
+        (msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
+            msg.fromQQ == "614671889")
+     then
         return ""
     end
     --! 是否在回归保护期
@@ -349,12 +352,26 @@ end
 -- 剧情模式解锁提示
 function StoryUnlocked(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local storyUnlockedNotice, specialUnlockedNotice =
+    local storyUnlockedNotice,
+        specialUnlockedNotice,
+        isStory0Read,
+        isSpecial0Read,
+        isShopUnlocked,
+        story2Choice,
+        isSpecial1Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
-        {"storyUnlockedNotice", "specialUnlockedNotice"},
-        {"0000000000000000000000000", "0000000000000000000000000"}
+        {
+            "storyUnlockedNotice",
+            "specialUnlockedNotice",
+            "isStory0Read",
+            "isSpecial0Read",
+            "isShopUnlocked",
+            "story2Choice",
+            "isSpecial1Read"
+        },
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -365,7 +382,7 @@ function StoryUnlocked(msg)
         content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 序章『惊蛰』,已经解锁,输入“进入剧情 序章”可浏览剧情"
         res = "1" .. string.sub(storyUnlockedNotice, 2)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif (favor >= 1500 and GetUserConf("storyConf", msg.fromQQ, "isSpecial0Read", 0) == 0) then
+    elseif (isSpecial0Read == 0 and favor >= 1500) then
         flag = string.sub(specialUnlockedNotice, 1, 1)
         if (flag == "1") then
             return ""
@@ -373,10 +390,7 @@ function StoryUnlocked(msg)
         content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 元旦特典『预想此时应更好』,已经解锁,输入“进入剧情 元旦特典”可浏览剧情"
         res = "1" .. string.sub(specialUnlockedNotice, 2)
         SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
-    elseif
-        (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and favor >= 2000 and
-            GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0)
-     then
+    elseif (isStory0Read == 1 and favor >= 2000 and isShopUnlocked == 0) then
         flag = string.sub(storyUnlockedNotice, 2, 2)
         if (flag == "1") then
             return ""
@@ -384,10 +398,7 @@ function StoryUnlocked(msg)
         content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第一章『夜未央』,已经解锁,输入“进入剧情 第一章”可浏览剧情"
         res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif
-        (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 1 and favor >= 3000 and
-            GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0)
-     then
+    elseif (isShopUnlocked == 1 and favor >= 3000 and story2Choice == 0) then
         flag = string.sub(storyUnlockedNotice, 3, 3)
         if (flag == "1") then
             return ""
@@ -395,7 +406,7 @@ function StoryUnlocked(msg)
         content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第二章『难以言明的选择』,已经解锁,输入“进入剧情 第二章”可浏览剧情"
         res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) ~= 0 and favor >= 4000 then
+    elseif story2Choice ~= 0 and favor >= 4000 then
         flag = string.sub(storyUnlockedNotice, 4, 4)
         if (flag == "1") then
             return ""
@@ -403,6 +414,15 @@ function StoryUnlocked(msg)
         content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第三章『此般景致』,已经解锁,输入“进入剧情 第三章”可浏览剧情"
         res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
+    elseif isSpecial1Read == 0 then
+        --todo 8.06后恢复好感3500
+        flag = string.sub(specialUnlockedNotice, 2, 2)
+        if (flag == "1") then
+            return ""
+        end
+        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 七夕特典『近在咫尺的距离』限时开放,输入“进入剧情 七夕特典”可浏览剧情"
+        res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
+        SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
     end
     sendMsg(content, msg.fromGroup, msg.fromQQ)
 end

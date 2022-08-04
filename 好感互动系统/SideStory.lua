@@ -2,11 +2,13 @@ msg_order = {}
 
 package.path = getDiceDir() .. "/plugin/Story/?.lua"
 require "Story"
+require "Special"
 require "Story0"
 require "Special0"
 require "Story1"
 require "Story2"
 require "Story3"
+require "Special1"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
@@ -50,6 +52,8 @@ function StoryMain(msg)
     else
         if (StorySpecial == 0) then
             Reply = SpecialZero(msg)
+        elseif StorySpecial == 1 then
+            Reply = SpecialOne(msg)
         end
     end
     return Reply
@@ -117,6 +121,13 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "StoryReadNow", 3)
             Story = "第三章 此般景致"
         end
+    elseif string.find(StoryTemp, "七夕特典") or string.find(StoryTemp, "近在咫尺的距离") then
+        --todo 8.06恢复好感3500限制
+        -- if favor < 3500 then
+        --     return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3500)"
+        -- end
+        SetUserConf("storyConf", msg.fromQQ, "SpecialReadNow", 1)
+        Story = "七夕特典 近在咫尺的距离"
     end
     -- 是否存在章节
     if (Story == "") then
@@ -160,7 +171,8 @@ function Choose(msg)
     end
     -- 匹配选项
     local res = string.match(msg.fromMsg, "[%s]*(%d)", 3)
-    if (res == nil or res == "" or res * 1 < 1 or res * 1 > 3) then
+    res = tonumber(res or 0)
+    if (res < 1 or res > 3) then
         return "您必须输入一个有效的选项数字哦~"
     end
 
@@ -178,6 +190,8 @@ function Choose(msg)
     else
         if (StorySpecial == 0) then
             Reply = SpecialZeroChoose(msg, res)
+        elseif StorySpecial == 1 then
+            Reply = SpecialOneChoose(msg, res)
         end
     end
     return Reply
@@ -224,6 +238,8 @@ function Skip(msg)
     else
         if (StorySpecial == 0) then
             Reply = SkipSpecial0(msg)
+        elseif StorySpecial == 1 then
+            Reply = SkipSpecial1(msg)
         end
     end
     if (Reply == nil) then
