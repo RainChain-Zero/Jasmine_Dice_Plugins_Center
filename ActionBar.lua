@@ -118,7 +118,7 @@ function action_del(msg)
             end
         end
         -- 从等待栈中移除玩家
-        for k3, v3 in pairs(actionBar.waiting_stack) do
+        for k3, v3 in pairs(actionBar.waiting_stack or {}) do
             if v1 == v3 then
                 table.remove(actionBar.waiting_stack, k3)
             end
@@ -207,6 +207,9 @@ function action_show(msg)
     end
     local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
     local res = "当前行动次序，按照行动圈规则的话...让茉莉看看...\n行动圈长度为" .. (actionBar.length or 500)
+    if not actionBar.players then
+        return "『ERROR』当前群中不存在玩家的先攻值信息哦~"
+    end
     for k, v in pairs(actionBar.players) do
         res = res .. "\n" .. k .. "：目前累计" .. v.distance .. "，先攻值：" .. v.speed
     end

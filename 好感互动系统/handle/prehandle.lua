@@ -414,8 +414,7 @@ function StoryUnlocked(msg)
         content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第三章『此般景致』,已经解锁,输入“进入剧情 第三章”可浏览剧情"
         res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
         SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif isSpecial1Read == 0 then
-        --todo 8.06后恢复好感3500
+    elseif isSpecial1Read == 0 and favor >= 3500 then
         flag = string.sub(specialUnlockedNotice, 2, 2)
         if (flag == "1") then
             return ""
