@@ -53,7 +53,7 @@ picture_api = {
     [2] = "http://random.firefliestudio.com",
     [3] = "https://www.dmoe.cc/random.php",
     [4] = "https://api.ixiaowai.cn/api/api.php",
-    [5] = "https://apibug.cn/api/ecy/&apiKey=5c41c5388d534ebc1ab0774e9df1b0d4"
+    [5] = "https://apibug.cn/api/ecy/"
 }
 
 function http_cat(msg)
