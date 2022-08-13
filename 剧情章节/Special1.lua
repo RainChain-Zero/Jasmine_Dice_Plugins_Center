@@ -17,7 +17,7 @@ function SpecialOne(msg)
             Init(msg)
             if isSpecial1Read == 0 then
                 local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-                GetUserConf("favorConf", msg.fromQQ, "好感度", favor + 100)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor + 100)
                 content = content .. "{FormFeed}{FormFeed}当前好感变化:+100"
             end
             SetUserConf("storyConf", msg.fromQQ, "isSpecial1Read", 1)

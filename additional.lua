@@ -8,7 +8,7 @@ function Mute(msg)
         if (QQ == nil or QQ == "") then
             return "{nick} 请告诉茉莉目标是哪位小朋友哦~"
         end
-        eventMsg(".group ban " .. QQ .. " " .. time, msg.fromGroup, "2677409596") 
+        eventMsg(".group ban " .. QQ .. " " .. time, msg.fromGroup, "2677409596")
     end
 end
 msg_order[Trade_order] = "Mute"
@@ -19,7 +19,7 @@ function Kick(msg)
         if (QQ == nil or QQ == "") then
             return "{nick} 请告诉茉莉目标是哪位小朋友哦~"
         end
-        eventMsg(".group kick " .. QQ , msg.fromGroup, "2677409596")
+        eventMsg(".group kick " .. QQ, msg.fromGroup, "2677409596")
     end
 end
 msg_order["#移除"] = "Kick"
@@ -51,14 +51,16 @@ msg_order["来点二次元"] = "picture"
 picture_api = {
     [1] = "https://iw233.cn/api/Random.php",
     [2] = "http://random.firefliestudio.com",
-    [3] = "https://acg.toubiec.cn/random.php",
-    [4] = "https://www.dmoe.cc/random.php",
-    [5] = "https://api.ixiaowai.cn/api/api.php"
+    [3] = "https://www.dmoe.cc/random.php",
+    [4] = "https://api.ixiaowai.cn/api/api.php",
+    [5] = "https://apibug.cn/api/ecy/&apiKey=5c41c5388d534ebc1ab0774e9df1b0d4"
 }
 
--- 摸鱼人日历
-function TouchFish(msg)
-    
-	return "[CQ:image,url=https://api.vvhan.com/api/moyu]"
+function http_cat(msg)
+    local code = string.match(msg.fromMsg, "(%d+)")
+    if not code then
+        return "请输入正确的http状态码"
+    end
+    return "[CQ:image,url=https://http.cat/" .. code .. "]"
 end
-msg_order["/摸鱼人日历"] = "moyu"
+msg_order["/httpcat"] = "http_cat"

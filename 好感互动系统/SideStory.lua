@@ -122,10 +122,9 @@ function EnterStory(msg)
             Story = "第三章 此般景致"
         end
     elseif string.find(StoryTemp, "七夕特典") or string.find(StoryTemp, "近在咫尺的距离") then
-        --todo 8.06恢复好感3500限制
-        -- if favor < 3500 then
-        --     return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3500)"
-        -- end
+        if favor < 3500 then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3500)"
+        end
         SetUserConf("storyConf", msg.fromQQ, "SpecialReadNow", 1)
         Story = "七夕特典 近在咫尺的距离"
     end
@@ -223,7 +222,7 @@ function Skip(msg)
     end
     -- 必须在小窗下进行
     if (msg.fromGroup ~= "0") then
-        return "茉莉..茉莉可不想在人多的地方和你分享这些哦（脸红）"
+        return "茉莉..茉莉可不想在人多的地方和你分享这些哦（脸红）（必须在好友小窗下进行）"
     end
     if (StoryNormal ~= -1) then
         if (StoryNormal == 0) then
