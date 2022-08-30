@@ -1,29 +1,29 @@
 function StoryThree(msg)
-    local MainIndex, Option, Choice, ChoiceIndex =
-        GetUserConf("storyConf", msg.fromQQ, {"MainIndex", "Option", "Choice", "ChoiceIndex"}, {1, 0, 0, 1})
+    local mainIndex, option, choice, choiceIndex =
+        GetUserConf("storyConf", msg.fromQQ, {"mainIndex", "option", "choice", "choiceIndex"}, {1, 0, 0, 1})
     local content = "系统：出现未知错误，请报告系统管理员"
-    if (Option == 0) then
-        content = Story3[MainIndex]
-        if (MainIndex == 12) then
-            SetUserConf("storyConf", msg.fromQQ, "Option", 1)
+    if (option == 0) then
+        content = Story3[mainIndex]
+        if (mainIndex == 12) then
+            SetUserConf("storyConf", msg.fromQQ, "option", 1)
             return content
-        elseif MainIndex == 23 then
+        elseif mainIndex == 23 then
             Init(msg)
             SetUserConf("storyConf", msg.fromQQ, "isStory3Read", 1)
             return content
         end
-        SetUserConf("storyConf", msg.fromQQ, "MainIndex", MainIndex + 1)
+        SetUserConf("storyConf", msg.fromQQ, "mainIndex", mainIndex + 1)
         return content
-    elseif Option == 1 then
-        if (Choice == 0) then
+    elseif option == 1 then
+        if (choice == 0) then
             return "请选择其中一个选项以推进哦~"
-        elseif Choice == 1 then
+        elseif choice == 1 then
             OptionNormalInit(msg, 16)
             return Story3[13]
-        elseif Choice == 2 then
+        elseif choice == 2 then
             OptionNormalInit(msg, 16)
             return Story3[14]
-        elseif Choice == 3 then
+        elseif choice == 3 then
             OptionNormalInit(msg, 16)
             return Story3[15]
         end
@@ -31,7 +31,7 @@ function StoryThree(msg)
 end
 
 function StoryThreeChoose(msg, res)
-    SetUserConf("storyConf", msg.fromQQ, {"Choice", "story2Choice", "NextOption"}, {res * 1, res * 1, -1})
+    SetUserConf("storyConf", msg.fromQQ, {"choice", "story2Choice", "nextOption"}, {res * 1, res * 1, -1})
     local isStory3Read = GetUserConf("storyConf", msg.fromQQ, "isStory3Read", 0)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     -- 选择2 初次阅读增加100好感
@@ -42,14 +42,14 @@ function StoryThreeChoose(msg, res)
 end
 
 function SkipStory3(msg)
-    local NextOption, isStory3Read = GetUserConf("storyConf", msg.fromQQ, {"NextOption", "isStory3Read"}, {1, 0})
+    local nextOption, isStory3Read = GetUserConf("storyConf", msg.fromQQ, {"nextOption", "isStory3Read"}, {1, 0})
     if isStory3Read == 0 then
         return "初次阅读可不允许跳过哦？"
     end
-    if NextOption == 1 then
-        SetUserConf("storyConf", msg.fromQQ, "Option", 1)
+    if nextOption == 1 then
+        SetUserConf("storyConf", msg.fromQQ, "option", 1)
         return Story3[12]
-    elseif NextOption == -1 then
+    elseif nextOption == -1 then
         Init(msg)
         return Story3[23]
     end

@@ -22,8 +22,8 @@ function StoryMain(msg)
         "storyConf",
         msg.fromQQ,
         {
-            "StoryReadNow",
-            "SpecialReadNow"
+            "storyReadNow",
+            "specialReadNow"
         },
         {-1, -1}
     )
@@ -77,13 +77,13 @@ function EnterStory(msg)
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1000)"
         end
         Story = "序章 惊蛰"
-        SetUserConf("storyConf", msg.fromQQ, {"StoryReadNow", "ChoiceSelected0"}, {0, 0})
+        SetUserConf("storyConf", msg.fromQQ, {"storyReadNow", "choiceSelected0"}, {0, 0})
     elseif (string.find(StoryTemp, "元旦特典") ~= nil or string.find(StoryTemp, "预想此时应更好") ~= nil) then
         if (favor < 1500) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1500)"
         end
         Story = "元旦特典 预想此时应更好"
-        SetUserConf("storyConf", msg.fromQQ, "SpecialReadNow", 0)
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 0)
     elseif (string.find(StoryTemp, "第一章") ~= nil or string.find(StoryTemp, "夜未央") ~= nil) then
         if (favor < 2000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
@@ -97,7 +97,7 @@ function EnterStory(msg)
             msg.fromQQ,
             {
                 "actionRoundLeft",
-                "StoryReadNow",
+                "storyReadNow",
                 "isStory1Option1Choice3"
             },
             {4, 1, -1}
@@ -109,7 +109,7 @@ function EnterStory(msg)
         elseif (favor < 3000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3000)"
         else
-            SetUserConf("storyConf", msg.fromQQ, "StoryReadNow", 2)
+            SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 2)
             Story = "第二章 难以言明的选择"
         end
     elseif (string.find(StoryTemp, "第三章") or string.find(StoryTemp, "此般景致")) then
@@ -118,21 +118,21 @@ function EnterStory(msg)
         elseif (favor < 4000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足4000)"
         else
-            SetUserConf("storyConf", msg.fromQQ, "StoryReadNow", 3)
+            SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 3)
             Story = "第三章 此般景致"
         end
     elseif string.find(StoryTemp, "七夕特典") or string.find(StoryTemp, "近在咫尺的距离") then
         if favor < 3500 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3500)"
         end
-        SetUserConf("storyConf", msg.fromQQ, "SpecialReadNow", 1)
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 1)
         Story = "七夕特典 近在咫尺的距离"
     end
     -- 是否存在章节
     if (Story == "") then
         return "请输入正确的章节名哦~"
     end
-    SetUserConf("storyConf", msg.fromQQ, {"MainIndex", "Option"}, {1, 0})
+    SetUserConf("storyConf", msg.fromQQ, {"mainIndex", "option"}, {1, 0})
     return "您已进入剧情模式『" .. Story .. "』,请在小窗模式下输入.f一步一步进行哦~"
 end
 msg_order[EntryStoryOrder] = "EnterStory"
@@ -143,13 +143,13 @@ function Init(msg)
         "storyConf",
         msg.fromQQ,
         {
-            "MainIndex",
-            "ChoiceIndex",
-            "Option",
-            "Choice",
-            "StoryReadNow",
-            "SpecialReadNow",
-            "NextOption"
+            "mainIndex",
+            "choiceIndex",
+            "option",
+            "choice",
+            "storyReadNow",
+            "specialReadNow",
+            "nextOption"
         },
         {1, 1, 0, 0, -1, -1, 1}
     )
@@ -157,15 +157,15 @@ end
 
 -- 选项选择
 function Choose(msg)
-    local Option, StoryNormal, StorySpecial =
-        GetUserConf("storyConf", msg.fromQQ, {"Option", "StoryReadNow", "SpecialReadNow"}, {0, -1, -1})
+    local option, StoryNormal, StorySpecial =
+        GetUserConf("storyConf", msg.fromQQ, {"option", "storyReadNow", "specialReadNow"}, {0, -1, -1})
     local Reply = "系统：出现未知错误，请报告系统管理员"
     -- 未进入任何剧情模式
     if (StoryNormal + StorySpecial == -2) then
         return ""
     end
     -- 没有任何选项
-    if (Option == 0) then
+    if (option == 0) then
         return "您现在还不能选择任何选项哦~"
     end
     -- 匹配选项
@@ -200,7 +200,7 @@ msg_order[".C"] = "Choose"
 
 -- 一个选项结束后初始化有关记录
 function OptionNormalInit(msg, index)
-    SetUserConf("storyConf", msg.fromQQ, {"MainIndex", "ChoiceIndex", "Option", "Choice"}, {index, 1, 0, 0})
+    SetUserConf("storyConf", msg.fromQQ, {"mainIndex", "choiceIndex", "option", "choice"}, {index, 1, 0, 0})
 end
 
 -- 跳转到下一选项
@@ -210,8 +210,8 @@ function Skip(msg)
         "storyConf",
         msg.fromQQ,
         {
-            "StoryReadNow",
-            "SpecialReadNow"
+            "storyReadNow",
+            "specialReadNow"
         },
         {-1, -1}
     )

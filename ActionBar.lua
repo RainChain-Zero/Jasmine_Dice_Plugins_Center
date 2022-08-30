@@ -1,3 +1,9 @@
+--[[
+    @Author RainChain-Zero
+    @Version 1.0
+    @Last Modified 2022/08/12 23:36
+    @Description：先攻、行动圈顺序表
+]]
 msg_order = {}
 
 --[[
@@ -13,14 +19,12 @@ function action_set(msg)
     local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
     actionBar.length = tonumber(length or 500)
     setGroupConf(msg.fromGroup, "actionBar", actionBar)
-    return "『SUCCESS』茉莉已设置当前群聊行动圈长度为：" .. actionBar.length
+    return "『SUCCESS』{self}已设置当前群聊行动圈长度为：" .. actionBar.length
 end
 msg_order[".acl"] = "action_set"
 
 --[[
-    玩家通过指令录入先攻值
-    @parm1 玩家名(唯一)
-    @parm2 先攻值|先攻变化
+    玩家通过指令录入先攻值,.ac 玩家名（唯一） 先攻值
 ]]
 function action_start(msg)
     if msg.fromGroup == "0" then
@@ -38,7 +42,7 @@ function action_start(msg)
         nameRcv, signRcv, numRcv = string.match(msg.fromMsg, "[%s]*(.+)[%s]+([%+%-]+)[%s]*(%d+)", #".ac" + 1)
     end
     if not nameRcv then
-        return "『ERROR』要告诉茉莉正确的玩家名才可以哦？"
+        return "『ERROR』要告诉{self}正确的玩家名才可以哦？"
     end
     if not numRcv then
         return "『ERROR』好像没有找到正确的先攻数值呢...要不再检查一下？"
@@ -91,7 +95,7 @@ function action_start(msg)
         return "『ERROR』先攻值可不能小于0诶..."
     end
     setGroupConf(msg.fromGroup, "actionBar", actionBar)
-    return "『SUCCESS』茉莉已为您录入先攻值，当前先攻值为" .. actionBar.players[nameRcv].speed
+    return "『SUCCESS』{self}已为您录入先攻值，当前先攻值为" .. actionBar.players[nameRcv].speed
 end
 msg_order[".ac"] = "action_start"
 
@@ -126,7 +130,7 @@ function action_del(msg)
     end
 
     setGroupConf(msg.fromGroup, "actionBar", actionBar)
-    return "『SUCCESS』茉莉已将" .. #players .. "位玩家移出本群先攻列表"
+    return "『SUCCESS』{self}已将" .. #players .. "位玩家移出本群先攻列表"
 end
 msg_order[".ac del"] = "action_del"
 
@@ -190,11 +194,11 @@ function action_next(msg)
             sendMsg(
                 "『WARNING』" ..
                     getUserConf(msg.fromQQ, "nick", "用户") ..
-                        "(" .. msg.fromQQ .. ")在" .. getGroupConf(msg.fromGroup, "name", "私聊") .. "疑似恶意让茉莉进入大数循环",
+                        "(" .. msg.fromQQ .. ")在" .. getGroupConf(msg.fromGroup, "name", "私聊") .. "疑似恶意让{self}进入大数循环",
                 0,
                 3032902237
             )
-            return "『WARNING』检测到数据异常，您疑似使茉莉进入大数循环，已通知管理员..."
+            return "『WARNING』检测到数据异常，您疑似使{self}进入大数循环，已通知管理员..."
         end
     end
 end
@@ -206,7 +210,7 @@ function action_show(msg)
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
     local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
-    local res = "当前行动次序，按照行动圈规则的话...让茉莉看看...\n行动圈长度为" .. (actionBar.length or 500)
+    local res = "当前行动次序，按照行动圈规则的话...让{self}看看...\n行动圈长度为" .. (actionBar.length or 500)
     if not actionBar.players then
         return "『ERROR』当前群中不存在玩家的先攻值信息哦~"
     end
@@ -241,7 +245,7 @@ function action_list(msg)
             return a.speed > b.speed
         end
     )
-    local res = "当前行动次序，按照普通先攻规则的话...让茉莉看看..."
+    local res = "当前行动次序，按照普通先攻规则的话...让{self}看看..."
     for i = 1, #players, 1 do
         res = res .. "\n" .. i .. "." .. players[i].name .. "：先攻值：" .. players[i].speed
     end
@@ -265,7 +269,7 @@ function action_reset(msg)
     -- 清空等待栈
     actionBar.waiting_stack = {}
     setGroupConf(msg.fromGroup, "actionBar", actionBar)
-    return "『SUCCESS』茉莉已经重置了本群的行动轮次序√"
+    return "『SUCCESS』{self}已经重置了本群的行动轮次序√"
 end
 msg_order[".ac reset"] = "action_reset"
 

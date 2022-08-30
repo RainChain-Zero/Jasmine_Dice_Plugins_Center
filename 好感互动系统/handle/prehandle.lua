@@ -37,11 +37,11 @@ function JudgeWorking(msg)
         -- 已经结束了打工
         if (os.time() > work["DDL"]) then
             -- 处于工作状态
-            SetUserConf("itemConf", msg.fromQQ, "FL", GetUserConf("itemConf", msg.fromQQ, "FL", 0) + work["profit"])
+            SetUserConf("itemConf", msg.fromQQ, "fl", GetUserConf("itemConf", msg.fromQQ, "fl", 0) + work["profit"])
             work["working"] = false
             SetUserConf("favorConf", msg.fromQQ, "work", work)
             sendMsg(
-                "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "FL",
+                "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "fl",
                 msg.fromGroup,
                 msg.fromQQ
             )
@@ -55,34 +55,34 @@ function JudgeWorking(msg)
 end
 -- 调整信任度和亲和度
 function TrustChange(msg)
-    local favor, trust_flag = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust_flag"}, {0, 0})
+    local favor, trust = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust"}, {0, 0})
     local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587"
     -- 关联信任度
     if (admin_judge) then
         if (favor < 1000) then
-            if (trust_flag == 0) then
+            if (trust == 0) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 0)
+            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 3032902237)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 0)
         elseif (favor < 3000) then
-            if (trust_flag == 1) then
+            if (trust == 1) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 1)
+            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 3032902237)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 1)
         elseif (favor < 5000) then
-            if (trust_flag == 2) then
+            if (trust == 2) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 2)
+            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 3032902237)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 2)
         else
-            if (trust_flag == 3) then
+            if (trust == 3) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 3)
+            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 3032902237)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 3)
         end
     end
 end
@@ -99,24 +99,20 @@ function CohesionChange(msg)
     )
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
-    end
-    if (favor > 1000) then
+    elseif (favor < 2000) then
         if (isStory0Read == 1) then
             -- 通过第一章且好感度达到1000
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 1)
         end
-    end
-    if (favor > 2000) then
+    elseif (favor < 3000) then
         if (isShopUnlocked == 1) then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 2)
         end
-    end
-    if (favor > 3000) then
+    elseif (favor < 4000) then
         if (story2Choice ~= 0) then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 3)
         end
-    end
-    if favor > 4000 then
+    else
         if isStory3Read == 1 then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 4)
         end
@@ -223,21 +219,12 @@ end
 
 -- 一定时间不交互将会降低好感度
 function FavorPunish(msg, show_favor)
-    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
+    local favor, lastTime = GetUserConf("favorConf", msg.fromQQ, {"好感度", "lastTime"}, {0, os.time()})
+    local time_table = os.date("*t", lastTime)
+    local _year, _month, _day, _hour = time_table["year"], time_table["month"], time_table["day"], time_table["hour"]
     local isFavorTimePunishDown, isFavorTimePunish = false, false
     -- 初始时间记为编写该程序段的时间
-    local _year, _month, _day, _hour =
-        GetUserConf(
-        "favorConf",
-        msg.fromQQ,
-        {
-            "year_last",
-            "month_last",
-            "day_last",
-            "hour_last"
-        },
-        {2021, 10, 11, 23}
-    )
+
     local subyear, subhour = year - _year, hour - _hour
     local subday
     -- ! 注意时间的计算方式
@@ -251,12 +238,7 @@ function FavorPunish(msg, show_favor)
     end
 
     if (show_favor ~= true) then
-        SetUserConf(
-            "favorConf",
-            msg.fromQQ,
-            {"month_last", "day_last", "hour_last", "year_last"},
-            {month, day, hour, year}
-        )
+        SetUserConf("favorConf", msg.fromQQ, "lastTime", os.time())
     end
     -- ! 好感度锁定列表
     if

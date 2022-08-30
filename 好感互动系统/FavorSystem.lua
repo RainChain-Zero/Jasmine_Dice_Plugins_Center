@@ -179,8 +179,9 @@ function rcv_food(msg)
     local gift_add = add_gift_once()
     local self_today_gift = GetUserToday(DiceQQ, "gifts", 0) + gift_add * cnt
     SetUserToday(DiceQQ, "gifts", self_today_gift)
-    local self_total_gift = GetUserConf("favorConf", DiceQQ, "gifts", 0) + gift_add * cnt
-    SetUserConf("favorConf", DiceQQ, "gifts", self_total_gift)
+    --! 骰娘总次数采用Dice!函数
+    local self_total_gift = getUserConf(DiceQQ, "gifts", 0) + gift_add * cnt
+    setUserConf(DiceQQ, "gifts", self_total_gift)
     if (today_sorry == 0) then
         -- 循环调用
         while (cnt > 0) do
@@ -597,7 +598,7 @@ function rcv_Ciallo_night(msg)
                 else
                     --! 1298754454 晚安定制
                     if msg.fromQQ == "1298754454" then
-                        return table_draw(merge_reply(reply_night_highest,evening_1298754454))
+                        return table_draw(merge_reply(reply_night_highest, evening_1298754454))
                     end
                     return table_draw(reply_night_highest)
                 end
@@ -737,35 +738,35 @@ function punish_favor_rude(msg)
     -- 为了使触发该函数时不触发版本通告，不使用local preReply=preHandle(msg)而采取部分内联形式
     FavorPunish(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local trust_flag = GetUserConf("favorConf", msg.fromQQ, "trust_flag", 0)
+    local trust = GetUserConf("favorConf", msg.fromQQ, "trust", 0)
     local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237"
     local today_rude = GetUserToday(msg.fromQQ, "rude", 0)
     -- festival(msg)
     if (admin_judge) then
         if (favor < 1000) then
-            if (trust_flag == 0) then
+            if (trust == 0) then
                 return ""
             end
             eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 0)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 0)
         elseif (favor < 3000) then
-            if (trust_flag == 1) then
+            if (trust == 1) then
                 return ""
             end
             eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 1)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 1)
         elseif (favor < 5000) then
-            if (trust_flag == 2) then
+            if (trust == 2) then
                 return ""
             end
             eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 2)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 2)
         else
-            if (trust_flag == 3) then
+            if (trust == 3) then
                 return ""
             end
             eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
-            SetUserConf("favorConf", msg.fromQQ, "trust_flag", 3)
+            SetUserConf("favorConf", msg.fromQQ, "trust", 3)
         end
     end
 
@@ -1703,29 +1704,29 @@ function action(msg)
             end
         end
     end
-    local judge_tietie = string.find(msg.fromMsg,"贴贴",1)~=nil
+    local judge_tietie = string.find(msg.fromMsg, "贴贴", 1) ~= nil
     if judge_tietie then
         today_tietie = today_tietie + 1
-        SetUserToday(msg.fromQQ,"tietie",today_tietie)
+        SetUserToday(msg.fromQQ, "tietie", today_tietie)
         if today_rude <= 2 and today_sorry <= 1 then
-            if favor<= ranint(1500 - left_limit, 1500 + right_limit) then
-                favor_now = favor + ModifyFavorChangeNormal(msg,favor,-40,affinity,succ)
+            if favor <= ranint(1500 - left_limit, 1500 + right_limit) then
+                favor_now = favor + ModifyFavorChangeNormal(msg, favor, -40, affinity, succ)
                 reply_main = table_draw(reply_tietie_less)
-            elseif favor<= ranint(3500 - left_limit, 3500 + right_limit) then
+            elseif favor <= ranint(3500 - left_limit, 3500 + right_limit) then
                 if today_tietie <= today_tietie_limit then
-                    favor_now = favor + ModifyFavorChangeNormal(msg,favor,10,affinity,succ)
+                    favor_now = favor + ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
                 end
                 reply_main = table_draw(reply_tietie_low)
-            elseif favor <= ranint(5500 - left_limit,5500 + left_limit) then
+            elseif favor <= ranint(5500 - left_limit, 5500 + left_limit) then
                 if today_tietie <= today_tietie_limit then
-                    favor_now = favor + ModifyFavorChangeNormal(msg,favor,13,affinity,succ)
+                    favor_now = favor + ModifyFavorChangeNormal(msg, favor, 13, affinity, succ)
                 end
                 reply_main = table_draw(reply_tietie_high)
             else
                 if today_tietie <= today_tietie_limit then
-                    favor_now = favor + ModifyFavorChangeNormal(msg,favor,15,affinity,succ)
+                    favor_now = favor + ModifyFavorChangeNormal(msg, favor, 15, affinity, succ)
                 end
-                if ranint(1,2)==1 then
+                if ranint(1, 2) == 1 then
                     reply_main = table_draw(reply_tietie_high)
                 else
                     reply_main = table_draw(reply_tietie_highest)
@@ -1742,7 +1743,6 @@ end
 reply_main = ""
 -- 执行函数相应“茉莉”
 function action_main(msg)
-
     for _, v in pairs(rude_table) do
         if (string.find(msg.fromMsg, v) ~= nil) then
             reply_main = punish_favor_rude(msg)

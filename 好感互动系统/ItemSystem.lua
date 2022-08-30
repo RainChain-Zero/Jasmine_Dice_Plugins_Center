@@ -312,7 +312,9 @@ function SearchItem(msg)
     if (item == "好感") then
         item = "好感度"
     end
-
+    if item == "FL" then
+        item = "fl"
+    end
     -- 判断道具是否存在
     for k, _ in pairs(Item) do
         if (string.find(k, item) ~= nil) then

@@ -51,11 +51,11 @@ function JudgeWorking(msg)
         -- 已经结束了打工
         if (os.time() > work["DDL"]) then
             -- 处于工作状态
-            SetUserConf("itemConf", msg.fromQQ, "FL", GetUserConf("itemConf", msg.fromQQ, "FL", 0) + work["profit"])
+            SetUserConf("itemConf", msg.fromQQ, "fl", GetUserConf("itemConf", msg.fromQQ, "fl", 0) + work["profit"])
             work["working"] = false
             SetUserConf("favorConf", msg.fromQQ, "work", work)
             sendMsg(
-                "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "FL",
+                "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "fl",
                 msg.fromGroup,
                 msg.fromQQ
             )
