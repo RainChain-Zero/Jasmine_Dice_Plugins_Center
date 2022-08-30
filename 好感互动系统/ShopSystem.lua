@@ -24,7 +24,8 @@ function ShopMenu(msg)
                 res[ItemShop[k].cohesion] = ""
             end
             res[ItemShop[k].cohesion] =
-                res[ItemShop[k].cohesion] .. k .. "（" .. ItemShop[k].cohesion .. "）"..ItemShop[k].class..":" .. ItemShop[k].price .. "\n"
+                res[ItemShop[k].cohesion] ..
+                k .. "（" .. ItemShop[k].cohesion .. "）" .. ItemShop[k].class .. ":" .. ItemShop[k].price .. "\n"
         end
     end
     for _, v in ipairs(res) do
@@ -72,16 +73,16 @@ function BuyItem(msg)
         return "『✖条件未满足』您的亲密度不足以购买此项物品哦~"
     end
 
-    local FL = GetUserConf("itemConf", msg.fromQQ, "FL", 500) -- 初始FL为500
+    local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 500) -- 初始FL为500
     local price = tonumber(string.match(ItemShop[item].price, "%d*")) * num
-    if (FL < price) then
+    if (fl < price) then
         return "『✖余量不足』诶？身上好像没带够FL...看来只能下次来了呢"
     else
         SetUserConf(
             "itemConf",
             msg.fromQQ,
-            {"FL", item},
-            {FL - price, GetUserConf("itemConf", msg.fromQQ, item, 0) + num}
+            {"fl", item},
+            {fl - price, GetUserConf("itemConf", msg.fromQQ, item, 0) + num}
         )
         -- 判断是否初次在小店购买（第一章剧情判断用）
         if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 10) then

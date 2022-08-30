@@ -7,15 +7,25 @@
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
--- UserConf.json的路径
-UserConfPath = getDiceDir() .. "/UserConfDir/"
 -- UserToday.json的路径
 UserTodayPath = getDiceDir() .. "/user/UserToday.json"
 -- GroupConf.json的路径
 GroupConfPath = getDiceDir() .. "/user/GroupConf.json"
 
+-- 本地API接口
+url = "http://localhost:45445/"
+
+routers = {
+    ["favorConf"] = "FavorConf",
+    ["adjustConf"] = "AdjustConf",
+    ["itemConf"] = "ItemConf",
+    ["storyConf"] = "StoryConf",
+    ["tradeConf"] = "TradeConf"
+}
+
 -- 文件名,qq,{key},{value} key和value相同索引处一一对应/qq,key,value
 function SetUserConf(filename, qq, key, value)
+    qq = tostring(qq)
     --! 参数不足判断
     if (value == nil) then
         error("SetUserConf arg#4 value==nil")
@@ -24,41 +34,41 @@ function SetUserConf(filename, qq, key, value)
     if (filename == "stroyConf") then
         error("spelling mistake in SetUserConf arg#1 filename")
     end
-    -- 读取json文件
-    local f1 = io.open(UserConfPath .. qq .. "/" .. filename .. ".json", "r")
-    if (not f1) then
-        --! 用户数据文件初始化
-        UserInit(qq)
-        -- 打开创建的文件
-        f1 = assert(io.open(UserConfPath .. qq .. "/" .. filename .. ".json", "r"))
-    end
-    Str = f1:read("a")
-    f1:close()
-    if (#Str == 0) then
-        Str = "{}"
-    end
-    --! 捕获异常
-    local succ, j = pcall(Json_decode)
-    if not succ then
-        error("『×警告！』用户" .. qq .. "数据文件" .. filename .. "出错!")
-    end
+    local j = {["qq"] = qq}
     -- 对密集的写入支持列表以提高效率
     if (type(key) == "table" and type(value) == "table") then
         -- 按顺序遍历表，写入
         for k, v in ipairs(key) do
-            j[v] = value[k]
+            if v == "好感度" then
+                j["favor"] = value[k]
+            else
+                j[v] = value[k]
+            end
         end
     else
-        j[key] = value
+        -- 好感度的字段名和后端统一
+        if key == "好感度" then
+            j["favor"] = value
+        else
+            j[key] = value
+        end
     end
     local json_encode = Json.encode(j)
-    local f2 = assert(io.open(UserConfPath .. qq .. "/" .. filename .. ".json", "w"))
-    f2:write(json_encode)
-    f2:close()
+    log(json_encode)
+    local res
+    res, Str = http.post(url .. "set" .. routers[filename], json_encode)
+    if not res then
+        error("网络异常")
+    end
+    res = Json.decode(Str)
+    if not res.succ then
+        error(qq .. "的post接口异常" .. res.err_msg)
+    end
 end
 
 -- 文件名,qq,{key},{default} key和default相同索引处一一对应/qq,key,default
 function GetUserConf(filename, qq, key, default)
+    qq = tostring(qq)
     --! 参数不足判断
     if (default == nil) then
         error("GetUserConf arg#4 default==nil")
@@ -67,20 +77,17 @@ function GetUserConf(filename, qq, key, default)
     if (filename == "stroyConf") then
         error("spelling mistake in GetUserConf arg#1 filename")
     end
-    local f1 = io.open(UserConfPath .. qq .. "/" .. filename .. ".json", "r")
-    if (not f1) then
-        --! 用户数据文件初始化
-        UserInit(qq)
-        -- 打开创建的文件
-        f1 = assert(io.open(UserConfPath .. qq .. "/" .. filename .. ".json", "r"))
+    local succ
+    succ, Str = http.get(url .. "get" .. routers[filename] .. "/" .. qq)
+    if not succ then
+        error("网络异常")
     end
-    Str = f1:read("a")
-    f1:close()
-    if (#Str == 0) then
-        Str = "{}"
+    --! 捕获异常'
+    local j = Json.decode(Str)
+    if not j.succ then
+        error(qq .. "的get请求调用失败！" .. j.err_msg)
     end
-    --! 捕获异常
-    local succ, j = pcall(Json_decode)
+    j = j.data or "{}"
     if not succ then
         error("『×警告！』用户" .. qq .. "数据文件" .. filename .. "出错!")
     end
@@ -90,15 +97,22 @@ function GetUserConf(filename, qq, key, default)
         -- 存放返回值表
         local res = key
         for k, v in ipairs(key) do
-            if (j[v] == nil) then
+            local v_now = v
+            if v == "好感度" then
+                v_now = "favor"
+            end
+            if (j[v_now] == nil) then
                 res[k] = default[k]
             else
-                res[k] = j[v]
+                res[k] = j[v_now]
             end
         end
         -- unpack res表,统一返回所有值
         return table.unpack(res)
     else
+        if key == "好感度" then
+            key = "favor"
+        end
         if (j[key] == nil) then
             return default
         else
@@ -237,19 +251,4 @@ function SetUserToday(qq, key, value)
     local f2 = assert(io.open(UserTodayPath, "w"))
     f2:write(json_encode)
     f2:close()
-end
-
--- 用户数据文件初始化
-function UserInit(qq)
-    os.execute("mkdir " .. UserConfPath .. qq .. "/")
-    os.execute("touch " .. UserConfPath .. qq .. "/favorConf.json")
-    os.execute("touch " .. UserConfPath .. qq .. "/storyConf.json")
-    os.execute("touch " .. UserConfPath .. qq .. "/itemConf.json")
-    os.execute("touch " .. UserConfPath .. qq .. "/tradeConf.json")
-    os.execute("touch " .. UserConfPath .. qq .. "/adjustConf.json")
-end
-
--- 异常处理封装
-function Json_decode()
-    return Json.decode(Str)
 end
