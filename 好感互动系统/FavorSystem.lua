@@ -1761,6 +1761,13 @@ function action_main(msg)
 end
 msg_order[normal_order] = "action_main"
 
+--! 注册指令
+function register(msg)
+    setUserConf(msg.fromQQ, "isRegister", 1)
+    return "信息已录入...欢迎您，{nick}，希望能和你一起创造美好的回忆~"
+end
+msg_order["我已阅读并理解茉莉协议，同意接受以上服务条款"] = "register"
+
 -- 管理员测试权限
 function setfavor(msg)
     local first, second = "", ""
