@@ -54,6 +54,12 @@ function Trade(msg)
         if (msg.fromQQ == QQReceive) then
             return "系统：您无法和自己交易哦~"
         end
+        if itemRequest == "FL" then
+            itemRequest = "fl"
+        end
+        if itemReceive == "FL" then
+            itemReceive = "fl"
+        end
         -- ? 输入的道具是否存在
         local flag1, flag2 = Check()
         if (not flag1 or not flag2) then
@@ -239,7 +245,7 @@ function adminGift(msg)
     if (QQ == nil or QQ == "" or num == nil or item == nil or message == nil) then
         return "参数输入有误！"
     end
-    SetUserConf("itemConf", QQ, item, GetUserConf("itemConf", QQ * 1, item, 0) + num)
+    SetUserConf("itemConf", QQ, item, GetUserConf("itemConf", QQ * 1, item, 0) + tonumber(num))
     -- 发送消息提醒对方
     -- ! 注意 一定要在对方是好友的前提下使用！
     local content = "系统邮件：" .. message .. "\n已接收附件：" .. item .. "x" .. string.format("%.0f", num) .. ",通过指令“查询 道具名”确认"

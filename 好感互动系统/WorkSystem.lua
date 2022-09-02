@@ -28,7 +28,7 @@ function Work(msg)
         work["profit"] = 100
     end
     time = os.time() + math.modf(time * 60 * 60 * WorkTime_Item(msg))
-    work["DDL"] = time
+    work["ddl"] = time
 
     SetUserConf("favorConf", msg.fromQQ, "work", work)
     return "你和茉莉走进刚开门的咖啡馆，跟常青打了个招呼，就和茉莉换上工作服，开始上班。\n下班时间：" .. os.date("%Y.%m.%d %H:%M:%S", time)
@@ -49,7 +49,7 @@ function JudgeWorking(msg)
     if (work["working"] == true) then
         -- 未进入打工状态
         -- 已经结束了打工
-        if (os.time() > work["DDL"]) then
+        if (os.time() > work["ddl"]) then
             -- 处于工作状态
             SetUserConf("itemConf", msg.fromQQ, "fl", GetUserConf("itemConf", msg.fromQQ, "fl", 0) + work["profit"])
             work["working"] = false

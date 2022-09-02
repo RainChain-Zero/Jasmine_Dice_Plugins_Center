@@ -56,7 +56,7 @@ function draw_lottery(msg)
         resp.data.avg,
         resp.data.msg
     -- 计算x和y
-    local x = math.floor(item_request_price / avg + 0.5)
+    local x = math.floor(item_request_price / avg * 100 + 0.5) / 100
     local y = 0
     if x < 0.8 or x > 1.2 then
         y = math.abs(x - 1)

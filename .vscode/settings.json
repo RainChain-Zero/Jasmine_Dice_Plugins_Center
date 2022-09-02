@@ -12,7 +12,9 @@
     "log",
     "getGroupConf",
     "setGroupConf",
-    "http"
+    "http",
+    "getUserToday",
+    "setUserToday"
   ],
   "Lua.diagnostics.disable": ["lowercase-global"]
 }

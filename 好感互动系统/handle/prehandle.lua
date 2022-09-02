@@ -44,7 +44,7 @@ function JudgeWorking(msg)
     if (work["working"] == true) then
         -- 未进入打工状态
         -- 已经结束了打工
-        if (os.time() > work["DDL"]) then
+        if (os.time() > work["ddl"] or 0) then
             -- 处于工作状态
             SetUserConf("itemConf", msg.fromQQ, "fl", GetUserConf("itemConf", msg.fromQQ, "fl", 0) + work["profit"])
             work["working"] = false

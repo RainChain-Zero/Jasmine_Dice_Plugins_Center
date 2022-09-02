@@ -175,7 +175,7 @@ function rcv_food(msg)
         return "对不起{nick}，茉莉今天...想换点别的口味呢呜QAQ"
     end
     -- 计算今日/累计投喂，存取在骰娘用户记录上
-    local DiceQQ = getDiceQQ()
+    local DiceQQ = 3349795206
     local gift_add = add_gift_once()
     local self_today_gift = GetUserToday(DiceQQ, "gifts", 0) + gift_add * cnt
     SetUserToday(DiceQQ, "gifts", self_today_gift)
