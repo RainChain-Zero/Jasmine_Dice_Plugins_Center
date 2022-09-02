@@ -175,7 +175,7 @@ function rcv_food(msg)
         return "对不起{nick}，茉莉今天...想换点别的口味呢呜QAQ"
     end
     -- 计算今日/累计投喂，存取在骰娘用户记录上
-    local DiceQQ = getDiceQQ()
+    local DiceQQ = 3349795206
     local gift_add = add_gift_once()
     local self_today_gift = GetUserToday(DiceQQ, "gifts", 0) + gift_add * cnt
     SetUserToday(DiceQQ, "gifts", self_today_gift)
@@ -1760,6 +1760,13 @@ function action_main(msg)
     return reply_main
 end
 msg_order[normal_order] = "action_main"
+
+--! 注册指令
+function register(msg)
+    setUserConf(msg.fromQQ, "isRegister", 1)
+    return "信息已录入...欢迎您，{nick}，希望能和你一起创造美好的回忆~"
+end
+msg_order["我已阅读并理解茉莉协议，同意接受以上服务条款"] = "register"
 
 -- 管理员测试权限
 function setfavor(msg)

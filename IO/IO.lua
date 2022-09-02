@@ -54,7 +54,6 @@ function SetUserConf(filename, qq, key, value)
         end
     end
     local json_encode = Json.encode(j)
-    log(json_encode)
     local res
     res, Str = http.post(url .. "set" .. routers[filename], json_encode)
     if not res then

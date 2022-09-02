@@ -10,6 +10,15 @@ function preHandle(msg)
     -- 强制更新提示信息
     -- sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
     -- os.exit()
+    --! 强制阅读协议注册，一天提醒一次
+    if getUserConf(msg.fromQQ, "isRegister", 0) == 0 then
+        if getUserToday(msg.fromQQ, "registerNotice", 0) == 0 then
+            setUserToday(msg.fromQQ, "registerNotice", 1)
+            return "检测到您还未激活好感系统...\n请前往https://rainchain-zero.github.io/JasmineDoc/promise/阅读茉莉协议并查看激活指令"
+        else
+            return ""
+        end
+    end
     -- 打工终止
     if (JudgeWorking(msg)) then
         return "『✖Error』“打工期间不准调情！”你就这样被常青抓了个正着（打工期间无法进行喂食以及交互）"
@@ -35,7 +44,7 @@ function JudgeWorking(msg)
     if (work["working"] == true) then
         -- 未进入打工状态
         -- 已经结束了打工
-        if (os.time() > work["DDL"]) then
+        if (os.time() > (work["ddl"] or 0)) then
             -- 处于工作状态
             SetUserConf("itemConf", msg.fromQQ, "fl", GetUserConf("itemConf", msg.fromQQ, "fl", 0) + work["profit"])
             work["working"] = false
@@ -63,25 +72,25 @@ function TrustChange(msg)
             if (trust == 0) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 0)
         elseif (favor < 3000) then
             if (trust == 1) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 1)
         elseif (favor < 5000) then
             if (trust == 2) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 2)
         else
             if (trust == 3) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 3)
         end
     end
