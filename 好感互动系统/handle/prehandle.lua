@@ -72,25 +72,25 @@ function TrustChange(msg)
             if (trust == 0) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 0)
         elseif (favor < 3000) then
             if (trust == 1) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 1)
         elseif (favor < 5000) then
             if (trust == 2) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 2)
         else
             if (trust == 3) then
                 return ""
             end
-            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 3032902237)
+            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
             SetUserConf("favorConf", msg.fromQQ, "trust", 3)
         end
     end

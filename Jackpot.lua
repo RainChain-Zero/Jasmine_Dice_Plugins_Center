@@ -6,7 +6,7 @@ require "itemIO"
 require "IO"
 
 function draw_lottery(msg)
-    local num, name = string.match(msg.fromMsg, "/抽奖[%s]*(%d+)[%s]*(%S*)")
+    local num, name, message = string.match(msg.fromMsg, "/抽奖[%s]*(%d+)[%s]*(%S*)[%s]*(.*)")
     if not num then
         return "请输入正确的抽奖命令哦~"
     end
@@ -31,9 +31,9 @@ function draw_lottery(msg)
     if item_request_price < 30 then
         return "不可以放入总价值少于30FL的物品哦~"
     end
-    local request_body = {num = num, name = name, price = item_request_price}
+    local request_body = {qq = tostring(msg.fromQQ), num = num, name = name, price = item_request_price, msg = message}
     -- 调用api抽奖
-    local res, resp = http.post(url .. "drawLottery", Json.encode(request_body))
+    local res, resp = http.post(url .. "drawLottery", Json.encode(request_body), "application/json;charset=gbk")
     if not res then
         return "网络异常"
     end
@@ -48,7 +48,13 @@ function draw_lottery(msg)
         fl, item_request_num = fl - 6, item_request_num - num
     end
     -- 抽取到的物品
-    local item_get_num, item_get, price_get, avg = resp.data.num, resp.data.name, resp.data.price, resp.data.avg
+    local qq_get, item_get_num, item_get, price_get, avg, message_get =
+        resp.data.qq,
+        resp.data.num,
+        resp.data.name,
+        resp.data.price,
+        resp.data.avg,
+        resp.data.msg
     -- 计算x和y
     local x = math.floor(item_request_price / avg + 0.5)
     local y = 0
@@ -94,5 +100,11 @@ function draw_lottery(msg)
             SetUserConf("itemConf", msg.fromQQ, {"fl", name, item_get}, {fl, item_request_num, item_num_now})
         end
     end
-    return reply .. "，额外变动了【" .. m .. "】FL"
+    reply = reply .. "，额外变动了【" .. m .. "】FL"
+    if message_get ~= nil and message_get ~= "" then
+        reply =
+            reply ..
+            "\n里面还发现了来自【" .. getUserConf(qq_get, "name", "用户") .. "(" .. qq_get .. ")" .. "】的留言：" .. message_get
+    end
+    return reply
 end
