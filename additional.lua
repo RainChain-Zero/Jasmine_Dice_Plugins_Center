@@ -24,6 +24,14 @@ function Kick(msg)
 end
 msg_order["#移除"] = "Kick"
 
+function Nn(msg)
+    if msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596" then
+        local qq = string.match(msg.fromMsg, "(%d+)")
+        eventMsg(".nn", msg.fromGroup, qq)
+    end
+end
+msg_order["#nn"] = "Nn"
+
 function picture(msg)
     if (GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 1000) then
         return "『✖条件未满足』此功能需要好感度≥1000"
