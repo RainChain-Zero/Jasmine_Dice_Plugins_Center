@@ -65,32 +65,28 @@ end
 -- 调整信任度和亲和度
 function TrustChange(msg)
     local favor, trust = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust"}, {0, 0})
-    local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587"
+    local admin_judge =
+        msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587" and
+        msg.fromQQ ~= "2595928998" and
+        msg.fromQQ ~= "751766424" and
+        msg.fromQQ ~= "839968342"
     -- 关联信任度
     if (admin_judge) then
-        if (favor < 1000) then
-            if (trust == 0) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
+        if (favor < 500) then
+            --eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 0)
             SetUserConf("favorConf", msg.fromQQ, "trust", 0)
         elseif (favor < 3000) then
-            if (trust == 1) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
+            --eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 1)
             SetUserConf("favorConf", msg.fromQQ, "trust", 1)
         elseif (favor < 5000) then
-            if (trust == 2) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
+            --eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 2)
             SetUserConf("favorConf", msg.fromQQ, "trust", 2)
         else
-            if (trust == 3) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
+            --eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 3)
             SetUserConf("favorConf", msg.fromQQ, "trust", 3)
         end
     end
