@@ -92,17 +92,18 @@ function GiveGift(msg)
     end
     -- 固定属性
     local favor_now
+    local affinity_now = affinity
     --! 先调整亲和度，不然可能破千不清空亲和
     if (Gift_list[item].affinity ~= nil) then
-        local affinity_now = affinity + num * Gift_list[item].affinity
+        affinity_now = affinity + num * Gift_list[item].affinity
         if (affinity_now > 100) then
             affinity_now = 100
         end
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
     end
     if (Gift_list[item].favor ~= nil) then
-        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity)
-        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity_now)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity_now)
     end
 
     -- 持续性道具处理
