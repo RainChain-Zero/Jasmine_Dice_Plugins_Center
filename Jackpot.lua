@@ -33,7 +33,7 @@ function draw_lottery(msg)
     end
     local request_body = {qq = tostring(msg.fromQQ), num = num, name = name, price = item_request_price, msg = message}
     -- 调用api抽奖
-    local res, resp = http.post(url .. "drawLottery", Json.encode(request_body), "application/json;charset=gbk")
+    local res, resp = http.post(url .. "drawLottery", Json.encode(request_body), "application/json;charset=utf-8")
     if not res then
         return "网络异常"
     end

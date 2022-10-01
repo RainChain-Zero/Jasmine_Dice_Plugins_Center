@@ -177,8 +177,8 @@ function rcv_food(msg)
     -- 计算今日/累计投喂，存取在骰娘用户记录上
     local DiceQQ = 3349795206
     local gift_add = add_gift_once()
-    local self_today_gift = GetUserToday(DiceQQ, "gifts", 0) + gift_add * cnt
-    SetUserToday(DiceQQ, "gifts", self_today_gift)
+    local self_today_gift = getUserToday(DiceQQ, "gifts", 0) + gift_add * cnt
+    setUserToday(DiceQQ, "gifts", self_today_gift)
     --! 骰娘总次数采用Dice!函数
     local self_total_gift = getUserConf(DiceQQ, "gifts", 0) + gift_add * cnt
     setUserConf(DiceQQ, "gifts", self_total_gift)
@@ -1037,7 +1037,7 @@ normal_order = "茉莉"
 function _Ciallo_normal(msg)
     -- return "Warning！好感组件强制更新中 相关功能已停用"
     -- local preReply=preHandle(msg)
-    local ignore_qq = {2595928998, 751766424, 959686587}
+    local ignore_qq = {959686587}
     --! 千音暂时不回复，以及定制reply
     for _, v in pairs(ignore_qq) do
         if msg.fromQQ * 1 == v then
@@ -1091,7 +1091,14 @@ function _Ciallo_normal(msg)
         if (today_rude >= 3 or today_sorry >= 2) then
             reply_main = "Error!不存在的机体名！"
         else
-            reply_main = "{sample:嗯哼？茉莉在这哦~Ciallo|诶...是在叫茉莉吗？茉莉茉莉在哦~|我听到了！就是{nick}在叫我！这次一定没有错！}"
+            -- 定制reply
+            if msg.fromQQ == "2595928998" then
+                reply_main = table_draw(normal_2595928998)
+            elseif msg.fromQQ == "751766424" then
+                reply_main = table_draw(normal_751766424)
+            else
+                reply_main = "{sample:嗯哼？茉莉在这哦~Ciallo|诶...是在叫茉莉吗？茉莉茉莉在哦~|我听到了！就是{nick}在叫我！这次一定没有错！}"
+            end
         end
     end
 end

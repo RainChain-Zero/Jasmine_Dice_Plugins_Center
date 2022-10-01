@@ -57,16 +57,16 @@ npcList = {
 	"鹿野院平藏"
 }
 
-msg_order = {["让"] = "letSpeaker", ["说"] = "doSpeaker"}
+msg_order = {["/让"] = "letSpeaker"}
 
 function letSpeaker(msg)
 	local favor = GetUserConf("favorConf", msg.fromQQ, "favor", 0)
 	if favor < 500 then
 		return "该功能需要好感度达到500哦~"
 	end
-	local npc = string.match(msg.fromMsg, "^让(.-)说")
+	local npc = string.match(msg.fromMsg, "^/让(.-)说")
 	if npc then
-		local prefix = "让" .. npc .. "说"
+		local prefix = "/让" .. npc .. "说"
 		local text = string.sub(msg.fromMsg, #prefix + 1)
 		for i = 1, #npcList do
 			if npcList[i] == npc then

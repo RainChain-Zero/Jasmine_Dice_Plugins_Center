@@ -23,6 +23,11 @@ function preHandle(msg)
     if (JudgeWorking(msg)) then
         return "『✖Error』“打工期间不准调情！”你就这样被常青抓了个正着（打工期间无法进行喂食以及交互）"
     end
+    -- 交互冷却
+    local isFrequency = JudgeFrequency(msg)
+    if isFrequency ~= nil then
+        return isFrequency
+    end
     -- 道具附加好感
     AddFavor_Item(msg)
     -- 道具附加亲和度
@@ -36,6 +41,35 @@ function preHandle(msg)
     CohesionChange(msg)
     -- 剧情解锁提示
     StoryUnlocked(msg)
+end
+
+function JudgeFrequency(msg)
+    local frequency = getUserToday(msg.fromQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
+    -- 个人冷却时间
+    if os.time() - frequency["lastTime"] < 5 then
+        frequency["count"] = frequency["count"] + 1
+        setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
+        if frequency["count"] >= 3 then
+            local favor, affinity = GetUserConf(msg.fromQQ, {"好感度", "affinity"}, {0, 0})
+            SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
+            return "您无视提醒，作为惩罚，您损失了100点好感和20点亲和度"
+        end
+        return "当前交互频率过高，茉莉被你突如其来的攻势宕机了！请等待5s后再试，无视提醒将得到损失"
+    else
+        setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
+    end
+    -- 全局冷却时间
+    local DiceQQ = getDiceQQ()
+    frequency = getUserToday(DiceQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
+    if os.time() - frequency["lastTime"] < 3 then
+        frequency["count"] = frequency["count"] + 1
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
+        if frequency["count"] > 3 then
+            return "当前全局交互频率过高，系统繁忙，茉莉并没有理睬你"
+        end
+    else
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
+    end
 end
 
 -- 打工状态判断
@@ -65,32 +99,28 @@ end
 -- 调整信任度和亲和度
 function TrustChange(msg)
     local favor, trust = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust"}, {0, 0})
-    local admin_judge = msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587"
+    local admin_judge =
+        msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587" and
+        msg.fromQQ ~= "2595928998" and
+        msg.fromQQ ~= "751766424" and
+        msg.fromQQ ~= "839968342"
     -- 关联信任度
     if (admin_judge) then
-        if (favor < 1000) then
-            if (trust == 0) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
+        if (favor < 500) then
+            --eventMsg(".user trust " .. msg.fromQQ .. " 0", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 0)
             SetUserConf("favorConf", msg.fromQQ, "trust", 0)
         elseif (favor < 3000) then
-            if (trust == 1) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
+            --eventMsg(".user trust " .. msg.fromQQ .. " 1", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 1)
             SetUserConf("favorConf", msg.fromQQ, "trust", 1)
         elseif (favor < 5000) then
-            if (trust == 2) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
+            --eventMsg(".user trust " .. msg.fromQQ .. " 2", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 2)
             SetUserConf("favorConf", msg.fromQQ, "trust", 2)
         else
-            if (trust == 3) then
-                return ""
-            end
-            eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
+            --eventMsg(".user trust " .. msg.fromQQ .. " 3", 0, 2677409596)
+            setUserConf(msg.fromQQ, "trust", 3)
             SetUserConf("favorConf", msg.fromQQ, "trust", 3)
         end
     end
@@ -251,8 +281,12 @@ function FavorPunish(msg, show_favor)
     end
     -- ! 好感度锁定列表
     if
-        (msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
-            msg.fromQQ == "614671889")
+        (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
+            msg.fromQQ == "614671889" or
+            msg.fromQQ == "2043789473" or
+            msg.fromQQ == "2677402349" or
+            msg.fromQQ == "1530045447" or
+            msg.fromQQ == "4786515")
      then
         return ""
     end
