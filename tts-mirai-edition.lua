@@ -57,7 +57,7 @@ npcList = {
 	"鹿野院平藏"
 }
 
-msg_order = {["/让"] = "letSpeaker", ["说"] = "doSpeaker"}
+msg_order = {["/让"] = "letSpeaker"}
 
 function letSpeaker(msg)
 	local favor = GetUserConf("favorConf", msg.fromQQ, "favor", 0)
