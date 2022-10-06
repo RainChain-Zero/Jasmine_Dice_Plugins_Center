@@ -45,10 +45,13 @@ end
 
 function JudgeFrequency(msg)
     local frequency = getUserToday(msg.fromQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
+    local DiceQQ = getDiceQQ()
+    local frequency_bot = getUserToday(DiceQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     -- 个人冷却时间
     if os.time() - frequency["lastTime"] < 5 then
         frequency["count"] = frequency["count"] + 1
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
         if frequency["count"] >= 3 then
             local favor, affinity = GetUserConf(msg.fromQQ, {"好感度", "affinity"}, {0, 0})
             SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
@@ -57,14 +60,13 @@ function JudgeFrequency(msg)
         return "当前交互频率过高，茉莉被你突如其来的攻势宕机了！请等待5s后再试，无视提醒将得到损失"
     else
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
     end
     -- 全局冷却时间
-    local DiceQQ = getDiceQQ()
-    frequency = getUserToday(DiceQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
-    if os.time() - frequency["lastTime"] < 3 then
-        frequency["count"] = frequency["count"] + 1
-        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
-        if frequency["count"] > 3 then
+    if os.time() - frequency_bot["lastTime"] < 6 then
+        frequency_bot["count"] = frequency_bot["count"] + 1
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
+        if frequency_bot["count"] >= 3 then
             return "当前全局交互频率过高，系统繁忙，茉莉并没有理睬你"
         end
     else
@@ -85,7 +87,7 @@ function JudgeWorking(msg)
             SetUserConf("favorConf", msg.fromQQ, "work", work)
             sendMsg(
                 "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "fl",
-                msg.fromGroup,
+                msg.fromGroup or 0,
                 msg.fromQQ
             )
             return false
@@ -448,12 +450,12 @@ function StoryUnlocked(msg)
         res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
         SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
     end
-    sendMsg(content, msg.fromGroup, msg.fromQQ)
+    sendMsg(content, msg.fromGroup or 0, msg.fromQQ)
 end
 
 -- 动作类交互预处理
 function Actionprehandle(str)
-    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love", "贴贴"}
+    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love", "贴贴", "蹭蹭"}
     for _, v in pairs(list) do
         if (string.find(str, v) ~= nil) then
             return true
