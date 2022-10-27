@@ -140,20 +140,26 @@ function CohesionChange(msg)
     )
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
-    elseif (favor < 2000) then
+    end
+    if (favor >= 1000 and isShopUnlocked ~= 1) then
         if (isStory0Read == 1) then
-            -- 通过第一章且好感度达到1000
+            -- 通过序章且好感度达到1000
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 1)
         end
-    elseif (favor < 3000) then
+    end
+    if (favor >= 2000 and story2Choice == 0) then
+        -- 通过第一章
         if (isShopUnlocked == 1) then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 2)
         end
-    elseif (favor < 4000) then
+    end
+    if (favor >= 3000 and isStory3Read == 0) then
+        -- 通过第二章
         if (story2Choice ~= 0) then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 3)
         end
-    else
+    end
+    if favor >= 4000 then
         if isStory3Read == 1 then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 4)
         end
@@ -199,7 +205,7 @@ function AddFavor_Item(msg)
             SetUserToday(msg.fromQQ, "addFavor_Cookie", 1)
         end
     elseif (GetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1) == 0) then
-        sendMsg("注意，您的『袋装曲奇』道具效果已消失", msg.fromGroup, msg.fromQQ)
+        sendMsg("注意，您的『袋装曲奇』道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1)
     end
@@ -231,7 +237,7 @@ function AddAffinity_Item(msg)
         end
     elseif (sushiDDLFlag == 0) then
         if (sushiDDL ~= 0) then
-            sendMsg("注意，您的『寿司』道具效果已消失", msg.fromGroup, msg.fromQQ)
+            sendMsg("注意，您的『寿司』道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
         end
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addAffinityDDLFlag_Sushi", 1)
@@ -251,7 +257,7 @@ function FavorTimePunishDownRate(msg)
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDL", 0)) then
         return GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
     elseif (GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDLFlag", 1) == 0) then
-        sendMsg("注意，您的好感度时间惩罚减免道具效果已消失", msg.fromGroup, msg.fromQQ)
+        sendMsg("注意，您的好感度时间惩罚减免道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, {"favorTimePunishDownDDLFlag", "favorTimePunishDownRate"}, {1, 0})
     end
