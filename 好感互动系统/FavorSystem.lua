@@ -33,6 +33,7 @@ today_love_limit = 1 -- 每日爱加好感次数上限
 today_interaction_limit = 3 -- 每日"互动-部位"增加好感次数上限
 today_cute_limit = 1
 today_tietie_limit = 1
+today_cengceng_limit = 1
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
 -- 时间系统
@@ -125,7 +126,7 @@ end
 function blackList(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor <= -200 and favor > -500) then
-        sendMsg("Warning:检测到你的好感度过低，即将触发机体下限保护机制！", msg.fromGroup, msg.fromQQ)
+        sendMsg("Warning:检测到你的好感度过低，即将触发机体下限保护机制！", msg.fromGroup or 0, msg.fromQQ)
     end
     if (favor < -500) then
         sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.fromGroup, 0, 2677409596)
@@ -281,7 +282,9 @@ function rcv_Ciallo_morning(msg)
                 -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
             end
-            if (favor < ranint(1500 - left_limit, 1500, right_limit)) then
+            if (favor < 0) then
+                return table_draw(reply_ciallo_lowest)
+            elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
                 return table_draw(reply_morning_less)
             elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
                 return table_draw(reply_morning_low)
@@ -383,7 +386,9 @@ function rcv_Ciallo_afternoon(msg)
             -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
             CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         end
-        if (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
+        if (favor < 0) then
+            return table_draw(reply_ciallo_lowest)
+        elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
             return "嗯？要睡午觉了吗，也是，养好精神也很重要呢"
         elseif (favor < ranint(4000 - left_limit, 4000 + right_limit)) then
             return "午安哦，茉莉也有点困了...呼呼呼"
@@ -458,7 +463,9 @@ function rcv_Ciallo_noon(msg)
                     -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
                 end
-                if (favor <= ranint(1500 - left_limit, 1500 + right_limit)) then
+                if (favor < 0) then
+                    return table_draw(reply_ciallo_lowest)
+                elseif (favor <= ranint(1500 - left_limit, 1500 + right_limit)) then
                     return "唔，中午好！{nick}，吃过午饭了吗？吃过就赶快去休息吧"
                 elseif (favor <= ranint(4500 - left_limit, 4500 + right_limit)) then
                     return "中午好呀{nick}——今天过去一半了哦，有什么要做的就抓紧吧"
@@ -532,7 +539,9 @@ function rcv_Ciallo_evening(msg)
                 local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5, affinity, succ)
                 CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
             end
-            if (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
+            if favor < 0 then
+                return table_draw(reply_ciallo_lowest)
+            elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
                 return table_draw(reply_evening_less)
             elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
                 return table_draw(reply_evening_low)
@@ -589,7 +598,9 @@ function rcv_Ciallo_night(msg)
                     -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                     CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
                 end
-                if (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
+                if favor < 0 then
+                    return table_draw(reply_ciallo_lowest)
+                elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
                     return table_draw(reply_night_less)
                 elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
                     return table_draw(reply_night_low)
@@ -1125,7 +1136,8 @@ function action(msg)
         today_face,
         today_suki,
         today_love,
-        today_tietie =
+        today_tietie,
+        today_cengceng =
         GetUserToday(
         msg.fromQQ,
         {
@@ -1140,9 +1152,10 @@ function action(msg)
             "face",
             "suki",
             "love",
-            "tietie"
+            "tietie",
+            "cengceng"
         },
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
 
     local blackReply = blackList(msg)
@@ -1156,6 +1169,15 @@ function action(msg)
     if (calibration_message1 ~= nil) then
         reply_main = calibration_message1
         return ""
+    end
+    --! 灵音定制 蹭蹭
+    if (msg.fromQQ == "2595928998" and string.find(msg.fromMsg, "蹭蹭") ~= nil) then
+        today_cengceng = today_cengceng + 1
+        reply_main = table_draw(cengceng_2595928998)
+        SetUserToday(msg.fromQQ, "cengceng", today_cengceng)
+        if today_cengceng <= today_cengceng_limit then
+            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20, affinity, succ)
+        end
     end
     -- action 抱
     local judge_hug = string.find(msg.fromMsg, "抱", 1) ~= nil
@@ -1206,8 +1228,12 @@ function action(msg)
                                     favor + ModifyFavorChangeNormal(msg, favor, -90, affinity, succ)
                                 )
                             end
-                            reply_main = table_draw(reply_hug_less)
-                            return ""
+                            if favor < 0 then
+                                reply_main = table_draw(reply_action_lowest)
+                            else
+                                reply_main = table_draw(reply_hug_less)
+                            end
+                            return
                         elseif (favor <= ranint(3000 - left_limit, 3000 + right_limit)) then
                             if (today_hug <= today_hug_limit) then
                                 favor_now = favor + ModifyFavorChangeNormal(msg, favor, 8, affinity, succ)
@@ -1272,8 +1298,12 @@ function action(msg)
                                 favor + ModifyFavorChangeNormal(msg, favor, -30, affinity, succ)
                             )
                         end
-                        reply_main = table_draw(reply_touch_less)
-                        return ""
+                        if favor < 0 then
+                            reply_main = table_draw(reply_action_lowest)
+                        else
+                            reply_main = table_draw(reply_touch_less)
+                        end
+                        return
                     elseif (favor <= ranint(2000 - left_limit, 2000 + right_limit)) then
                         if (today_touch <= today_touch_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 8, affinity, succ)
@@ -1330,8 +1360,12 @@ function action(msg)
                                 favor + ModifyFavorChangeNormal(msg, favor, -80, affinity, succ)
                             )
                         end
-                        reply_main = table_draw(reply_lift_less)
-                        return ""
+                        if favor < 0 then
+                            reply_main = table_draw(reply_action_lowest)
+                        else
+                            reply_main = table_draw(reply_lift_less)
+                        end
+                        return
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         if (today_lift <= today_lift_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 10, affinity, succ)
@@ -1400,8 +1434,12 @@ function action(msg)
                             "好感度",
                             favor + ModifyFavorChangeNormal(msg, favor, -100, affinity, succ)
                         )
-                        reply_main = table_draw(reply_kiss_less)
-                        return ""
+                        if favor < 0 then
+                            reply_main = table_draw(reply_action_lowest)
+                        else
+                            reply_main = table_draw(reply_kiss_less)
+                        end
+                        return
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         SetUserConf(
                             "favorConf",
@@ -1410,7 +1448,7 @@ function action(msg)
                             favor + ModifyFavorChangeNormal(msg, favor, -20, affinity, succ)
                         )
                         reply_main = table_draw(reply_kiss_low)
-                        return ""
+                        return
                     elseif (favor <= ranint(6700 - left_limit, 6700 + right_limit)) then
                         if (today_kiss <= today_kiss_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 15, affinity, succ)
@@ -1466,8 +1504,12 @@ function action(msg)
                             "好感度",
                             favor + ModifyFavorChangeNormal(msg, favor, -40, affinity, succ)
                         )
-                        reply_main = table_draw(reply_hand_less)
-                        return ""
+                        if favor < 0 then
+                            reply_main = table_draw(reply_action_lowest)
+                        else
+                            reply_main = table_draw(reply_hand_less)
+                        end
+                        return
                     elseif (favor <= ranint(2800 - left_limit, 2800 + right_limit)) then
                         if (today_hand <= today_hand_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 8, affinity, succ)
@@ -1531,8 +1573,12 @@ function action(msg)
                             "好感度",
                             favor + ModifyFavorChangeNormal(msg, favor, -40, affinity, succ)
                         )
-                        reply_main = table_draw(reply_face_less)
-                        return ""
+                        if favor < 0 then
+                            reply_main = table_draw(reply_action_lowest)
+                        else
+                            reply_main = table_draw(reply_face_less)
+                        end
+                        return
                     elseif (favor <= ranint(3200 - left_limit, 3200 + right_limit)) then
                         if (today_face <= today_face_limit) then
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5, affinity, succ)
