@@ -49,6 +49,38 @@ function add_question(msg)
 end
 msg_order[".add q"] = "add_question"
 
+remove_question_order = ".del q"
+msg_order[remove_question_order] = "remove_question"
+function remove_question(msg)
+    local admin_qq = {
+        "3032902237",
+        "839968342",
+        "751766424",
+        "2595928998",
+        "2677409596"
+    }
+    local question = string.match(msg.fromMsg, "[%s]*(.*)", #remove_question_order + 1) or ""
+    for _, v in pairs(admin_qq) do
+        if msg.fromQQ == v then
+            local f = assert(io.open(getDiceDir() .. "/plugin/data/100question/100question.json", "r"))
+            local str = f:read("a")
+            f:close()
+            local j = Json.decode(str)
+            for i, v1 in pairs(j) do
+                if v1 == question then
+                    table.remove(j, i)
+                    f = assert(io.open(getDiceDir() .. "/plugin/data/100question/100question.json", "w"))
+                    f:write(Json.encode(j))
+                    f:close()
+                    return "问题删除成功！"
+                end
+            end
+            return "未找到该问题！"
+        end
+    end
+    return "你没有此操作的权限！"
+end
+
 function read_item()
     local f = assert(io.open(getDiceDir() .. "/plugin/data/100question/100question.json", "r"))
     local str = f:read("a")

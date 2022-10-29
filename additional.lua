@@ -72,3 +72,6 @@ function http_cat(msg)
     return "[CQ:image,url=https://http.cat/" .. code .. "]"
 end
 msg_order["/httpcat"] = "http_cat"
+
+function start_trpg(msg)
+end
