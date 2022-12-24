@@ -9,6 +9,7 @@ require "Story1"
 require "Story2"
 require "Story3"
 require "Special1"
+require "Special2"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
@@ -54,6 +55,8 @@ function StoryMain(msg)
             Reply = SpecialZero(msg)
         elseif StorySpecial == 1 then
             Reply = SpecialOne(msg)
+        elseif StorySpecial == 2 then
+            Reply = SpecialTwo(msg)
         end
     end
     return Reply
@@ -127,6 +130,12 @@ function EnterStory(msg)
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 1)
         Story = "七夕特典 近在咫尺的距离"
+    elseif StoryTemp:find("圣诞特典") or StoryTemp:find("予你的光点") then
+        if favor < 2000 then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
+        end
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 2)
+        Story = "圣诞特典 予你的光点"
     end
     -- 是否存在章节
     if (Story == "") then
@@ -191,6 +200,8 @@ function Choose(msg)
             Reply = SpecialZeroChoose(msg, res)
         elseif StorySpecial == 1 then
             Reply = SpecialOneChoose(msg, res)
+        elseif StorySpecial == 2 then
+            Reply = SpecialTwoChoose(msg, res)
         end
     end
     return Reply
@@ -239,6 +250,8 @@ function Skip(msg)
             Reply = SkipSpecial0(msg)
         elseif StorySpecial == 1 then
             Reply = SkipSpecial1(msg)
+        elseif StorySpecial == 2 then
+            Reply = SkipSpecial2(msg)
         end
     end
     if (Reply == nil) then

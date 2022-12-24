@@ -210,7 +210,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             dice = ranint(1, 10)
             if (dice == 10) then
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("adjustConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 return Item[item].res[2].reply
             else
@@ -224,7 +224,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 3) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("adjustConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -237,7 +237,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 2) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("adjustConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
