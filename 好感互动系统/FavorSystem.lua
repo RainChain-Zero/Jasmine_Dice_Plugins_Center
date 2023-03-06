@@ -129,8 +129,7 @@ function blackList(msg)
         sendMsg("Warning:检测到你的好感度过低，即将触发机体下限保护机制！", msg.fromGroup or 0, msg.fromQQ)
     end
     if (favor < -500) then
-        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.fromGroup, 0, 2677409596)
-        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.fromGroup, 0, 3032902237)
+        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.fromGroup, 801655697, 0)
         eventMsg(
             ".group " .. msg.fromGroup .. " ban " .. msg.fromQQ .. " " .. tostring(-favor),
             msg.fromGroup,
@@ -1527,7 +1526,11 @@ function action(msg)
                             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 12, affinity, succ)
                         --SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                         end
-                        reply_main = table_draw(reply_hand_highest)
+                        if msg.fromQQ ~= "3358315232" then
+                            reply_main = table_draw(reply_hand_highest)
+                        else
+                            reply_main = table_draw(merge_reply(reply_hand_highest, hand_3358315232))
+                        end
                     end
                 else
                     SetUserConf(

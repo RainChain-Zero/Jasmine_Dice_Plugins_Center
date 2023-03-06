@@ -3,8 +3,12 @@ require "IO"
 
 msg_order = {}
 
-work_order = "/开始打工"
+work_order = "/开始"
 function Work(msg)
+    --! 灵音定制reply /开始xx 6/9视作打工
+    if msg.fromQQ ~= "2595928998" and msg.fromMsg:find("/开始打工") ~= 1 then
+        return ""
+    end
     if (GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0) then
         return "『✖条件未满足』您首先需要通过剧情第二章『难以言明的选择 』"
     end
