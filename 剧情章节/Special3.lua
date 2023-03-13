@@ -1,5 +1,6 @@
 function SpecialThree(msg)
-    local mainIndex, option, choice = GetUserConf("storyConf", msg.fromQQ, {"mainIndex", "option", "choice"}, {1, 0, 0})
+    local mainIndex, option, choice, isSpecial3Read =
+        GetUserConf("storyConf", msg.fromQQ, {"mainIndex", "option", "choice", "isSpecial3Read"}, {1, 0, 0, 0})
     local content = "系统：白色情人节剧情出现未知错误，请报告系统管理员"
     if option == 0 then
         content = Special3[mainIndex]
@@ -8,17 +9,15 @@ function SpecialThree(msg)
             SetUserConf("storyConf", msg.fromQQ, "option", 1)
         elseif mainIndex == 44 then
             -- 播放歌曲
-            local req = {
-                ["qq"] = msg.fromQQ,
-                ["type"] = "163",
-                ["id"] = 1850441824
-            }
-            http.post(http.post("http://localhost:8083/musicCard", Json.encode(req)))
+            build_music_card(msg.fromQQ, "163", 1850441824)
             sleepTime(1500)
         elseif mainIndex == 52 then
-            content = content .. "{FormFeed}白色情人节特辑『献给你的礼物』Fin." .. "\n\n提示：您获得了道具『八音盒』x1，好感度变化：+200"
-            SetUserConf("itemConf", msg.fromQQ, "musicBox", 1)
-            SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + 200)
+            content = content .. "{FormFeed}白色情人节特典『献给你的礼物』Fin."
+            if isSpecial3Read == 0 then
+                content = content .. "\n\n提示：您得到了道具『八音盒』x1,；好感变化：+200"
+                SetUserConf("itemConf", msg.fromQQ, "musicBox", 1)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + 200)
+            end
             Init(msg)
         end
     elseif option == 1 then
@@ -71,28 +70,18 @@ function SpecialThreeExtra(msg)
         Init(msg)
     elseif mainIndex == 2 then
         -- 播放歌曲
-        local req = {
-            ["qq"] = msg.fromQQ,
-            ["type"] = "163",
-            ["id"] = 1947095105
-        }
-        http.post(http.post("http://localhost:8083/musicCard", Json.encode(req)))
+        build_music_card(msg.fromQQ, "163", 1947095105)
         sleepTime(1500)
     end
     return content
 end
 
 -- 构造发送卡片
-function build_music_card(songname, songpageurl, img, songurl, singername)
-    local xml =
-        '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\' ?><msg serviceID="2" templateID="1" action="web" brief="&#91;♫&#93;' ..
-        songname ..
-            '" sourceMsgId="0" url="' ..
-                songpageurl ..
-                    '" flag="0" adverSign="0" multiMsgFlag="0" ><item layout="2"><audio cover="' ..
-                        img ..
-                            '" src="' ..
-                                songurl ..
-                                    '" /><title>' ..
-                                        songname .. "</title><summary>" .. singername .. "</summary></item></msg>]"
+function build_music_card(qq, type, id)
+    local req = {
+        ["qq"] = qq,
+        ["type"] = type,
+        ["id"] = id
+    }
+    http.post(http.post("http://localhost:8083/musicCard", Json.encode(req)))
 end
