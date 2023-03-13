@@ -60,6 +60,8 @@ function StoryMain(msg)
             Reply = getNickFirst(msg.fromQQ, SpecialTwo(msg))
         elseif StorySpecial == 3 then
             Reply = getNickFirst(msg.fromQQ, SpecialThree(msg))
+        elseif StorySpecial == 4 then
+            Reply = SpecialThreeExtra(msg)
         end
     end
     return Reply

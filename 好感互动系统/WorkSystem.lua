@@ -15,6 +15,11 @@ function Work(msg)
     if (JudgeWorking(msg)) then
         return "『✖并发限制』你同一时间只能有一项正在进行的打工哦~"
     end
+    -- 打工会使八音盒道具失效
+    local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
+    if musicBox["enable"] then
+        setUserConf(msg.fromQQ, "musicBox", {["enable"] = false, ["cd"] = musicBox["cd"]})
+    end
     local time = string.match(msg.fromMsg, "[%s]*(%d+)", #work_order + 1)
     local work = {
         ["working"] = true

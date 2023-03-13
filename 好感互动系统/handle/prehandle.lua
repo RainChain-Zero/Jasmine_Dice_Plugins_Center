@@ -293,26 +293,12 @@ function FavorPunish(msg, show_favor)
     if (show_favor ~= true) then
         SetUserConf("favorConf", msg.fromQQ, "lastTime", os.time())
     end
-    -- ! 好感度锁定列表
-    if
-        (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
-            msg.fromQQ == "614671889" or
-            msg.fromQQ == "2043789473" or
-            msg.fromQQ == "2677402349" or
-            msg.fromQQ == "1530045447" or
-            msg.fromQQ == "4786515" or
-            msg.fromQQ == "3578788465" or
-            msg.fromQQ == "1530045447")
-     then
+
+    -- 好感不流逝
+    if isFavorSilent(msg, favor) then
         return ""
     end
-    --! 是否在回归保护期
-    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
-        return ""
-    end
-    if (favor <= 500) then
-        return ""
-    end
+
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
     -- 一天之内
@@ -391,6 +377,37 @@ function FavorPunish(msg, show_favor)
     end
     -- 返回是否处于好感流逝状态，是否存在道具修正状态
     return isFavorTimePunish, isFavorTimePunishDown
+end
+
+-- 因为各种情况，好感度不流逝的情况
+function isFavorSilent(msg, favor)
+    -- ! 好感度锁定列表
+    if
+        (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
+            msg.fromQQ == "614671889" or
+            msg.fromQQ == "2043789473" or
+            msg.fromQQ == "2677402349" or
+            msg.fromQQ == "1530045447" or
+            msg.fromQQ == "4786515" or
+            msg.fromQQ == "3578788465" or
+            msg.fromQQ == "1530045447")
+     then
+        return true
+    end
+    -- 判断八音盒效果
+    local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
+    if musicBox["enable"] then
+        -- 触发八音盒效果，本次交互不降低好感（刷新交互时间），同时八音盒失效
+        setUserConf(msg.fromQQ, "musicBox", {["enable"] = false, ["cd"] = musicBox["cd"]})
+        return true
+    end
+    --! 是否在回归保护期
+    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
+        return true
+    end
+    if (favor <= 500) then
+        return true
+    end
 end
 
 -- 剧情模式解锁提示

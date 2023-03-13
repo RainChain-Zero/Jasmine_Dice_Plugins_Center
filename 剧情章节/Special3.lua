@@ -15,7 +15,7 @@ function SpecialThree(msg)
             content = content .. "{FormFeed}白色情人节特典『献给你的礼物』Fin."
             if isSpecial3Read == 0 then
                 content = content .. "\n\n提示：您得到了道具『八音盒』x1,；好感变化：+200"
-                SetUserConf("itemConf", msg.fromQQ, "musicBox", 1)
+                SetUserConf("itemConf", msg.fromQQ, "音乐盒", 1)
                 SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + 200)
             end
             Init(msg)
