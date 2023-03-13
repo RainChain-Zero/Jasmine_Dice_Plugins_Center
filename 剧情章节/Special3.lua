@@ -6,6 +6,15 @@ function SpecialThree(msg)
         SetUserConf("storyConf", "mainIndex", mainIndex + 1)
         if mainIndex == 11 then
             SetUserConf("storyConf", msg.fromQQ, "option", 1)
+        elseif mainIndex == 44 then
+            -- 播放歌曲
+            local req = {
+                ["qq"] = msg.fromQQ,
+                ["type"] = "163",
+                ["id"] = 1850441824
+            }
+            http.post(http.post("http://localhost:8083/musicCard", Json.encode(req)))
+            sleepTime(1500)
         elseif mainIndex == 52 then
             content = content .. "{FormFeed}白色情人节特辑『献给你的礼物』Fin." .. "\n\n提示：您获得了道具『八音盒』x1，好感度变化：+200"
             SetUserConf("itemConf", msg.fromQQ, "musicBox", 1)
@@ -60,6 +69,30 @@ function SpecialThreeExtra(msg)
     if mainIndex == 15 then
         content = content .. "\n\n......(end)"
         Init(msg)
+    elseif mainIndex == 2 then
+        -- 播放歌曲
+        local req = {
+            ["qq"] = msg.fromQQ,
+            ["type"] = "163",
+            ["id"] = 1947095105
+        }
+        http.post(http.post("http://localhost:8083/musicCard", Json.encode(req)))
+        sleepTime(1500)
     end
     return content
+end
+
+-- 构造发送卡片
+function build_music_card(songname, songpageurl, img, songurl, singername)
+    local xml =
+        '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\' ?><msg serviceID="2" templateID="1" action="web" brief="&#91;♫&#93;' ..
+        songname ..
+            '" sourceMsgId="0" url="' ..
+                songpageurl ..
+                    '" flag="0" adverSign="0" multiMsgFlag="0" ><item layout="2"><audio cover="' ..
+                        img ..
+                            '" src="' ..
+                                songurl ..
+                                    '" /><title>' ..
+                                        songname .. "</title><summary>" .. singername .. "</summary></item></msg>]"
 end
