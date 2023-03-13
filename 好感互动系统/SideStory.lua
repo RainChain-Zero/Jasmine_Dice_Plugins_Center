@@ -10,6 +10,7 @@ require "Story2"
 require "Story3"
 require "Special1"
 require "Special2"
+require "Special3"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
@@ -56,12 +57,19 @@ function StoryMain(msg)
         elseif StorySpecial == 1 then
             Reply = SpecialOne(msg)
         elseif StorySpecial == 2 then
-            Reply = SpecialTwo(msg)
+            Reply = getNickFirst(msg.fromQQ, SpecialTwo(msg))
+        elseif StorySpecial == 3 then
+            Reply = getNickFirst(msg.fromQQ, SpecialThree(msg))
         end
     end
     return Reply
 end
 msg_order[".f"] = "StoryMain"
+
+--! 获取字符串第一个UTF-8字符
+function getNickFirst(qq, str)
+    return str:gsub("{nickFirst}", getUserConf(qq, "nick", "笨蛋"):match("[%z\1-\127\194-\244][\128-\191]*"))
+end
 
 -- 剧情入口点
 EntryStoryOrder = "进入剧情"
@@ -136,6 +144,9 @@ function EnterStory(msg)
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 2)
         Story = "圣诞特典 予你的光点"
+    elseif StoryTemp:find("白色情人节特典") or StoryTemp:find("献给你的礼物") then
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
+        Story = "白色情人节特典 献给你的礼物"
     end
     -- 是否存在章节
     if (Story == "") then
@@ -202,6 +213,8 @@ function Choose(msg)
             Reply = SpecialOneChoose(msg, res)
         elseif StorySpecial == 2 then
             Reply = SpecialTwoChoose(msg, res)
+        elseif StorySpecial == 3 then
+            Reply = SpecialThreeChoose(msg, res)
         end
     end
     return Reply
@@ -252,6 +265,8 @@ function Skip(msg)
             Reply = SkipSpecial1(msg)
         elseif StorySpecial == 2 then
             Reply = SkipSpecial2(msg)
+        elseif StorySpecial == 3 then
+            Reply = SkipSpecial3(msg)
         end
     end
     if (Reply == nil) then

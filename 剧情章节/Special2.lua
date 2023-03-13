@@ -35,12 +35,7 @@ function SpecialTwo(msg)
         end
         OptionNormalInit(msg, 36)
     end
-    return getNickFirst(msg.fromQQ, content)
-end
-
---! 获取字符串第一个UTF-8字符
-function getNickFirst(qq, str)
-    return str:gsub("{nickFirst}", getUserConf(qq, "nick", "笨蛋"):match("[%z\1-\127\194-\244][\128-\191]*"))
+    return content
 end
 
 function SpecialTwoChoose(msg, res)
