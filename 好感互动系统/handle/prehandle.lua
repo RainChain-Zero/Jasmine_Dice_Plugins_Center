@@ -295,7 +295,7 @@ function FavorPunish(msg, show_favor)
     end
 
     -- 好感不流逝
-    if isFavorSilent(msg, favor) then
+    if isFavorSilent(msg, favor, show_favor) then
         return ""
     end
 
@@ -380,7 +380,7 @@ function FavorPunish(msg, show_favor)
 end
 
 -- 因为各种情况，好感度不流逝的情况
-function isFavorSilent(msg, favor)
+function isFavorSilent(msg, favor, show_favor)
     -- ! 好感度锁定列表
     if
         (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
@@ -396,7 +396,7 @@ function isFavorSilent(msg, favor)
     end
     -- 判断八音盒效果
     local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
-    if musicBox["enable"] then
+    if musicBox["enable"] and not show_favor then
         -- 触发八音盒效果，本次交互不降低好感（刷新交互时间），同时八音盒失效
         setUserConf(msg.fromQQ, "musicBox", {["enable"] = false, ["cd"] = musicBox["cd"]})
         return true
@@ -420,7 +420,8 @@ function StoryUnlocked(msg)
         isShopUnlocked,
         story2Choice,
         isSpecial1Read,
-        isSpecial2Read =
+        isSpecial2Read,
+        isSpecial3Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -432,9 +433,10 @@ function StoryUnlocked(msg)
             "isShopUnlocked",
             "story2Choice",
             "isSpecial1Read",
-            "isSpecial2Read"
+            "isSpecial2Read",
+            "isSpecial3Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -490,6 +492,14 @@ function StoryUnlocked(msg)
         if (flag == "0") then
             content = content .. "『✔提示』剧情模式 圣诞特典『予你的光点』已经解锁,输入“进入剧情 圣诞特典”可浏览剧情\n"
             res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
+        end
+    end
+    if isSpecial3Read and favor >= 2000 then
+        flag = string.sub(specialUnlockedNotice, 4, 4)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 白色情人节特典『献给你的礼物』已经开放,输入“进入剧情 献给你的礼物”可浏览剧情\n注意：本次解锁剧情需要扣除750FL"
+            res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
         end
     end

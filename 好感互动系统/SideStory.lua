@@ -147,8 +147,20 @@ function EnterStory(msg)
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 2)
         Story = "圣诞特典 予你的光点"
     elseif StoryTemp:find("白色情人节特典") or StoryTemp:find("献给你的礼物") then
-        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
-        Story = "白色情人节特典 献给你的礼物"
+        local isSpecial3Read = GetUserConf("storyConf", msg.fromQQ, "isSpecial3Read", 0)
+        if isSpecial3Read == 0 then
+            local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
+            if fl >= 750 then
+                SetUserConf("itemConf", msg.fromQQ, "fl", fl - 750)
+                SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
+                Story = "白色情人节特典 献给你的礼物"
+            else
+                msg:echo("您需要拥有750fl来解锁此剧情哦~")
+            end
+        else
+            SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
+            Story = "白色情人节特典 献给你的礼物"
+        end
     end
     -- 是否存在章节
     if (Story == "") then

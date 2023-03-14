@@ -349,8 +349,6 @@ function SearchItem(msg)
         res = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     end
 
-    sendMsg("系统：正在检索..." .. ranint(20, 50) .. "%..." .. ranint(51, 80) .. "%...", msg.fromGroup or 0, msg.fromQQ)
-    sleepTime(1000)
     local content = "您目前的『" .. item .. "』数量为" .. string.format("%0.f", res) .. "\n(" .. Item[item].des .. ")"
     --! 查询八音盒会进入隐藏剧情
     if item:find("八音盒") then
@@ -360,6 +358,7 @@ function SearchItem(msg)
             content = content .. "\n提示：你可以通过输入.f来阅读此道具的隐藏剧情"
         end
     end
+    return content
 end
 msg_order[check_order] = "SearchItem"
 
