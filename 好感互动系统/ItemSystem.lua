@@ -36,6 +36,20 @@ function UseItem(msg)
         return "哒咩哟哒咩，超额透支是不行的！"
     end
 
+    -- 八音盒
+    if item:find("八音盒") then
+        local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
+        local enable, cd = musicBox["enable"] or false, musicBox["cd"] or 0
+        if enable then
+            return "该道具已生效，无法重复使用哦~"
+        end
+        if os.time() < cd then
+            return "该道具冷却中，无法使用哦~"
+        end
+        setUserConf(msg.fromQQ, "musicBox", {enable = true, cd = os.time() + 432000})
+        return Item["八音盒"].reply
+    end
+
     -- ? 是否用于解锁剧情章节
     local succ = false
     local entryStoryCheck = GetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
@@ -210,7 +224,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             dice = ranint(1, 10)
             if (dice == 10) then
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("adjustConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 return Item[item].res[2].reply
             else
@@ -224,7 +238,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 3) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("adjustConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -237,7 +251,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 2) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("adjustConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -316,6 +330,7 @@ function SearchItem(msg)
     if item == "FL" then
         item = "fl"
     end
+
     -- 判断道具是否存在
     for k, _ in pairs(Item) do
         if (string.find(k, item) ~= nil) then
@@ -334,9 +349,16 @@ function SearchItem(msg)
         res = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     end
 
-    sendMsg("系统：正在检索..." .. ranint(20, 50) .. "%..." .. ranint(51, 80) .. "%...", msg.fromGroup or 0, msg.fromQQ)
-    sleepTime(1000)
-    return "您目前的『" .. item .. "』数量为" .. string.format("%0.f", res) .. "\n(" .. Item[item].des .. ")"
+    local content = "您目前的『" .. item .. "』数量为" .. string.format("%0.f", res) .. "\n(" .. Item[item].des .. ")"
+    --! 查询八音盒会进入隐藏剧情
+    if item:find("八音盒") then
+        local musicBoxNum = GetUserConf("itemConf", msg.fromQQ, "八音盒", 0)
+        if musicBoxNum >= 1 then
+            SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 4)
+            content = content .. "\n提示：你可以通过输入.f来阅读此道具的隐藏剧情"
+        end
+    end
+    return content
 end
 msg_order[check_order] = "SearchItem"
 

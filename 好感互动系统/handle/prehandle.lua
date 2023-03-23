@@ -32,8 +32,7 @@ function preHandle(msg)
     AddFavor_Item(msg)
     -- 道具附加亲和度
     AddAffinity_Item(msg)
-    -- 版本通告处
-    --Notice(msg)
+    -- Notice(msg)
     -- ! 好感时间惩罚
     FavorPunish(msg)
     -- 信任度和亲和度关联
@@ -48,25 +47,25 @@ function JudgeFrequency(msg)
     local DiceQQ = getDiceQQ()
     local frequency_bot = getUserToday(DiceQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     -- 个人冷却时间
-    if os.time() - frequency["lastTime"] < 5 then
+    if os.time() - frequency["lastTime"] < 10 then
         frequency["count"] = frequency["count"] + 1
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
-        if frequency["count"] >= 3 then
+        if frequency["count"] >= 2 then
             local favor, affinity = GetUserConf(msg.fromQQ, {"好感度", "affinity"}, {0, 0})
             SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
             return "您无视提醒，作为惩罚，您损失了100点好感和20点亲和度"
         end
-        return "当前交互频率过高，茉莉被你突如其来的攻势宕机了！请等待5s后再试，无视提醒将得到损失"
+        return "当前交互频率过高，茉莉被你突如其来的攻势宕机了！请等待10s后再试，无视提醒将得到损失"
     else
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
     end
     -- 全局冷却时间
-    if os.time() - frequency_bot["lastTime"] < 6 then
+    if os.time() - frequency_bot["lastTime"] < 7 then
         frequency_bot["count"] = frequency_bot["count"] + 1
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
-        if frequency_bot["count"] >= 3 then
+        if frequency_bot["count"] >= 2 then
             return "当前全局交互频率过高，系统繁忙，茉莉并没有理睬你"
         end
     else
@@ -267,6 +266,13 @@ end
 -- 一定时间不交互将会降低好感度
 function FavorPunish(msg, show_favor)
     local favor, lastTime = GetUserConf("favorConf", msg.fromQQ, {"好感度", "lastTime"}, {0, os.time()})
+    -- 测试群通告
+    if favor >= 3000 and getUserConf(msg.fromQQ, "testGroupNotice", 0) == 0 then
+        local at = "[CQ:at,qq=" .. msg.fromQQ .. "]"
+        msg:echo(at .. "【重要通知】您的好感已达3000，为了保证您的正常使用，我们诚挚邀请您加入茉莉测试群（517343442）\n若有特殊情况&被冻结，将只在此群启用备用机。")
+        setUserConf(msg.fromQQ, "testGroupNotice", 1)
+    end
+
     local time_table = os.date("*t", lastTime)
     local _year, _month, _day, _hour = time_table["year"], time_table["month"], time_table["day"], time_table["hour"]
     local isFavorTimePunishDown, isFavorTimePunish = false, false
@@ -287,24 +293,12 @@ function FavorPunish(msg, show_favor)
     if (show_favor ~= true) then
         SetUserConf("favorConf", msg.fromQQ, "lastTime", os.time())
     end
-    -- ! 好感度锁定列表
-    if
-        (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
-            msg.fromQQ == "614671889" or
-            msg.fromQQ == "2043789473" or
-            msg.fromQQ == "2677402349" or
-            msg.fromQQ == "1530045447" or
-            msg.fromQQ == "4786515")
-     then
+
+    -- 好感不流逝
+    if isFavorSilent(msg, favor, show_favor) then
         return ""
     end
-    --! 是否在回归保护期
-    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
-        return ""
-    end
-    if (favor <= 500) then
-        return ""
-    end
+
     local Llimit, Rlimit = 0, 0
     -- 分段降低好感
     -- 一天之内
@@ -352,6 +346,9 @@ function FavorPunish(msg, show_favor)
         isFavorTimePunish = true
     end
     local favor_down = math.modf(ranint(Llimit, Rlimit) * itemDownRate)
+    if favor_down > 1000 then
+        favor_down = 1000
+    end
     if (favor - favor_down < 500) then
         favor_down = favor - 500
         favor = 500
@@ -382,6 +379,37 @@ function FavorPunish(msg, show_favor)
     return isFavorTimePunish, isFavorTimePunishDown
 end
 
+-- 因为各种情况，好感度不流逝的情况
+function isFavorSilent(msg, favor, show_favor)
+    -- ! 好感度锁定列表
+    if
+        (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
+            msg.fromQQ == "614671889" or
+            msg.fromQQ == "2043789473" or
+            msg.fromQQ == "2677402349" or
+            msg.fromQQ == "1530045447" or
+            msg.fromQQ == "4786515" or
+            msg.fromQQ == "3578788465" or
+            msg.fromQQ == "1530045447")
+     then
+        return true
+    end
+    -- 判断八音盒效果
+    local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
+    if musicBox["enable"] and not show_favor then
+        -- 触发八音盒效果，本次交互不降低好感（刷新交互时间），同时八音盒失效
+        setUserConf(msg.fromQQ, "musicBox", {["enable"] = false, ["cd"] = musicBox["cd"]})
+        return true
+    end
+    --! 是否在回归保护期
+    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
+        return true
+    end
+    if (favor <= 500) then
+        return true
+    end
+end
+
 -- 剧情模式解锁提示
 function StoryUnlocked(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
@@ -391,7 +419,9 @@ function StoryUnlocked(msg)
         isSpecial0Read,
         isShopUnlocked,
         story2Choice,
-        isSpecial1Read =
+        isSpecial1Read,
+        isSpecial2Read,
+        isSpecial3Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -402,61 +432,80 @@ function StoryUnlocked(msg)
             "isSpecial0Read",
             "isShopUnlocked",
             "story2Choice",
-            "isSpecial1Read"
+            "isSpecial1Read",
+            "isSpecial2Read",
+            "isSpecial3Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
         flag = string.sub(storyUnlockedNotice, 1, 1)
-        if (flag == "1") then
-            return ""
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 序章『惊蛰』,已经解锁,输入“进入剧情 序章”可浏览剧情\n"
+            res = "1" .. string.sub(storyUnlockedNotice, 2)
+            SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
         end
-        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 序章『惊蛰』,已经解锁,输入“进入剧情 序章”可浏览剧情"
-        res = "1" .. string.sub(storyUnlockedNotice, 2)
-        SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif (isSpecial0Read == 0 and favor >= 1500) then
-        flag = string.sub(specialUnlockedNotice, 1, 1)
-        if (flag == "1") then
-            return ""
-        end
-        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 元旦特典『预想此时应更好』,已经解锁,输入“进入剧情 元旦特典”可浏览剧情"
-        res = "1" .. string.sub(specialUnlockedNotice, 2)
-        SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
-    elseif (isStory0Read == 1 and favor >= 2000 and isShopUnlocked == 0) then
-        flag = string.sub(storyUnlockedNotice, 2, 2)
-        if (flag == "1") then
-            return ""
-        end
-        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第一章『夜未央』,已经解锁,输入“进入剧情 第一章”可浏览剧情"
-        res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
-        SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif (isShopUnlocked == 1 and favor >= 3000 and story2Choice == 0) then
-        flag = string.sub(storyUnlockedNotice, 3, 3)
-        if (flag == "1") then
-            return ""
-        end
-        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第二章『难以言明的选择』,已经解锁,输入“进入剧情 第二章”可浏览剧情"
-        res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
-        SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif story2Choice ~= 0 and favor >= 4000 then
-        flag = string.sub(storyUnlockedNotice, 4, 4)
-        if (flag == "1") then
-            return ""
-        end
-        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 第三章『此般景致』,已经解锁,输入“进入剧情 第三章”可浏览剧情"
-        res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
-        SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
-    elseif isSpecial1Read == 0 and favor >= 3500 then
-        flag = string.sub(specialUnlockedNotice, 2, 2)
-        if (flag == "1") then
-            return ""
-        end
-        content = content .. "[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. "『✔提示』剧情模式 七夕特典『近在咫尺的距离』限时开放,输入“进入剧情 七夕特典”可浏览剧情"
-        res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
-        SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
     end
-    sendMsg(content, msg.fromGroup or 0, msg.fromQQ)
+    if (isSpecial0Read == 0 and favor >= 1500) then
+        flag = string.sub(specialUnlockedNotice, 1, 1)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 元旦特典『预想此时应更好』,已经解锁,输入“进入剧情 元旦特典”可浏览剧情\n"
+            res = "1" .. string.sub(specialUnlockedNotice, 2)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
+        end
+    end
+    if (isStory0Read == 1 and favor >= 2000 and isShopUnlocked == 0) then
+        flag = string.sub(storyUnlockedNotice, 2, 2)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 第一章『夜未央』,已经解锁,输入“进入剧情 第一章”可浏览剧情\n"
+            res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
+            SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
+        end
+    end
+    if (isShopUnlocked == 1 and favor >= 3000 and story2Choice == 0) then
+        flag = string.sub(storyUnlockedNotice, 3, 3)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 第二章『难以言明的选择』,已经解锁,输入“进入剧情 第二章”可浏览剧情\n"
+            res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
+            SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
+        end
+    end
+    if story2Choice ~= 0 and favor >= 4000 then
+        flag = string.sub(storyUnlockedNotice, 4, 4)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 第三章『此般景致』,已经解锁,输入“进入剧情 第三章”可浏览剧情\n"
+            res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
+            SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", res)
+        end
+    end
+    if isSpecial1Read == 0 and favor >= 3500 then
+        flag = string.sub(specialUnlockedNotice, 2, 2)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 七夕特典『近在咫尺的距离』已经解锁,输入“进入剧情 七夕特典”可浏览剧情\n"
+            res = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
+        end
+    end
+    if isSpecial2Read == 0 and favor >= 2000 then
+        flag = string.sub(specialUnlockedNotice, 3, 3)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 圣诞特典『予你的光点』已经解锁,输入“进入剧情 圣诞特典”可浏览剧情\n"
+            res = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
+        end
+    end
+    if isSpecial3Read and favor >= 2000 then
+        flag = string.sub(specialUnlockedNotice, 4, 4)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 白色情人节特典『献给你的礼物』已经开放,输入“进入剧情 献给你的礼物”可浏览剧情\n注意：本次解锁剧情需要扣除750FL"
+            res = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
+        end
+    end
+    if content ~= "" then
+        msg:echo("[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. content)
+    end
 end
 
 -- 动作类交互预处理

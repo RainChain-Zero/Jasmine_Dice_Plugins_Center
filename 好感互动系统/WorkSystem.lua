@@ -3,13 +3,22 @@ require "IO"
 
 msg_order = {}
 
-work_order = "/开始打工"
+work_order = "/开始"
 function Work(msg)
+    --! 灵音定制reply /开始xx 6/9视作打工
+    if msg.fromQQ ~= "2595928998" and msg.fromMsg:find("/开始打工") ~= 1 then
+        return ""
+    end
     if (GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0) then
         return "『✖条件未满足』您首先需要通过剧情第二章『难以言明的选择 』"
     end
     if (JudgeWorking(msg)) then
         return "『✖并发限制』你同一时间只能有一项正在进行的打工哦~"
+    end
+    -- 打工会使八音盒道具失效
+    local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
+    if musicBox["enable"] then
+        setUserConf(msg.fromQQ, "musicBox", {["enable"] = false, ["cd"] = musicBox["cd"]})
     end
     local time = string.match(msg.fromMsg, "[%s]*(%d+)", #work_order + 1)
     local work = {

@@ -55,6 +55,9 @@ function ShowFavorHandle(msg, favor, affinity)
     if (addFavorItem["addFavorEveryAction"] == "Hairpin") then
         state = state .. "\n不只是发簪：每次未超出当日限制次数的交互额外增加10好感。"
     end
+    if (getUserConf(msg.fromQQ, "musicBox", {})["enable"]) then
+        state = state .. "\n残缺的旋律：你们之间的记忆暂停了（好感流逝锁定）。"
+    end
     state = state .. "\n\n"
     return res .. state
 end
