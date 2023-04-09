@@ -496,7 +496,7 @@ function StoryUnlocked(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", res)
         end
     end
-    if isSpecial3Read and favor >= 2000 then
+    if isSpecial3Read == 0 and favor >= 2000 then
         flag = string.sub(specialUnlockedNotice, 4, 4)
         if (flag == "0") then
             content = content .. "『✔提示』剧情模式 白色情人节特典『献给你的礼物』已经开放,输入“进入剧情 献给你的礼物”可浏览剧情\n注意：本次解锁剧情需要扣除750FL"
