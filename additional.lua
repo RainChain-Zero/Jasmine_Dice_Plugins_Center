@@ -57,11 +57,12 @@ end
 msg_order["来点二次元"] = "picture"
 
 picture_api = {
-    [1] = "https://iw233.cn/api/Random.php",
-    [2] = "http://random.firefliestudio.com",
-    [3] = "https://www.dmoe.cc/random.php",
-    [4] = "https://api.ixiaowai.cn/api/api.php",
-    [5] = "https://apibug.cn/api/ecy/&apiKey=5c41c5388d534ebc1ab0774e9df1b0d4"
+    [1] = "http://random.firefliestudio.com",
+    [2] = "https://www.dmoe.cc/random.php",
+    [3] = "https://api.vvhan.com/api/acgimg",
+    [4] = "https://img.xjh.me/random_img.php",
+    [5] = "https://api.ghser.com/random/api.php",
+    [6] = "https://api.yimian.xyz/img"
 }
 
 function http_cat(msg)
