@@ -36,7 +36,7 @@ function StoryMain(msg)
     end
 
     -- 必须在小窗下进行
-    if (msg.fromGroup ~= nil) then
+    if (msg.gid ~= nil) then
         return "茉莉..茉莉可不想在人多的地方和你分享这些哦（脸红）"
     end
 
@@ -259,7 +259,7 @@ function Skip(msg)
         return ""
     end
     -- 必须在小窗下进行
-    if (msg.fromGroup ~= nil) then
+    if (msg.gid ~= nil) then
         return "茉莉..茉莉可不想在人多的地方和你分享这些哦（脸红）（必须在好友小窗下进行）"
     end
     if (StoryNormal ~= -1) then

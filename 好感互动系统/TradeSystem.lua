@@ -101,7 +101,7 @@ function Trade(msg)
                 itemRequest,
                 GetUserConf("itemConf", QQReceive, itemRequest, 0) + itemRequestNum
             )
-            sendMsg(content, msg.fromGroup, QQReceive)
+            sendMsg(content, msg.gid, QQReceive)
             return ""
         else
             if (itemReceive == nil) then
@@ -129,7 +129,7 @@ function Trade(msg)
                                     itemRequestNum ..
                                         itemRequest ..
                                             "；同时失去" .. itemReceiveNum .. itemReceive .. "\n是否接受？（输入 “交易同意/拒绝”）"
-            sendMsg(content, msg.fromGroup, QQReceive)
+            sendMsg(content, msg.gid, QQReceive)
         else
             content =
                 "系统：您收到来自用户编号为" ..
@@ -138,7 +138,7 @@ function Trade(msg)
                         itemRequestNum ..
                             itemRequest .. "；同时失去" .. itemReceiveNum .. itemReceive .. "\n是否接受？（输入 “交易 同意/拒绝”）"
             sendMsg(content, 0, QQReceive)
-            sendMsg("系统：您的交易请求已发送，请等待对方回复，结果将通过私聊通知。若长时间未回复，可能是对方未加本机好友并且所在群禁止了临时会话", msg.fromGroup, msg.fromQQ)
+            sendMsg("系统：您的交易请求已发送，请等待对方回复，结果将通过私聊通知。若长时间未回复，可能是对方未加本机好友并且所在群禁止了临时会话", msg.gid, msg.fromQQ)
         end
         return ""
     elseif

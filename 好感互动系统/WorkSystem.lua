@@ -65,7 +65,7 @@ function JudgeWorking(msg)
             SetUserConf("favorConf", msg.fromQQ, "work", work)
             sendMsg(
                 "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "fl",
-                msg.fromGroup or 0,
+                msg.gid or 0,
                 msg.fromQQ
             )
             return false

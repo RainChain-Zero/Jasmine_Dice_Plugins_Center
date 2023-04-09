@@ -8,7 +8,7 @@
 -- 各条交互前预处理
 function preHandle(msg)
     -- 强制更新提示信息
-    -- sendMsg("紧急维护，暂停服务！",msg.fromGroup,msg.fromQQ)
+    -- sendMsg("紧急维护，暂停服务！",msg.gid,msg.fromQQ)
     -- os.exit()
     --! 强制阅读协议注册，一天提醒一次
     if getUserConf(msg.fromQQ, "isRegister", 0) == 0 then
@@ -86,7 +86,7 @@ function JudgeWorking(msg)
             SetUserConf("favorConf", msg.fromQQ, "work", work)
             sendMsg(
                 "[CQ:at,qq=" .. msg.fromQQ .. "]『✔提示』打工已经完成！\n夜渐渐深了，你伸了个懒腰，叫上茉莉准备下班\n收益：" .. work["profit"] .. "fl",
-                msg.fromGroup or 0,
+                msg.gid or 0,
                 msg.fromQQ
             )
             return false
@@ -172,7 +172,7 @@ function Notice(msg)
         SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 47})
     end
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (msg.fromGroup == "0" and noticeQQ == 0) then
+    if (not msg.gid and noticeQQ == 0) then
         noticeQQ = noticeQQ + 1
         local content =
             "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
@@ -180,13 +180,13 @@ function Notice(msg)
         sendMsg(content, 0, msg.fromQQ)
     end
     noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (msg.fromGroup ~= "0") then
+    if (msg.gid) then
         if (noticeQQ == 0) then
             noticeQQ = noticeQQ + 1
             local content =
                 "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
             SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
-            sendMsg(content, msg.fromGroup, msg.fromQQ)
+            sendMsg(content, msg.gid, msg.fromQQ)
         end
     end
 end
@@ -204,7 +204,7 @@ function AddFavor_Item(msg)
             SetUserToday(msg.fromQQ, "addFavor_Cookie", 1)
         end
     elseif (GetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1) == 0) then
-        sendMsg("注意，您的『袋装曲奇』道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
+        sendMsg("注意，您的『袋装曲奇』道具效果已消失", msg.gid or 0, msg.fromQQ)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1)
     end
@@ -236,7 +236,7 @@ function AddAffinity_Item(msg)
         end
     elseif (sushiDDLFlag == 0) then
         if (sushiDDL ~= 0) then
-            sendMsg("注意，您的『寿司』道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
+            sendMsg("注意，您的『寿司』道具效果已消失", msg.gid or 0, msg.fromQQ)
         end
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addAffinityDDLFlag_Sushi", 1)
@@ -256,7 +256,7 @@ function FavorTimePunishDownRate(msg)
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDL", 0)) then
         return GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
     elseif (GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDLFlag", 1) == 0) then
-        sendMsg("注意，您的好感度时间惩罚减免道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
+        sendMsg("注意，您的好感度时间惩罚减免道具效果已消失", msg.gid or 0, msg.fromQQ)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, {"favorTimePunishDownDDLFlag", "favorTimePunishDownRate"}, {1, 0})
     end
@@ -390,7 +390,8 @@ function isFavorSilent(msg, favor, show_favor)
             msg.fromQQ == "1530045447" or
             msg.fromQQ == "4786515" or
             msg.fromQQ == "3578788465" or
-            msg.fromQQ == "1530045447")
+            msg.fromQQ == "1530045447" or
+            msg.fromQQ == "1549554054")
      then
         return true
     end

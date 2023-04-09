@@ -172,7 +172,7 @@ function ark_check(msg, str, isrka)
    if ((type(num) == "string" and (num == "" or num == nil)) and not sign_judge) then
       --存在即时检定但无修订值
       --! 已知问题：如果检定条目为“力量”，将会取出nil
-      num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0)
+      num = getPlayerCardAttr(msg.fromQQ, msg.gid, obj, 0)
 
       if (num == nil) then
          return ""
@@ -188,12 +188,12 @@ function ark_check(msg, str, isrka)
    elseif (type(num) == "string" and (num == "" or num == nil) and sign_judge) then
       --既有即时检定又有修订值
       if (sign == "+") then
-         num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + attack + add * 1
+         num = getPlayerCardAttr(msg.fromQQ, msg.gid, obj, 0) + attack + add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
       elseif (sign == "-") then
-         num = getPlayerCardAttr(msg.fromQQ, msg.fromGroup, obj, 0) + attack - add * 1
+         num = getPlayerCardAttr(msg.fromQQ, msg.gid, obj, 0) + attack - add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end

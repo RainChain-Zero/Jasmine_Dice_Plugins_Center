@@ -121,7 +121,7 @@ function AddFavorPerAction(msg, favor_ori, affinity)
         res = res + ModifyFavorChangeSpecial(favor_ori, 10, affinity)
     elseif (hairpinDDLFlag == 0) then
         if (hairpinDDL ~= 0) then
-            sendMsg("注意，您的『发簪』道具效果已消失", msg.fromGroup or 0, msg.fromQQ)
+            sendMsg("注意，您的『发簪』道具效果已消失", msg.gid or 0, msg.fromQQ)
         end
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorPerActionDDLFlag_Hairpin", 1)

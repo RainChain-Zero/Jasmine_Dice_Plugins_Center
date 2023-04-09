@@ -26,30 +26,29 @@ function write_note(msg)
     if note == nil then
         return "记录内容不能为空"
     end
-    local note_table = getGroupConf(msg.fromGroup, "note", {})
+    local note_table = getGroupConf(msg.gid, "note", {})
     table.insert(note_table, {qq = msg.fromQQ, note = note})
-    setGroupConf(msg.fromGroup, "note", note_table)
+    setGroupConf(msg.gid, "note", note_table)
     return "{self}已经为记录成功了哦~"
 end
 
 -- 读记录
 function read_note(msg)
-    local note_table = getGroupConf(msg.fromGroup, "note", {})
+    local note_table = getGroupConf(msg.gid, "note", {})
     local note = "当前笔记——\n"
     for i = 1, #note_table do
         note =
             note ..
             tostring(i) ..
                 ". " ..
-                    note_table[i].note ..
-                        "（" .. getUserConf(note_table[i].qq, "nick#" .. msg.fromGroup, "获取群名片失败") .. "）\n"
+                    note_table[i].note .. "（" .. getUserConf(note_table[i].qq, "nick#" .. msg.gid, "获取群名片失败") .. "）\n"
     end
     return note
 end
 
 -- 删记录
 function del_note(msg)
-    local note_table = getGroupConf(msg.fromGroup, "note", {})
+    local note_table = getGroupConf(msg.gid, "note", {})
     local index = string.match(msg.fromMsg, "[%s]*(%d+)", #"/删除记录")
     if index == nil then
         return "请输入要删除的记录的序号"
@@ -59,12 +58,12 @@ function del_note(msg)
         return "序号超出范围"
     end
     table.remove(note_table, index)
-    setGroupConf(msg.fromGroup, "note", note_table)
+    setGroupConf(msg.gid, "note", note_table)
     return "{self}已经将该条删除记录成功了哦~"
 end
 
 -- 清空记录
 function clear_note(msg)
-    setGroupConf(msg.fromGroup, "note", nil)
+    setGroupConf(msg.gid, "note", nil)
     return "{self}已经将所有记录清空成功了哦~"
 end

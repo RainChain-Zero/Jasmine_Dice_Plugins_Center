@@ -12,13 +12,13 @@ msg_order = {}
     默认500
 ]]
 function action_set(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
     local length = string.match(msg.fromMsg, "(%d+)")
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     actionBar.length = tonumber(length or 500)
-    setGroupConf(msg.fromGroup, "actionBar", actionBar)
+    setGroupConf(msg.gid, "actionBar", actionBar)
     return "『SUCCESS』{self}已设置当前群聊行动圈长度为：" .. actionBar.length
 end
 msg_order[".acl"] = "action_set"
@@ -27,7 +27,7 @@ msg_order[".acl"] = "action_set"
     玩家通过指令录入先攻值,.ac 玩家名（唯一） 先攻值
 ]]
 function action_start(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
     -- 玩家名中不能有+、-、空格
@@ -64,7 +64,7 @@ function action_start(msg)
             waiting_stack = {}
         }
     ]]
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     -- 空值检验
     if not actionBar.players then
         actionBar.players = {}
@@ -94,17 +94,17 @@ function action_start(msg)
     if speed < 0 then
         return "『ERROR』先攻值可不能小于0诶..."
     end
-    setGroupConf(msg.fromGroup, "actionBar", actionBar)
+    setGroupConf(msg.gid, "actionBar", actionBar)
     return "『SUCCESS』{self}已为您录入先攻值，当前先攻值为" .. actionBar.players[nameRcv].speed
 end
 msg_order[".ac"] = "action_start"
 
 -- 中途删除玩家
 function action_del(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     if not actionBar.players then
         return "『ERROR』当前群聊中还不存在任何玩家的先攻值哦？"
     end
@@ -129,17 +129,17 @@ function action_del(msg)
         end
     end
 
-    setGroupConf(msg.fromGroup, "actionBar", actionBar)
+    setGroupConf(msg.gid, "actionBar", actionBar)
     return "『SUCCESS』{self}已将" .. #players .. "位玩家移出本群先攻列表"
 end
 msg_order[".ac del"] = "action_del"
 
 -- 下一位行动的玩家
 function action_next(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     if not actionBar.players then
         return "『ERROR』当前群聊中还不存在任何玩家的先攻值哦？"
     end
@@ -149,7 +149,7 @@ function action_next(msg)
         local now = waiting_stack[1].name
         table.remove(waiting_stack, 1)
         actionBar.waiting_stack = waiting_stack
-        setGroupConf(msg.fromGroup, "actionBar", actionBar)
+        setGroupConf(msg.gid, "actionBar", actionBar)
         return "下一位该行动的是...唔，是" .. now .. "！"
     end
     -- 行动圈长度默认500
@@ -186,7 +186,7 @@ function action_next(msg)
             local now = waiting[1].name
             table.remove(waiting, 1)
             actionBar.waiting_stack = waiting
-            setGroupConf(msg.fromGroup, "actionBar", actionBar)
+            setGroupConf(msg.gid, "actionBar", actionBar)
             return "下一位该行动的是...唔，是" .. now .. "！"
         end
         times = times + 1
@@ -194,7 +194,7 @@ function action_next(msg)
             sendMsg(
                 "『WARNING』" ..
                     getUserConf(msg.fromQQ, "nick", "用户") ..
-                        "(" .. msg.fromQQ .. ")在" .. getGroupConf(msg.fromGroup, "name", "私聊") .. "疑似恶意让{self}进入大数循环",
+                        "(" .. msg.fromQQ .. ")在" .. getGroupConf(msg.gid, "name", "私聊") .. "疑似恶意让{self}进入大数循环",
                 0,
                 3032902237
             )
@@ -206,10 +206,10 @@ msg_order[".ac next"] = "action_next"
 
 -- 展示当期行动圈
 function action_show(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     local res = "当前行动次序，按照行动圈规则的话...让{self}看看...\n行动圈长度为" .. (actionBar.length or 500)
     if not actionBar.players then
         return "『ERROR』当前群中不存在玩家的先攻值信息哦~"
@@ -227,10 +227,10 @@ msg_order[".ac show"] = "action_show"
 
 -- 展示当前先攻的功能次序（普通）
 function action_list(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     local players = {}
     if not actionBar.players then
         return "『ERROR』咦...当前群聊中好像没有一——条先攻信息诶！"
@@ -255,10 +255,10 @@ msg_order[".ac list"] = "action_list"
 
 -- 重置本群行动轮次序
 function action_reset(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
-    local actionBar = getGroupConf(msg.fromGroup, "actionBar", {})
+    local actionBar = getGroupConf(msg.gid, "actionBar", {})
     if not actionBar.players then
         return "『ERROR』当前群聊中还不存在任何玩家的先攻值哦？"
     end
@@ -268,17 +268,17 @@ function action_reset(msg)
     end
     -- 清空等待栈
     actionBar.waiting_stack = {}
-    setGroupConf(msg.fromGroup, "actionBar", actionBar)
+    setGroupConf(msg.gid, "actionBar", actionBar)
     return "『SUCCESS』{self}已经重置了本群的行动轮次序√"
 end
 msg_order[".ac reset"] = "action_reset"
 
 -- 清除本群行动条
 function action_clear(msg)
-    if msg.fromGroup == "0" then
+    if not msg.gid then
         return "『ERROR』这条指令只能在群聊中使用哦？"
     end
-    setGroupConf(msg.fromGroup, "actionBar", nil)
+    setGroupConf(msg.gid, "actionBar", nil)
     return "『SUCCESS』1 2 3...本群的先攻信息已经清空了哦"
 end
 msg_order[".ac clr"] = "action_clear"

@@ -8,7 +8,7 @@ function Mute(msg)
         if (QQ == nil or QQ == "") then
             return "{nick} 请告诉茉莉目标是哪位小朋友哦~"
         end
-        eventMsg(".group ban " .. QQ .. " " .. time, msg.fromGroup, "2677409596")
+        eventMsg(".group ban " .. QQ .. " " .. time, msg.gid, "2677409596")
     end
 end
 msg_order[Trade_order] = "Mute"
@@ -19,7 +19,7 @@ function Kick(msg)
         if (QQ == nil or QQ == "") then
             return "{nick} 请告诉茉莉目标是哪位小朋友哦~"
         end
-        eventMsg(".group kick " .. QQ, msg.fromGroup, "2677409596")
+        eventMsg(".group kick " .. QQ, msg.gid, "2677409596")
     end
 end
 msg_order["#移除"] = "Kick"
@@ -27,7 +27,7 @@ msg_order["#移除"] = "Kick"
 function Nn(msg)
     if msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596" then
         local qq = string.match(msg.fromMsg, "(%d+)")
-        eventMsg(".nn", msg.fromGroup, qq)
+        eventMsg(".nn", msg.gid, qq)
     end
 end
 msg_order["#nn"] = "Nn"
