@@ -208,8 +208,9 @@ function AddFavor_Item(msg)
         -- 更新标记，下次不做提醒
         SetUserConf("adjustConf", msg.fromQQ, "addFavorDDLFlag_Cookie", 1)
     end
-    -- SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor_change)
-    CheckFavor(msg.fromQQ, favor_ori, favor_change + favor_ori, affinity)
+    if favor_change > 0 then
+        CheckFavor(msg.fromQQ, favor_ori, favor_change + favor_ori, affinity)
+    end
     -- 返回正在起效的道具表用户好感状态栏
     addFavorItem["addFavorEveryDay"] = addFavorEveryDay
 

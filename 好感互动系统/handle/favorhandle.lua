@@ -234,6 +234,12 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         now = favor_now % 10000
         now = math.modf(now / 1000)
     end
+    sendMsg(
+        "favor_ori:" ..
+            favor_ori .. " favor_now:" .. favor_now .. " pre:" .. pre .. " now:" .. now .. " affinity:" .. affinity,
+        921454429,
+        3032902237
+    )
     if (now >= (pre + 1) % 10) then
         if (affinity == 100) then
             affinity = 0
