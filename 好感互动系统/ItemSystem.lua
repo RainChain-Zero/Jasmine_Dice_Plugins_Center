@@ -228,7 +228,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             dice = ranint(1, 10)
             if (dice == 10) then
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 return Item[item].res[2].reply
             else
@@ -242,7 +242,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 3) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -255,7 +255,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 2) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -269,7 +269,7 @@ end
 
 function JudgeSpecialItemNum(msg, num)
     if (num > 1) then
-        sendMsg("注意，该道具具有随机效果，一次只能赠送一个哦", msg.gid, msg.fromQQ)
+        msg:echo("注意，该道具具有随机效果，一次只能赠送一个哦")
         return 1
     end
     return num
