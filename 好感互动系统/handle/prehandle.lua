@@ -486,7 +486,8 @@ function StoryUnlocked(msg)
         flag = string.sub(specialUnlockedNotice, 2, 2)
         if (flag == "0") then
             content = content .. "『✔提示』剧情模式 七夕特典『近在咫尺的距离』已经解锁,输入“进入剧情 七夕特典”可浏览剧情\n"
-            specialUnlockedNotice = string.sub(storyUnlockedNotice, 1, 1) .. "1" .. string.sub(storyUnlockedNotice, 3)
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 1) .. "1" .. string.sub(specialUnlockedNotice, 3)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
@@ -494,7 +495,8 @@ function StoryUnlocked(msg)
         flag = string.sub(specialUnlockedNotice, 3, 3)
         if (flag == "0") then
             content = content .. "『✔提示』剧情模式 圣诞特典『予你的光点』已经解锁,输入“进入剧情 圣诞特典”可浏览剧情\n"
-            specialUnlockedNotice = string.sub(storyUnlockedNotice, 1, 2) .. "1" .. string.sub(storyUnlockedNotice, 4)
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 2) .. "1" .. string.sub(specialUnlockedNotice, 4)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
@@ -502,7 +504,8 @@ function StoryUnlocked(msg)
         flag = string.sub(specialUnlockedNotice, 4, 4)
         if (flag == "0") then
             content = content .. "『✔提示』剧情模式 白色情人节特典『献给你的礼物』已经开放,输入“进入剧情 献给你的礼物”可浏览剧情\n注意：本次解锁剧情需要扣除750FL"
-            specialUnlockedNotice = string.sub(storyUnlockedNotice, 1, 3) .. "1" .. string.sub(storyUnlockedNotice, 5)
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 3) .. "1" .. string.sub(specialUnlockedNotice, 5)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
