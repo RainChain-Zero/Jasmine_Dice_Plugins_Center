@@ -52,6 +52,18 @@ function UseItem(msg)
         else
             return Item["八音盒"].reply
         end
+    elseif item:find("投影灯") then
+        local light = getUserConf(msg.fromQQ, "projectionLamp", {})
+        local lasting, cd = light["lasting"] or 0, light["cd"] or 0
+        local now = os.time()
+        if lasting > now then
+            return "该道具已生效，无法重复使用哦~"
+        end
+        if now < cd then
+            return "该道具冷却中，无法使用哦~"
+        end
+        setUserConf(msg.fromQQ, "projectionLamp", {cd = now + 432000, lasting = now + 172800})
+        return Item["星幕投影灯"].reply
     end
 
     -- ? 是否用于解锁剧情章节

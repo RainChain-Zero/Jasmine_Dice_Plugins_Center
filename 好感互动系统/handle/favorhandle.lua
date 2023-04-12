@@ -222,6 +222,8 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
     local pre, now = 0, 0
     -- 回归修正
     favor_now = CheckRegression(qq, favor_now, affinity)
+    -- 每次交互对好感的修正道具
+    favor_now = favor_now + add_favor_per_action(qq)
     if (favor_ori < 1000) then
         pre = 0
     else
@@ -234,12 +236,6 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         now = favor_now % 10000
         now = math.modf(now / 1000)
     end
-    sendMsg(
-        "favor_ori:" ..
-            favor_ori .. " favor_now:" .. favor_now .. " pre:" .. pre .. " now:" .. now .. " affinity:" .. affinity,
-        921454429,
-        3032902237
-    )
     if (now >= (pre + 1) % 10) then
         if (affinity == 100) then
             affinity = 0
@@ -252,6 +248,16 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         SetUserConf("favorConf", qq, "好感度", favor_now)
     end
     return favor_now, affinity
+end
+
+-- 每次交互增加的好感道具
+function add_favor_per_action(qq)
+    local projectionLamp = getUserConf(qq, "projectionLamp", {})
+    local now, favor_add = os.time(), 0
+    if (projectionLamp.lasting or 0) > now then
+        favor_add = favor_add + ranint(5, 7)
+    end
+    return favor_add
 end
 
 -- 检验回归加成

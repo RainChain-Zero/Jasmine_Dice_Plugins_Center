@@ -130,12 +130,12 @@ end
 -- 调整亲密度
 function CohesionChange(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    local isStory0Read, isShopUnlocked, story2Choice, isStory3Read =
+    local isStory0Read, isShopUnlocked, story2Choice, isStory3Read, isStory4Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
-        {"isStory0Read", "isShopUnlocked", "story2Choice", "isStory3Read"},
-        {0, 0, 0, 0}
+        {"isStory0Read", "isShopUnlocked", "story2Choice", "isStory3Read", "isStory4Read"},
+        {0, 0, 0, 0, 0}
     )
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
@@ -159,7 +159,9 @@ function CohesionChange(msg)
         end
     end
     if favor >= 4000 then
-        if isStory3Read == 1 then
+        if isStory4Read == 1 then
+            SetUserConf("favorConf", msg.fromQQ, "cohesion", 5)
+        elseif isStory3Read == 1 then
             SetUserConf("favorConf", msg.fromQQ, "cohesion", 4)
         end
     end
@@ -424,7 +426,9 @@ function StoryUnlocked(msg)
         story2Choice,
         isSpecial1Read,
         isSpecial2Read,
-        isSpecial3Read =
+        isSpecial3Read,
+        isStory3Read,
+        isSpecial4Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -437,9 +441,11 @@ function StoryUnlocked(msg)
             "story2Choice",
             "isSpecial1Read",
             "isSpecial2Read",
-            "isSpecial3Read"
+            "isSpecial3Read",
+            "isStory3Read",
+            "isSpecial4Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -506,6 +512,25 @@ function StoryUnlocked(msg)
             content = content .. "『✔提示』剧情模式 白色情人节特典『献给你的礼物』已经开放,输入“进入剧情 献给你的礼物”可浏览剧情\n注意：本次解锁剧情需要扣除750FL"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 3) .. "1" .. string.sub(specialUnlockedNotice, 5)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
+    -- 第四章
+    if isStory3Read == 1 and favor >= 4000 then
+        flag = string.sub(storyUnlockedNotice, 5, 5)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 第四章『众生相』,已经解锁,输入“进入剧情 第四章”可浏览剧情\n"
+            storyUnlockedNotice = string.sub(storyUnlockedNotice, 1, 4) .. "1" .. string.sub(storyUnlockedNotice, 6)
+            SetUserConf("storyConf", msg.fromQQ, "storyUnlockedNotice", storyUnlockedNotice)
+        end
+    end
+    -- 星星点灯
+    if favor >= 2000 and isSpecial4Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 5, 5)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式『星星点灯』已经开放,输入“进入剧情 星星点灯”可浏览剧情\n注意：本次解锁剧情需要扣除900FL"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 4) .. "1" .. string.sub(specialUnlockedNotice, 6)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end

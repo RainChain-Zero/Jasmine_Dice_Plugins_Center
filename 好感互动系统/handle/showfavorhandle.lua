@@ -30,7 +30,10 @@ function ShowFavorHandle(msg, favor, affinity)
     if (calibration_limit > 16) then
         state = state .. "\n逻辑并发过载：某些安全隐患正在提升。"
     end
-    if (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10) < 0) then
+    if
+        (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10) < 0 and
+            (getUserConf(msg.fromQQ, "projectionLamp", {}).lasting or 0) < os.time())
+     then
         state = state .. "\n情感单元过载：当前好感获取量减少。"
     else
         state = state .. "\n情感单元谐振：当前好感获取量增加。"

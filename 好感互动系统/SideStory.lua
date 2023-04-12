@@ -8,9 +8,11 @@ require "Special0"
 require "Story1"
 require "Story2"
 require "Story3"
+require "Story4"
 require "Special1"
 require "Special2"
 require "Special3"
+require "Special4"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
@@ -50,6 +52,8 @@ function StoryMain(msg)
             Reply = StoryTwo(msg)
         elseif StoryNormal == 3 then
             Reply = StoryThree(msg)
+        elseif StoryNormal == 4 then
+            Reply = StoryFour(msg)
         end
     else
         if (StorySpecial == 0) then
@@ -62,6 +66,8 @@ function StoryMain(msg)
             Reply = getNickFirst(msg.fromQQ, SpecialThree(msg))
         elseif StorySpecial == 4 then
             Reply = SpecialThreeExtra(msg)
+        elseif StorySpecial == 5 then
+            Reply = SpecialFour(msg)
         end
     end
     return Reply
@@ -161,6 +167,24 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
             Story = "白色情人节特典 献给你的礼物"
         end
+    elseif StoryTemp:find("第四章") or StoryTemp:find("众生相") then
+        if GetUserConf("storyConf", msg.fromQQ, "isStory3Read", 0) == 0 then
+            return "『✖条件未满足』您需要通过第三章 此般景致"
+        elseif favor < 4000 then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足4000)"
+        else
+            SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 4)
+            Story = "第四章 众生相"
+        end
+    elseif StoryTemp:find("星星点灯") or StoryTemp:find("生日特典") then
+        local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
+        if fl >= 900 then
+            SetUserConf("itemConf", msg.fromQQ, "fl", fl - 900)
+            SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 5)
+            Story = "生日特典 星星点灯"
+        else
+            msg:echo("您需要拥有900fl来解锁此剧情哦~")
+        end
     end
     -- 是否存在章节
     if (Story == "") then
@@ -219,6 +243,8 @@ function Choose(msg)
             Reply = StoryTwoChoose(msg, res)
         elseif StoryNormal == 3 then
             Reply = StoryThreeChoose(msg, res)
+        elseif StoryNormal == 4 then
+            Reply = StoryFourChoose(msg, res)
         end
     else
         if (StorySpecial == 0) then
@@ -271,6 +297,8 @@ function Skip(msg)
             Reply = SkipStory2(msg)
         elseif StoryNormal == 3 then
             Reply = SkipStory3(msg)
+        elseif StoryNormal == 4 then
+            Reply = SkipStory4(msg)
         end
     else
         if (StorySpecial == 0) then
@@ -281,6 +309,8 @@ function Skip(msg)
             Reply = SkipSpecial2(msg)
         elseif StorySpecial == 3 then
             Reply = SkipSpecial3(msg)
+        elseif StorySpecial == 4 then
+            Reply = "本剧情没有选项哦~无法跳转"
         end
     end
     if (Reply == nil) then

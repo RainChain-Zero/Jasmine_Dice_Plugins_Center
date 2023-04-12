@@ -1795,6 +1795,36 @@ end
 reply_main = ""
 -- 执行函数相应“茉莉”
 function action_main(msg)
+    if msg.fromMsg:find("生日快乐") then
+        if GetUserToday(msg.fromQQ, "happyBirthday",0) == 0 then
+            SetUserToday(msg.fromQQ, "happyBirthday", 1)
+            local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
+            -- 好感+100
+            SetUserConf("favorConf", msg.fromQQ, "好感度", favor + 100)
+            if favor < 6000 then
+                local buwei = ""
+                if favor < 2000 then
+                    buwei = "脸颊"
+                else
+                    buwei = "嘴唇"
+                end
+                return "这么一来.....茉莉已经来到{nick}身边两周年了呢。这段时间多谢{nick}的照顾了~诶嘿嘿~要是没有{nick}的话，茉莉才不可能站在这里笑着陪你聊天呢。所以……今天就稍微奖励一下{nick}吧~啾~（少女轻轻地对着你的" ..
+                    buwei .. "一点，随后一蹦一跳地逃跑一样地离开了你的房间，只留下空气中的馨香）"
+            else
+                local hello = ""
+                if hour >= 5 and hour <= 11 then
+                    hello = "早安"
+                elseif hour >= 12 and hour <= 16 then
+                    hello = "午安"
+                else
+                    hello = "晚安"
+                end
+                return "{nick}~" ..
+                    hello ..
+                        "~，今天可是你与茉莉相处两周年的时间哦。怎么样？有没有为茉莉准备礼物呢~先说好，狐狐、狼狼、鱼鱼她们可是送给了我一整套明信片哦。\n诶？！{nick}什么都没有准备！茉莉可要.....唔！（还未等少女鼓起嘴你便主动吻了上去，茉莉也并没推开，而是软身靠在你的怀里）真是的....{nick}就算在今天也要偷袭，又不是不愿意这样了.....笨蛋！茉莉什么都没有说了！"
+            end
+        end
+    end
     for _, v in pairs(rude_table) do
         if (string.find(msg.fromMsg, v) ~= nil) then
             reply_main = punish_favor_rude(msg)
