@@ -177,13 +177,19 @@ function EnterStory(msg)
             Story = "第四章 众生相"
         end
     elseif StoryTemp:find("星星点灯") or StoryTemp:find("生日特典") then
-        local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
-        if fl >= 900 then
-            SetUserConf("itemConf", msg.fromQQ, "fl", fl - 900)
+        local isSepcial4Read = GetUserConf("storyConf", msg.fromQQ, "isSepcial4Read", 0)
+        if isSepcial4Read == 0 then
+            local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
+            if fl >= 900 then
+                SetUserConf("itemConf", msg.fromQQ, "fl", fl - 900)
+                SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 5)
+                Story = "生日特典 星星点灯"
+            else
+                msg:echo("您需要拥有900fl来解锁此剧情哦~")
+            end
+        else
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 5)
             Story = "生日特典 星星点灯"
-        else
-            msg:echo("您需要拥有900fl来解锁此剧情哦~")
         end
     end
     -- 是否存在章节
