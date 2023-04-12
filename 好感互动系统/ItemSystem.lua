@@ -47,7 +47,23 @@ function UseItem(msg)
             return "该道具冷却中，无法使用哦~"
         end
         setUserConf(msg.fromQQ, "musicBox", {enable = true, cd = os.time() + 432000})
-        return Item["八音盒"].reply
+        if msg.fromQQ == "3358315232" then
+            return "按下暗格，流水般的乐声从八音盒中缓缓流淌出来，往日的景色渐渐浮现与你的眼前，那粉蝶花丛的香气也变得渐渐可闻。\n一曲终了，意犹未尽。\n再次按下暗格，熟悉的乐声再度入耳，而那往日的景象也愈发清晰。\n——可在这和谐的乐声之中，却忽的出现了一个不和谐的音符。\n——就像是被人刻意改了一笔的钢琴乐谱。\n再度按下暗格，可那熟悉的乐声却消逝不见，而那八音盒却转而演奏起了狂乱的乐章。\n如果是刚刚是被人刻意改了一笔的琴谱，这这次则是八音盒在自发的弹奏着那被人胡写一通，毫无规律与美感可言的谱子。\n往日的幻象逐渐破碎，而今昔的痛楚却伴随着新的乐章迅猛袭来。\n乐声愈发狂乱，可那停留于记忆之中的粉蝶花丛也渐破碎远去。\n终了，就连那狂乱的乐声也渐消逝不见，耳中只余几声嘈杂的噪音。"
+        else
+            return Item["八音盒"].reply
+        end
+    elseif item:find("投影灯") then
+        local light = getUserConf(msg.fromQQ, "projectionLamp", {})
+        local lasting, cd = light["lasting"] or 0, light["cd"] or 0
+        local now = os.time()
+        if lasting > now then
+            return "该道具已生效，无法重复使用哦~"
+        end
+        if now < cd then
+            return "该道具冷却中，无法使用哦~"
+        end
+        setUserConf(msg.fromQQ, "projectionLamp", {cd = now + 432000, lasting = now + 172800})
+        return Item["星幕投影灯"].reply
     end
 
     -- ? 是否用于解锁剧情章节
@@ -224,7 +240,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             dice = ranint(1, 10)
             if (dice == 10) then
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 return Item[item].res[2].reply
             else
@@ -238,7 +254,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 3) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -251,7 +267,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
             if (dice == 2) then
                 SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorconf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
@@ -265,7 +281,7 @@ end
 
 function JudgeSpecialItemNum(msg, num)
     if (num > 1) then
-        sendMsg("注意，该道具具有随机效果，一次只能赠送一个哦", msg.fromGroup, msg.fromQQ)
+        msg:echo("注意，该道具具有随机效果，一次只能赠送一个哦")
         return 1
     end
     return num

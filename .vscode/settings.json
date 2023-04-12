@@ -16,6 +16,10 @@
     "getUserToday",
     "setUserToday"
   ],
-  "Lua.diagnostics.disable": ["lowercase-global", "cast-local-type"],
+  "Lua.diagnostics.disable": [
+    "lowercase-global",
+    "cast-local-type",
+    "param-type-mismatch"
+  ],
   "lua.targetVersion": "5.3"
 }

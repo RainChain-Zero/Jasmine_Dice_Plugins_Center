@@ -4,22 +4,21 @@ package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
 function draw(msg)
-    if (msg.fromGroup ~= "921454429" and msg.fromGroup ~= "1007561501" and msg.fromGroup ~= "384144009") then
+    if (msg.gid ~= "921454429" and msg.gid ~= "1007561501" and msg.gid ~= "384144009") then
         return ""
     end
     if msg.fromMsg == "end" then
-        setGroupConf(msg.fromGroup, "100questionsAnswerNow", 0)
-        return "嗯嗯，感谢" ..
-            getUserConf(msg.fromQQ, "nick", getGroupConf(msg.fromGroup, "100questionsQQ", "0")) .. "的精彩回答!!"
+        setGroupConf(msg.gid, "100questionsAnswerNow", 0)
+        return "嗯嗯，感谢" .. getUserConf(msg.fromQQ, "nick", getGroupConf(msg.gid, "100questionsQQ", "0")) .. "的精彩回答!!"
     end
     -- 上一位未回答结束
-    if (getGroupConf(msg.fromGroup, "100questionsAnswerNow", 0) == 1) then
+    if (getGroupConf(msg.gid, "100questionsAnswerNow", 0) == 1) then
         return "请耐心等待上一位回答结束哦~"
     end
     local reply = read_item()
-    setGroupConf(msg.fromGroup, "100questionsQQ", msg.fromQQ)
+    setGroupConf(msg.gid, "100questionsQQ", msg.fromQQ)
     -- 标记现在正在回答
-    setGroupConf(msg.fromGroup, "100questionsAnswerNow", 1)
+    setGroupConf(msg.gid, "100questionsAnswerNow", 1)
     return reply[ranint(1, #reply)]
 end
 msg_order[".q"] = "draw"

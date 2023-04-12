@@ -8,7 +8,7 @@ function Mute(msg)
         if (QQ == nil or QQ == "") then
             return "{nick} 请告诉茉莉目标是哪位小朋友哦~"
         end
-        eventMsg(".group ban " .. QQ .. " " .. time, msg.fromGroup, "2677409596")
+        eventMsg(".group ban " .. QQ .. " " .. time, msg.gid, "2677409596")
     end
 end
 msg_order[Trade_order] = "Mute"
@@ -19,7 +19,7 @@ function Kick(msg)
         if (QQ == nil or QQ == "") then
             return "{nick} 请告诉茉莉目标是哪位小朋友哦~"
         end
-        eventMsg(".group kick " .. QQ, msg.fromGroup, "2677409596")
+        eventMsg(".group kick " .. QQ, msg.gid, "2677409596")
     end
 end
 msg_order["#移除"] = "Kick"
@@ -27,7 +27,7 @@ msg_order["#移除"] = "Kick"
 function Nn(msg)
     if msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596" then
         local qq = string.match(msg.fromMsg, "(%d+)")
-        eventMsg(".nn", msg.fromGroup, qq)
+        eventMsg(".nn", msg.gid, qq)
     end
 end
 msg_order["#nn"] = "Nn"
@@ -57,11 +57,12 @@ end
 msg_order["来点二次元"] = "picture"
 
 picture_api = {
-    [1] = "https://iw233.cn/api/Random.php",
-    [2] = "http://random.firefliestudio.com",
-    [3] = "https://www.dmoe.cc/random.php",
-    [4] = "https://api.ixiaowai.cn/api/api.php",
-    [5] = "https://apibug.cn/api/ecy/&apiKey=5c41c5388d534ebc1ab0774e9df1b0d4"
+    [1] = "http://random.firefliestudio.com",
+    [2] = "https://www.dmoe.cc/random.php",
+    [3] = "https://api.vvhan.com/api/acgimg",
+    [4] = "https://img.xjh.me/random_img.php",
+    [5] = "https://api.ghser.com/random/api.php",
+    [6] = "https://api.yimian.xyz/img"
 }
 
 function http_cat(msg)
