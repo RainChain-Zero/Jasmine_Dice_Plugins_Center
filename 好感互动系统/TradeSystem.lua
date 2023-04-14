@@ -26,21 +26,12 @@ function Trade(msg)
         (string.find(msg.fromMsg, "同意") == nil and string.find(msg.fromMsg, "接受") == nil and
             string.find(msg.fromMsg, "拒绝") == nil)
      then
-        -- //? 判断被请求方是否在同一个群中
-        local isInGroup = (string.find(msg.fromMsg, "%[CQ:at,qq=") ~= nil)
-        if (isInGroup == true) then
-            isInGroup = 1
-        else
-            isInGroup = 0
-            -- ! 禁止跨群交易（防止主动发起临时对话）
-            return ""
-        end
         -- 正则检测并选出参数
         -- //todo 注意输入合法性的判断条件
         QQReceive, itemRequestNum, itemRequest, itemReceiveNum, itemReceive =
             string.match(
             msg.fromMsg,
-            "^[%s]*[%[CQ:at,qq=]*(%d*)[%]]*[%s]*[T,t]*[%s]*(%d*)[%s]*(%S*)[%s]*[F,f]*[%s]*(%d*)[%s]*(%S*)$",
+            "%[CQ:at,id=(%d+)%]%s*[Tt]*%s*(%d+)%s*(%S+)%s[Ff]*%s*(%d+)%s*(%S+)",
             #trade_order + 1
         )
         if
@@ -75,20 +66,12 @@ function Trade(msg)
         end
         -- 如果itemReceiveNum为0 为赠送的情况
         if (itemReceiveNum * 1 == 0) then
-            if (isInGroup == 1) then
-                content =
-                    "[CQ:at,qq=" ..
-                    QQReceive ..
-                        "]\n" ..
-                            "系统：您收到来自用户" ..
-                                getUserConf(msg.fromQQ, "nick", "用户名获取失败") ..
-                                    "的赠送——您得到了" .. itemRequestNum .. itemRequest
-            else
-                content =
-                    "系统：您收到来自" ..
-                    "用户编号为" ..
-                        getUserConf(msg.fromQQ, "nick", "用户名获取失败") .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
-            end
+            content =
+                "[CQ:at,qq=" ..
+                QQReceive ..
+                    "]\n" ..
+                        "系统：您收到来自用户" ..
+                            getUserConf(msg.fromQQ, "nick", "用户名获取失败") .. "的赠送——您得到了" .. itemRequestNum .. itemRequest
             SetUserConf(
                 "itemConf",
                 msg.fromQQ,
@@ -101,15 +84,12 @@ function Trade(msg)
                 itemRequest,
                 GetUserConf("itemConf", QQReceive, itemRequest, 0) + itemRequestNum
             )
-            sendMsg(content, msg.gid, QQReceive)
-            return ""
+            return content
         else
             if (itemReceive == nil) then
                 return "系统：检测到您的参数输入有误哦~"
             end
         end
-        -- //? 记录下被交易方是否在同一个群内，用于被交易方回复时判断不同的处理方式
-        SetUserConf("tradeConf", QQReceive, "isInGroup", isInGroup)
         QQRequest = msg.fromQQ
         -- 交易双方在对方处留下记录作为交易进行的凭证
         SetUserConf("tradeConf", msg.fromQQ, "tradeReceive", QQReceive)
@@ -118,29 +98,16 @@ function Trade(msg)
         SetUserConf("tradeConf", msg.fromQQ, {"itemRequestNum", "itemRequest"}, {itemRequestNum * 1, itemRequest})
         SetUserConf("tradeConf", QQReceive, {"itemReceiveNum", "itemReceive"}, {itemReceiveNum * 1, itemReceive})
         -- 茉莉发送请求给被交易方
-        if (isInGroup == 1) then
-            content =
-                "[CQ:at,qq=" ..
-                QQReceive ..
-                    "]\n" ..
-                        "系统：您收到来自用户编号为" ..
-                            msg.fromQQ ..
-                                "的交易请求——您将得到" ..
-                                    itemRequestNum ..
-                                        itemRequest ..
-                                            "；同时失去" .. itemReceiveNum .. itemReceive .. "\n是否接受？（输入 “交易同意/拒绝”）"
-            sendMsg(content, msg.gid, QQReceive)
-        else
-            content =
-                "系统：您收到来自用户编号为" ..
-                msg.fromQQ ..
-                    "的交易请求——您将得到" ..
-                        itemRequestNum ..
-                            itemRequest .. "；同时失去" .. itemReceiveNum .. itemReceive .. "\n是否接受？（输入 “交易 同意/拒绝”）"
-            sendMsg(content, 0, QQReceive)
-            sendMsg("系统：您的交易请求已发送，请等待对方回复，结果将通过私聊通知。若长时间未回复，可能是对方未加本机好友并且所在群禁止了临时会话", msg.gid, msg.fromQQ)
-        end
-        return ""
+        content =
+            "[CQ:at,qq=" ..
+            QQReceive ..
+                "]\n" ..
+                    "系统：您收到来自用户编号为" ..
+                        msg.fromQQ ..
+                            "的交易请求——您将得到" ..
+                                itemRequestNum ..
+                                    itemRequest .. "；同时失去" .. itemReceiveNum .. itemReceive .. "\n是否接受？（输入 “交易同意/拒绝”）"
+        return content
     elseif
         (string.find(msg.fromMsg, "同意") ~= nil or string.find(msg.fromMsg, "接受") ~= nil or
             string.find(msg.fromMsg, "拒绝") ~= nil)
@@ -170,14 +137,8 @@ function Trade(msg)
                 GetUserConf("tradeConf", msg.fromQQ, "itemReceiveNum", 0)
             -- 余额不足，交易自动关闭
             if (itemReceiveNow - itemReceiveNum < 0) then
-                if (GetUserConf("tradeConf", msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
-                    -- 交易结束，交易凭证清除
-                    TradeEnd(tradeRequest, msg.fromQQ)
-                else
-                    content = "系统：用户" .. "{nick}" .. "(" .. msg.fromQQ .. ")拒绝了您的交易请求"
-                    sendMsg(content, 0, tradeRequest)
-                    TradeEnd(tradeRequest, msg.fromQQ)
-                end
+                -- 交易结束，交易凭证清除
+                TradeEnd(tradeRequest, msg.fromQQ)
                 return "系统：您的" .. itemReceive .. "余量不足,交易已关闭"
             end
 
@@ -202,26 +163,12 @@ function Trade(msg)
             SetUserConf("itemConf", tradeRequest, itemRequest, itemRequestNow - itemRequestNum)
 
             -- 茉莉发送交易结束通知
-            if (GetUserConf("tradeConf", msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
-                -- 交易结束，交易凭证清除
-                TradeEnd(tradeRequest, msg.fromQQ)
-            else
-                content = "系统：用户" .. "{nick}" .. "(" .. msg.fromQQ .. ")已同意您的交易请求"
-                sendMsg(content, 0, tradeRequest)
-                -- 交易结束，交易凭证清除
-                TradeEnd(tradeRequest, msg.fromQQ)
-            end
+            -- 交易结束，交易凭证清除
+            TradeEnd(tradeRequest, msg.fromQQ)
             return "系统：您同意了该交易，交易已成立"
         else
-            if (GetUserConf("tradeConf", msg.fromQQ, "isInGroup", 0) == 1) then -- 判断是否在同一群内
-                -- 交易结束，交易凭证清除
-                TradeEnd(tradeRequest, msg.fromQQ)
-            else
-                content = "系统：用户" .. "{nick}" .. "(" .. msg.fromQQ .. ")拒绝了您的交易请求"
-                sendMsg(content, 0, tradeRequest)
-                -- 交易结束，交易凭证清除
-                TradeEnd(tradeRequest, msg.fromQQ)
-            end
+            -- 交易结束，交易凭证清除
+            TradeEnd(tradeRequest, msg.fromQQ)
             return "系统：您拒绝了该交易，交易已关闭"
         end
     end
