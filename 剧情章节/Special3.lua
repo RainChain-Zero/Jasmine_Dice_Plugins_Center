@@ -75,13 +75,3 @@ function SpecialThreeExtra(msg)
     end
     return content
 end
-
--- 构造发送卡片
-function build_music_card(qq, type, id)
-    local req = {
-        ["qq"] = qq,
-        ["type"] = type,
-        ["id"] = id
-    }
-    http.post("http://localhost:8083/musicCard", Json.encode(req))
-end

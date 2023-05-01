@@ -56,7 +56,7 @@ function JudgeFrequency(msg)
             SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
             return "您无视提醒，作为惩罚，您损失了100点好感和20点亲和度"
         end
-        return "当前交互频率过高，茉莉被你突如其来的攻势宕机了！请等待10s后再试，无视提醒将得到损失"
+        return "当前交互频率过高，请等待10s后再试哦~"
     else
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
@@ -428,7 +428,8 @@ function StoryUnlocked(msg)
         isSpecial2Read,
         isSpecial3Read,
         isStory3Read,
-        isSpecial4Read =
+        isSpecial4Read,
+        isSpecial5Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -443,9 +444,10 @@ function StoryUnlocked(msg)
             "isSpecial2Read",
             "isSpecial3Read",
             "isStory3Read",
-            "isSpecial4Read"
+            "isSpecial4Read",
+            "isSpecial5Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -534,6 +536,15 @@ function StoryUnlocked(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
+    if favor >= 4000 and isSpecial5Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 6, 6)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式『夜』已经开放,输入“进入剧情 夜”可浏览剧情\n注意：本次解锁剧情需要扣除1000FL"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 5) .. "1" .. string.sub(specialUnlockedNotice, 7)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
     if content ~= "" then
         msg:echo("[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. content)
     end
@@ -541,7 +552,26 @@ end
 
 -- 动作类交互预处理
 function Actionprehandle(str)
-    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love", "贴贴", "蹭蹭"}
+    local list = {
+        "抱",
+        "摸",
+        "举高",
+        "亲",
+        "牵手",
+        "捏",
+        "揉",
+        "可爱",
+        "萌",
+        "kawa",
+        "喜欢",
+        "suki",
+        "爱",
+        "love",
+        "贴贴",
+        "蹭蹭",
+        "膝枕",
+        "肩膀"
+    }
     for _, v in pairs(list) do
         if (string.find(str, v) ~= nil) then
             return true

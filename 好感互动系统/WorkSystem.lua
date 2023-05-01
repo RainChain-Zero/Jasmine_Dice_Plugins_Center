@@ -5,8 +5,8 @@ msg_order = {}
 
 work_order = "/开始"
 function Work(msg)
-    --! 灵音定制reply /开始xx 6/9视作打工
-    if msg.fromQQ ~= "2595928998" and msg.fromMsg:find("/开始打工") ~= 1 then
+    --! 灵音、峎皬eh定制reply /开始xx 6/9视作打工
+    if (msg.fromQQ ~= "2595928998" and msg.fromQQ ~= "2043789473") and msg.fromMsg:find("/开始打工") ~= 1 then
         return ""
     end
     if (GetUserConf("storyConf", msg.fromQQ, "story2Choice", 0) == 0) then

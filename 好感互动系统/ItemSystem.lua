@@ -169,11 +169,14 @@ function FinishtCustomizedReply(msg)
     if (msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "2677409596") then
         return "『✖权限不足』只有管理员才可确认定制reply完成"
     end
-    local QQ = string.match(msg.fromMsg, "[%s]*(%d+)", #finish_reply_order + 1)
+    local QQ, msg = string.match(msg.fromMsg, "[%s]*(%d+)%s*(%S*)", #finish_reply_order + 1)
     if (QQ == nil or QQ == "") then
         return "『✖参数不足』请输入确认完成reply的目标QQ"
     end
     local content = "【系统邮件】您的定制reply已经完成，如有问题请通过“.send [消息内容]”进行反馈哦~"
+    if msg then
+        content = content .. "\n附加消息：" .. msg
+    end
     SetUserConf("itemConf", QQ, "定制reply", GetUserConf("itemConf", QQ, "定制reply", 0) - 1)
     sendMsg(content, 0, QQ)
     return "已确认完成该reply定制"

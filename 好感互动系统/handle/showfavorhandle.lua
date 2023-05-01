@@ -15,11 +15,13 @@ function ShowFavorHandle(msg, favor, affinity)
         state = state .. "\n打工人：打工期间无法进行喂食以及交互。"
     end
     if (favor < 3000) then
-        div = 100
+        div = 90
     elseif (favor < 8500) then
-        div = 140
+        div = 95
+    elseif (favor < 12000) then
+        div = 110
     elseif (favor < 15000) then
-        div = 170
+        div = 130
     else
         div = 200
     end
@@ -30,12 +32,11 @@ function ShowFavorHandle(msg, favor, affinity)
     if (calibration_limit > 16) then
         state = state .. "\n逻辑并发过载：某些安全隐患正在提升。"
     end
-    if
-        (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10) < 0 and
-            (getUserConf(msg.fromQQ, "projectionLamp", {}).lasting or 0) < os.time())
-     then
+    local cal = math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10)
+    if cal < 0 then
         state = state .. "\n情感单元过载：当前好感获取量减少。"
-    else
+    end
+    if cal > 0 or (getUserConf(msg.fromQQ, "projectionLamp", {}).lasting or 0) > os.time() then
         state = state .. "\n情感单元谐振：当前好感获取量增加。"
     end
     -- 判断回归

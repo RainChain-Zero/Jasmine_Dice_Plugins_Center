@@ -865,19 +865,6 @@ rude_table = {
     "操",
     "我操"
 }
-
--- function teach_special(msg)
---     local today_rude=GetUserToday(2677409596,"rude",0)
---     local today_sorry=GetUserToday(2677409596,"sorry",0)
---     if(today_rude>=1 or today_sorry>=2)then
---         return "嗯嗯...茉莉不会和主人学坏的！茉莉是好——孩——子！"
---     else
---         return "诶？可...可主人什么也没做错呀"
---     end
--- end
--- msg_order["不要和爱酱学坏哦"]="teach_special"
-
--- 道歉相关判断程序
 function say_sorry(msg)
     local preReply = preHandle(msg)
     local today_rude, today_sorry = GetUserToday(msg.fromQQ, {"rude", "sorry"}, {0, 0})
@@ -1004,8 +991,7 @@ function interaction(msg)
             CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         end
     end
-    local first, second = "", string.match(msg.fromMsg, "^[%s]*[%S]*[%s]*[%S]*$", #normal_order_old + 1)
-    first, second = string.match(second, "^[%S]*"), string.match(second, "^[%S]*", string.find(second, " ") + 1)
+    local first, second = msg.fromMsg:match("^[%s]*(%S*)[%s]*(%S*)$", #normal_order_old + 1)
     if (first ~= "互动") then
         return ""
     end
@@ -1027,7 +1013,10 @@ function interaction(msg)
     elseif (second == "腿") then
         second = "leg"
     elseif (second == "手") then
+        -- 互动 肩膀 定制reply
         second = "hand"
+    elseif second:find("肩") then
+        return "唔？{nick}累了么？（少女感受着颈间发丝磨蹭的沙沙声与渐渐平静的呼吸，微微侧过脑袋来，声音中流露出直率的关心）茉莉一直在你的身边哦……"
     end
     local flag = second .. "_" .. level
     for k, v in pairs(reply) do
@@ -1132,7 +1121,8 @@ function action(msg)
         today_suki,
         today_love,
         today_tietie,
-        today_cengceng =
+        today_cengceng,
+        today_lapPillow =
         GetUserToday(
         msg.fromQQ,
         {
@@ -1148,9 +1138,10 @@ function action(msg)
             "suki",
             "love",
             "tietie",
-            "cengceng"
+            "cengceng",
+            "lapPillow"
         },
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
 
     local blackReply = blackList(msg)
@@ -1786,9 +1777,24 @@ function action(msg)
             end
         end
     end
+    if msg.fromMsg:find("膝枕") then
+        if today_rude <= 2 and today_sorry <= 1 then
+            if favor <= ranint(8000 - left_limit, 8000 + right_limit) then
+                favor_now = favor + ModifyFavorChangeNormal(msg, favor, -20, affinity, succ)
+                reply_main = "嗯...？{nick}是生病了吧？怎么会说出这样的要求呢？茉莉无法答应哦。"
+            elseif GetUserConf("storyConf", msg.fromQQ, "isSpecial5Read", 0) == 0 then
+                reply_main = "{nick}想要膝枕吗？现在茉莉有些忙，可以等下次再说吗？\n（解锁条件：阅读剧情『夜』）"
+            elseif today_lapPillow >= 1 then
+                reply_main = "茉莉刚才不是已经安慰过{nick}了吗？真是的...怎么和小孩子一样啊....好吧，只能再休息一下下哦？"
+            else
+                today_lapPillow = today_lapPillow + 1
+                SetUserToday(msg.fromQQ, "lapPillow", today_lapPillow)
+                reply_main = table_draw(reply_lapPillow)
+                favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20, affinity, succ)
+            end
+        end
+    end
     CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
-    -- 最后判断是否是“互动--部位”格式
-    -- interaction(msg)
 end
 
 -- 以“茉莉 ”开头代表对象指向 然后搜索匹配相关动作
