@@ -2,6 +2,34 @@
 __BOUNDARY__ = 0.75
 -- 单位浮动值变动的区间长度
 __FLOAT_WEIGHT_CHANGE__ = 0.1
+-- 好心情
+__GOOD_MOOD__ = {
+    ["开心"] = function(random)
+        return 1 / random
+    end,
+    ["渴望"] = function(random)
+        return random
+    end,
+    ["好奇"] = function(random)
+        return nil
+    end,
+    ["振奋"] = function(random)
+        return random
+    end
+}
+-- 坏心情
+__BAD_MOOD__ = {
+    ["焦虑"] = function(random)
+        return random
+    end,
+    ["失望"] = function(random)
+        return 1 / random
+    end,
+    ["枯燥"] = function(random)
+        return 1 / random
+    end
+}
+
 -- 获取标准正态分布数
 function get_normal()
     local x = math.random()
@@ -22,11 +50,11 @@ function get_mood(float_value)
     local left, right = get_limit(float_value)
     log("左右边界：", left, right)
     if random < left then
-        return -1
+        return -1, random
     elseif random > right then
-        return 1
+        return 1, random
     else
-        return 0
+        return 0, random
     end
 end
 
@@ -36,7 +64,7 @@ end
     抽取的情绪为好情绪，浮动值加1
     抽取的情绪为平常情绪，浮动值不变
 ]]
-function change_float_value(mood_pre, mood_now, float_value)
+function update_float_value(mood_pre, mood_now, float_value)
     -- 两次获得的情绪相反，则浮动值归零
     if mood_pre + mood_now == 0 then
         return 0
@@ -97,9 +125,38 @@ end
 ]]
 function update_mood_info(mood_pre, float_value)
     -- 抽取新情绪
-    local mood_now = get_mood(float_value)
+    local mood_now, random = get_mood(float_value)
     -- 更新浮动值
-    float_value = change_float_value(mood_pre, mood_now, float_value)
+    float_value = update_float_value(mood_pre, mood_now, float_value)
+    -- 抽取具体心情
+    local special_mood, coefficient = get_special_mood(mood_now, random)
     log("新情绪：", mood_now, "新浮动值：", float_value)
-    return mood_now, float_value
+    log("具体心情：", special_mood, "系数：", coefficient)
+    return special_mood, coefficient
+end
+
+-- 获取具体心情
+function get_special_mood(mood, random)
+    local random_key = nil
+    if mood == 0 then
+        return "平常", 0
+    elseif mood == 1 then
+        random_key = get_random_key(__GOOD_MOOD__)
+        return random_key, __GOOD_MOOD__[random_key](random)
+    else
+        random_key = get_random_key(__BAD_MOOD__)
+        return random_key, __BAD_MOOD__[random_key](random)
+    end
+end
+
+-- 获取一个带key-value的table的随机key
+function get_random_key(tab)
+    -- 生成一个随机数
+    local random_index = math.random(1, #tab)
+    for key, _ in pairs(tab) do
+        if random_index == 1 then
+            return key
+        end
+        random_index = random_index - 1
+    end
 end

@@ -1,9 +1,3 @@
---[[
-    @author RainChain-Zero
-    @version 1.0
-    @Created 2022/03/31 22:04
-    @Last Modified 2022/04/10 00:45
-    ]] -- json.lua的路径
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 

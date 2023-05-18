@@ -157,8 +157,7 @@ function CustomizeReply(msg)
     content =
         "【系统邮件】收到了一条reply定制请求\n申请人：" ..
         getUserConf(msg.fromQQ, "nick", "用户名获取失败") .. "(" .. msg.fromQQ .. ")\n内容：" .. content
-    sendMsg(content, 0, 3032902237)
-    sendMsg(content, 0, 2677409596)
+    sendMsg(content, 432653151, 0)
     return "已经成功将请求发送至管理员~请耐心等待答复哦~\n为了能正常接收提示消息，请添加茉莉为好友w"
 end
 msg_order[reply_order] = "CustomizeReply"

@@ -1,10 +1,4 @@
 ---@diagnostic disable: lowercase-global
---[[
-    @author 慕北_Innocent(RainChain)
-    @version 4.5
-    @Created 2021/08/19 13:16
-    @Last Modified 2022/03/31 23:36
-    ]] -- 载入回复模块
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "favorReply"
 require "itemDescription"

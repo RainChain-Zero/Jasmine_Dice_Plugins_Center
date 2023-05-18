@@ -1,9 +1,4 @@
---[[
-    @author 慕北_Innocent(RainChain)
-    @version 1.1
-    @Created 2022/01/30 20:13
-    @Last Modified 2022/03/31 23:36
-    ]] msg_order = {}
+msg_order = {}
 
 package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
 require "itemDescription"
