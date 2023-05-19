@@ -1,23 +1,13 @@
 ---@diagnostic disable: lowercase-global
---[[
-    @author RainChain-Zero
-    @version 1.0
-    @Created 2022/04/02 23:26
-    @Last Modified 2022/04/03 16:44
-    ]]
 -- 各条交互前预处理
 function preHandle(msg)
     -- 强制更新提示信息
     -- sendMsg("紧急维护，暂停服务！",msg.gid,msg.fromQQ)
     -- os.exit()
     --! 强制阅读协议注册，一天提醒一次
-    if getUserConf(msg.fromQQ, "isRegister", 0) == 0 then
-        if getUserToday(msg.fromQQ, "registerNotice", 0) == 0 then
-            setUserToday(msg.fromQQ, "registerNotice", 1)
-            return "检测到您还未激活好感系统...\n请前往https://rainchain-zero.github.io/JasmineDoc/promise/阅读茉莉协议并查看激活指令"
-        else
-            return ""
-        end
+    local register = check_register(msg)
+    if register then
+        return register
     end
     -- 打工终止
     if (JudgeWorking(msg)) then
@@ -42,6 +32,14 @@ function preHandle(msg)
     StoryUnlocked(msg)
 end
 
+function check_register(msg)
+    if getUserConf(msg.fromQQ, "isRegister", 0) == 0 then
+        if getUserToday(msg.fromQQ, "registerNotice", 0) == 0 then
+            setUserToday(msg.fromQQ, "registerNotice", 1)
+            return "检测到您还未激活好感系统...\n请前往https://rainchain-zero.github.io/JasmineDoc/promise/阅读茉莉协议并查看激活指令"
+        end
+    end
+end
 function JudgeFrequency(msg)
     local frequency = getUserToday(msg.fromQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     local DiceQQ = getDiceQQ()
@@ -51,8 +49,8 @@ function JudgeFrequency(msg)
         frequency["count"] = frequency["count"] + 1
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
-        if frequency["count"] >= 2 then
-            local favor, affinity = GetUserConf(msg.fromQQ, {"好感度", "affinity"}, {0, 0})
+        if frequency["count"] >= 3 then
+            local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
             SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
             return "您无视提醒，作为惩罚，您损失了100点好感和20点亲和度"
         end
