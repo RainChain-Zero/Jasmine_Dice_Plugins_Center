@@ -46,7 +46,6 @@ function get_mood(float_value)
     local random = get_normal()
     -- 获取左右边界
     local left, right = get_limit(float_value)
-    print("左右边界：", left, right)
     if random < left then
         return -1, random
     elseif random > right then
@@ -95,7 +94,6 @@ end
 ]]
 function get_limit(float_vlaue)
     local float_weight = get_float_weight(float_vlaue)
-    print("浮动加权：", float_weight)
     -- 如果浮动加权的值超过了0.4，那么必定为另一种情绪
     if math.abs(float_weight) >= 0.4 then
         -- 若为坏情绪，必定为好情绪
@@ -126,10 +124,22 @@ function update_mood_info(mood_pre, float_value)
     float_value = update_float_value(mood_pre, mood_now, float_value)
     -- 抽取具体心情
     local special_mood, coefficient = get_special_mood(mood_now, random)
-    print("新情绪：", mood_now, "新浮动值：", float_value)
-    print("具体心情：", special_mood, "系数：", coefficient)
-    -- return special_mood, coefficient
-    return mood_now, float_value
+    return mood_now, float_value, special_mood, coefficient
+end
+
+-- 校准时更新用户列表心情
+function update_mood_list(mood_list)
+    for k, _ in pairs(mood_list) do
+        local mood_pre, float_value, mood_now, special_mood, coefficient
+        mood_pre, float_value = GetUserConf("moodConf", k, {"mood", "float_value"}, {0, 0})
+        mood_now, float_value, special_mood, coefficient = update_mood_info(mood_pre, float_value)
+        SetUserConf(
+            "moodConf",
+            k,
+            {"mood", "float_value", "special_mood", "coefficient"},
+            {mood_now, float_value, special_mood, coefficient}
+        )
+    end
 end
 
 -- 获取具体心情
