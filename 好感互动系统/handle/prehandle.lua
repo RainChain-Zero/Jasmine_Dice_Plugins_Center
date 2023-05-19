@@ -1,9 +1,6 @@
 ---@diagnostic disable: lowercase-global
 -- 各条交互前预处理
 function preHandle(msg)
-    -- 强制更新提示信息
-    -- sendMsg("紧急维护，暂停服务！",msg.gid,msg.fromQQ)
-    -- os.exit()
     --! 强制阅读协议注册，一天提醒一次
     local register = check_register(msg)
     if register then

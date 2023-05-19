@@ -1,10 +1,4 @@
 ---@diagnostic disable: lowercase-global
---[[
-    @author RainChain-Zero
-    @version 1.0
-    @Created 2022/04/03 16:23
-    @Last Modified 2022/04/03 16:44
-    ]]
 --! 校准值 使用Dice!函数
 calibration = getUserConf(getDiceQQ(), "calibration", 0)
 -- 校准值初始上限
