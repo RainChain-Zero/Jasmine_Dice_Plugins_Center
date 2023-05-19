@@ -35,6 +35,9 @@ end
 -- 修正好感变化值(适用于非赠礼交互)
 -- msg,原好感,当前好感变化值，亲和力,是否成功
 function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
+    if favor_change == 0 then
+        return 0
+    end
     local res = 0
     if (favor_change < 0) then
         -- 校准上限+2，亲和力减少

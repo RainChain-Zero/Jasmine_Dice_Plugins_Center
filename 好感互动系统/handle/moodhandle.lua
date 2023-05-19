@@ -162,3 +162,12 @@ function get_special_mood(mood, random)
         return random_key, __MOOD_FUNCTION__[random_key](y)
     end
 end
+
+function get_coefficient(special_mood, coefficient, candidates)
+    for _, v in pairs(candidates) do
+        if v == special_mood then
+            return coefficient
+        end
+    end
+    return 1
+end
