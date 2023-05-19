@@ -2,31 +2,29 @@
 __BOUNDARY__ = 0.75
 -- 单位浮动值变动的区间长度
 __FLOAT_WEIGHT_CHANGE__ = 0.1
--- 好心情
-__GOOD_MOOD__ = {
-    ["开心"] = function(random)
-        return 1 / random
+__GOOD_MOOD__ = {"开心", "渴望", "好奇", "振奋"}
+__BAD_MOOD__ = {"焦虑", "失望", "枯燥"}
+__MOOD_FUNCTION__ = {
+    ["开心"] = function(y)
+        return 1 / y
     end,
-    ["渴望"] = function(random)
-        return random
+    ["渴望"] = function(y)
+        return y
     end,
-    ["好奇"] = function(random)
-        return nil
+    ["好奇"] = function(y)
+        return 1
     end,
-    ["振奋"] = function(random)
-        return random
-    end
-}
--- 坏心情
-__BAD_MOOD__ = {
-    ["焦虑"] = function(random)
-        return random
+    ["振奋"] = function(y)
+        return y
     end,
-    ["失望"] = function(random)
-        return 1 / random
+    ["焦虑"] = function(y)
+        return y
     end,
-    ["枯燥"] = function(random)
-        return 1 / random
+    ["失望"] = function(y)
+        return 1 / y
+    end,
+    ["枯燥"] = function(y)
+        return 1 / y
     end
 }
 
@@ -48,7 +46,7 @@ function get_mood(float_value)
     local random = get_normal()
     -- 获取左右边界
     local left, right = get_limit(float_value)
-    log("左右边界：", left, right)
+    print("左右边界：", left, right)
     if random < left then
         return -1, random
     elseif random > right then
@@ -66,7 +64,7 @@ end
 ]]
 function update_float_value(mood_pre, mood_now, float_value)
     -- 两次获得的情绪相反，则浮动值归零
-    if mood_pre + mood_now == 0 then
+    if mood_pre * mood_now == -1 then
         return 0
     end
     if mood_now == -1 then
@@ -84,9 +82,7 @@ end
     浮动值>0时，每增加1，浮动加权增加0.1
 ]]
 function get_float_weight(float_value)
-    if float_value <= -1 then
-        return -__FLOAT_WEIGHT_CHANGE__ * float_value
-    elseif float_value >= 1 then
+    if float_value <= -1 or float_value >= 1 then
         return __FLOAT_WEIGHT_CHANGE__ * float_value
     else
         return 0
@@ -99,9 +95,9 @@ end
 ]]
 function get_limit(float_vlaue)
     local float_weight = get_float_weight(float_vlaue)
-    log("浮动加权：", float_weight)
-    -- 如果浮动加权的值超过了平常情绪的区间值，那么必定为另一种情绪
-    if __BOUNDARY__ * 2 - math.abs(float_weight) <= 0 then
+    print("浮动加权：", float_weight)
+    -- 如果浮动加权的值超过了0.4，那么必定为另一种情绪
+    if math.abs(float_weight) >= 0.4 then
         -- 若为坏情绪，必定为好情绪
         if float_weight < 0 then
             return -math.huge, -math.huge
@@ -130,33 +126,29 @@ function update_mood_info(mood_pre, float_value)
     float_value = update_float_value(mood_pre, mood_now, float_value)
     -- 抽取具体心情
     local special_mood, coefficient = get_special_mood(mood_now, random)
-    log("新情绪：", mood_now, "新浮动值：", float_value)
-    log("具体心情：", special_mood, "系数：", coefficient)
-    return special_mood, coefficient
+    print("新情绪：", mood_now, "新浮动值：", float_value)
+    print("具体心情：", special_mood, "系数：", coefficient)
+    -- return special_mood, coefficient
+    return mood_now, float_value
 end
 
 -- 获取具体心情
 function get_special_mood(mood, random)
     local random_key = nil
-    if mood == 0 then
-        return "平常", 0
-    elseif mood == 1 then
-        random_key = get_random_key(__GOOD_MOOD__)
-        return random_key, __GOOD_MOOD__[random_key](random)
-    else
-        random_key = get_random_key(__BAD_MOOD__)
-        return random_key, __BAD_MOOD__[random_key](random)
+    -- 对random做左右边界限定，防止有笨蛋全点了幸运
+    if random < -2 then
+        random = -2
+    elseif random > 2 then
+        random = 2
     end
-end
-
--- 获取一个带key-value的table的随机key
-function get_random_key(tab)
-    -- 生成一个随机数
-    local random_index = math.random(1, #tab)
-    for key, _ in pairs(tab) do
-        if random_index == 1 then
-            return key
-        end
-        random_index = random_index - 1
+    y = math.abs(random) + 1
+    if mood == 0 then
+        return "平常", 1
+    elseif mood == 1 then
+        random_key = __GOOD_MOOD__[math.random(#__GOOD_MOOD__)]
+        return random_key, __MOOD_FUNCTION__[random_key](y)
+    else
+        random_key = __BAD_MOOD__[math.random(#__BAD_MOOD__)]
+        return random_key, __MOOD_FUNCTION__[random_key](y)
     end
 end
