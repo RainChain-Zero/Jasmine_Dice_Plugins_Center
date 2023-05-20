@@ -13,19 +13,12 @@ function UseItem(msg)
     local reply = "唔姆姆，你这是要对着空气做什么呀？（部分物品需要赠送给茉莉才会触发：“赠送茉莉 数量 道具”数量不填默认为1）"
     local num, item, flag1, flag2 = "", "", false, false
     num, item = string.match(msg.fromMsg, "[u,U][%s]*(%d*)[%s]*(.*)")
-    if (item == nil or item == "") then
+    if (not item) then
         return "请输入道具名哦~（输入“道具图鉴”可查看目前支持的所有道具）"
     end
     -- 数量默认为1
-    if (num == "" or num == nil) then
+    if (not num) then
         num = 1
-    end
-    --! 梦的开始bug判断
-    if
-        (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and
-            GetUserConf("itemConf", msg.fromQQ, "梦的开始", 0) == 0)
-     then
-        SetUserConf("itemConf", msg.fromQQ, "梦的开始", 1)
     end
     -- 道具剩余数量判断
     flag1, flag2, item = UseCheck(msg, num, Item, item)
@@ -95,15 +88,15 @@ function GiveGift(msg)
     local num, item, flag1, flag2 = "", "", false, false
     local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.+)", #gift_order + 1)
-    if (num == "" or num == nil) then
+    if (not num) then
         num = 1
     end
     num = num * 1
-    if (item == "" or item == nil) then
+    if (not item) then
         return "『✖参数不足』诶诶诶？{nick}这是要送给茉莉什么呀？是...？惊喜吗！"
     end
     -- 合理性判断
-    flag1, flag2, item = UseCheck(msg, num * 1, Gift_list, item)
+    flag1, flag2, item = UseCheck(msg, num, Gift_list, item)
     if (not flag1) then
         return "『✖Error』嗯嗯嗯？原来这世上还存在这种东西的吗×"
     end
@@ -132,7 +125,14 @@ function GiveGift(msg)
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
     end
     if (Gift_list[item].favor ~= nil) then
-        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity_now)
+        local special_mood, coefficient = GetUserConf("favorConf", msg.fromQQ, {"special_mood", "coefficient"}, {0, 1})
+        coefficient = get_coefficient(special_mood, coefficient, {"渴望", "失望"})
+        local favor_change, calibration_message =
+            ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor * coefficient, affinity_now)
+        if (calibration_message ~= nil) then
+            return calibration_message
+        end
+        favor_now = favor_ori + num * favor_change
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity_now)
     end
 

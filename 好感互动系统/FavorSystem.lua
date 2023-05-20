@@ -91,7 +91,7 @@ function rcv_food(msg)
     end
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"渴望", "失望"})
 
     -- 匹配喂食的次数
@@ -176,7 +176,7 @@ function rcv_Ciallo_morning(msg)
     local today_morning = GetUserToday(msg.uid, "morning", 0)
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
@@ -262,7 +262,7 @@ function rcv_Ciallo_afternoon(msg)
     end
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local today_noon = GetUserToday(msg.uid, "noon", 0)
@@ -329,7 +329,7 @@ function rcv_Ciallo_noon(msg)
     local today_noon = GetUserToday(msg.uid, "noon", 0)
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
@@ -390,7 +390,7 @@ function rcv_Ciallo_evening(msg)
     local today_evening = GetUserToday(msg.uid, "evening", 0)
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
@@ -440,7 +440,7 @@ function rcv_Ciallo_night(msg)
     local today_night = GetUserToday(msg.uid, "night", 0)
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
@@ -519,7 +519,7 @@ function interaction(msg)
     end
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local today_interaction = GetUserToday(msg.uid, "今日互动", 0)
@@ -645,7 +645,7 @@ function action(msg)
     local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
     local favor_ori, favor_now = favor, favor
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 0})
+        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local blackReply = blackList(msg)
