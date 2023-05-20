@@ -30,10 +30,3 @@ cengceng_2595928998 = {
 hand_3358315232 = {
     "唔？要牵手吗？好哦.\n唔啊，你的手好冷……\n（哈气声）这样，就好些了吧，天这么冷，我可不允许你这么不负责任的把自己冻坏……才，才不是关心你呢（转过头去）"
 }
-
-function merge_reply(ori, new)
-    for _, v in pairs(new) do
-        table.insert(ori, v)
-    end
-    return ori
-end

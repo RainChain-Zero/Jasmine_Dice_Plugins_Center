@@ -9,6 +9,7 @@ require "prehandle"
 require "favorhandle"
 require "showfavorhandle"
 require "moodhandle"
+require "Utils"
 require "CustomizedReply"
 require "CalibrationSystem"
 msg_order = {}
@@ -96,7 +97,7 @@ function rcv_food(msg)
     -- 匹配喂食的次数
     if (cnt == 0) then
         cnt = string.match(msg.fromMsg, "[%s]*(%d+)", #food_order + 1)
-        if (cnt == nil or cnt == "") then
+        if (not cnt) then
             cnt = 1
         else
             cnt = cnt * 1
@@ -144,9 +145,7 @@ msg_order[food_order] = "rcv_food"
 function show_favor(msg)
     local favor, cohesion, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "cohesion", "affinity"}, {0, 0, 0})
     local state = ShowFavorHandle(msg, favor, affinity)
-    local header =
-        "[CQ:image,url=http://q1.qlogo.cn/g?b=qq&nk=" ..
-        msg.uid .. "&s=640]\n\n亲密度：" .. cohesion .. " | 亲和度：" .. affinity .. " | " .. state
+    local header = get_avatar(msg.uid) .. "\n\n亲密度：" .. cohesion .. " | 亲和度：" .. affinity .. " | " .. state
     if (favor < 3000) then
         return header ..
             "对{nick}的好感度只有" ..
@@ -193,35 +192,35 @@ function rcv_Ciallo_morning(msg)
         SetUserToday(msg.uid, "morning", today_morning + 1)
         local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
         if (calibration_message1 ~= nil) then
-            if (calibration_message1 ~= nil) then
-                return calibration_message1
-            end
-            if (succ == false) then
-                return "诶？早上好...那我先去准备早饭，有点心不在焉？不不，没有的事"
-            end
-            local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, true)
-            if (today_morning <= 1) then
-                -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
-                CheckFavor(msg.uid, favor_ori, favor_now, affinity)
-            end
-            if (favor < 0) then
-                return table_draw(reply_ciallo_lowest)
-            elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
-                return table_draw(reply_morning_less)
-            elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
-                return table_draw(reply_morning_low)
-            elseif (favor < ranint(6000 - left_limit, 6000 + right_limit)) then
-                return table_draw(reply_morning_high)
-            else
-                return table_draw(reply_morning_highest)
-            end
-        elseif (hour == 23 or (hour >= 0 and hour <= 2)) then
-            return table_draw(relpy_morning_nightWrong)
-        elseif (hour >= 11 and hour <= 15) then
-            return table_draw(reply_morning_afternoonWrong)
-        else
-            return table_draw(reply_morning_normalWrong)
+            return calibration_message1
         end
+        if (succ == false) then
+            return __REPLY_FAILED__["morning"]
+        end
+        local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, true)
+        if (today_morning <= 1) then
+            -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
+            CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+        end
+        local level = 1
+        if (favor < 0) then
+            return table_draw(__REPLY__LOWEST__.ciallo)
+        elseif (favor < ranint(1200 - left_limit, 1200 + right_limit)) then
+            level = 1
+        elseif (favor < ranint(4000 - left_limit, 4000 + right_limit)) then
+            level = 2
+        elseif (favor < ranint(6000 - left_limit, 6000 + right_limit)) then
+            level = 3
+        else
+            level = 4
+        end
+        return table_draw(__REPLY__["morning"][level][mood])
+    elseif (hour == 23 or (hour >= 0 and hour <= 2)) then
+        return table_draw(__REPLY_TIME_ERROR__["morning"]["night"])
+    elseif (hour >= 11 and hour <= 15) then
+        return table_draw(__REPLY_TIME_ERROR__["morning"]["noon"])
+    else
+        return table_draw(__REPLY_TIME_ERROR__["morning"]["other"])
     end
 end
 -- 可能的早安问候池(前缀匹配)
@@ -239,7 +238,12 @@ function rcv_Ciallo_morning_master(msg)
     today_morning = today_morning + 1
     SetUserToday(msg.uid, "morning", today_morning)
     if (search_keywords(msg.fromMsg, {"早", "早上好", "早啊", "早呀", "早安", "早哟"}) and msg.fromMsg:find("茉莉") == nil) then
-        if (favor >= 1200) then
+        if (favor >= 1500) then
+            local mood = GetUserConf("moodConf", msg.uid, "mood", 0)
+            -- 触发条件必须为好感度大于1500同时至少为平常心情
+            if mood == -1 then
+                return ""
+            end
             if (hour >= 5 and hour <= 10) then
                 return "诶诶诶{nick}早上好！今天是来找茉莉玩的吗？"
             else
@@ -263,7 +267,7 @@ function rcv_Ciallo_afternoon(msg)
 
     local today_noon = GetUserToday(msg.uid, "noon", 0)
     local favor_ori = favor
-    if (favor < -600) then
+    if (favor < -500) then
         return ""
     end
     if (hour > 7 and hour < 11) then
@@ -279,7 +283,7 @@ function rcv_Ciallo_afternoon(msg)
         return calibration_message1
     end
     if (succ == false) then
-        return "啊...？嗯...{nick}午安，很抱歉，能让茉莉一个人待一会吗"
+        return __REPLY_FAILED__["goodnoon"]
     end
     if (today_noon < __LIMIT_PER_DAY__.noon) then
         local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
@@ -287,7 +291,7 @@ function rcv_Ciallo_afternoon(msg)
         CheckFavor(msg.uid, favor_ori, favor_now, affinity)
     end
     if (favor < 0) then
-        return table_draw(reply_ciallo_lowest)
+        return table_draw(__REPLY__LOWEST__.ciallo)
     elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
         return "嗯？要睡午觉了吗，也是，养好精神也很重要呢"
     elseif (favor < ranint(4000 - left_limit, 4000 + right_limit)) then
@@ -306,8 +310,12 @@ msg_order["茉莉酱午安"] = "rcv_Ciallo_afternoon"
 function afternoon_special(msg)
     local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
 
-    if (favor >= 1200) then
-        return "嗯嗯" .. " 午安" .. "，这是茉莉凭个 人 意 愿想对你说的哦~"
+    if (favor >= 1500) then
+        local mood = GetUserConf("moodConf", msg.uid, "mood", 0)
+        -- 触发条件必须为好感度大于1500同时至少为平常心情
+        if mood ~= -1 then
+            return "嗯嗯" .. " 午安" .. "，这是茉莉凭个 人 意 愿想对你说的哦~"
+        end
     end
 end
 msg_order["午安"] = "afternoon_special"
@@ -335,7 +343,7 @@ function rcv_Ciallo_noon(msg)
         return calibration_message1
     end
     if (succ == false) then
-        return "中午好。嗯...?你说就没有其他的话了...?"
+        return __REPLY_FAILED__["noon"]
     end
     if (today_noon < __LIMIT_PER_DAY__.noon) then
         local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
@@ -343,7 +351,7 @@ function rcv_Ciallo_noon(msg)
         CheckFavor(msg.uid, favor_ori, favor_now, affinity)
     end
     if (favor < 0) then
-        return table_draw(reply_ciallo_lowest)
+        return table_draw(__REPLY__LOWEST__.ciallo)
     elseif (favor <= ranint(1500 - left_limit, 1500 + right_limit)) then
         return "唔，中午好！{nick}，吃过午饭了吗？吃过就赶快去休息吧"
     elseif (favor <= ranint(4500 - left_limit, 4500 + right_limit)) then
@@ -364,7 +372,6 @@ msg_order["中午好哟茉莉"] = "rcv_Ciallo_noon"
 -- 非指向性中午好
 function Ciallo_noon_normal(msg)
     local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
-
     if (favor >= 1200) then
         if (hour >= 11 and hour <= 14) then
             return "诶，中午好？是…在和茉莉说吗，应该……是吧"
@@ -396,27 +403,29 @@ function rcv_Ciallo_evening(msg)
             return calibration_message1
         end
         if (succ == false) then
-            return "女孩似乎没有理睬你的意思，只是怔怔望着窗外，若有所思×"
+            return __REPLY_FAILED__["evening"]
         end
         if (today_evening <= 1) then
             local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
             CheckFavor(msg.uid, favor_ori, favor_now, affinity)
         end
+        local level = 1
         if favor < 0 then
-            return table_draw(reply_ciallo_lowest)
+            return table_draw(__REPLY__LOWEST__.ciallo)
         elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
-            return table_draw(reply_evening_less)
+            level = 1
         elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
-            return table_draw(reply_evening_low)
+            level = 2
         elseif (favor < ranint(6000 - left_limit, 6000 + right_limit)) then
-            return table_draw(reply_evening_high)
+            level = 3
         else
-            return table_draw(reply_evening_highest)
+            level = 4
         end
+        return table_draw(__REPLY__["evening"][level][mood])
     elseif (hour >= 5 and hour <= 12) then
-        return table_draw(reply_evening_morningWrong)
+        return table_draw(__REPLY_TIME_ERROR__["evening"]["morning"])
     else
-        return table_draw(reply_evening_normalWrong)
+        return table_draw(__REPLY_TIME_ERROR__["evening"]["other"])
     end
 end
 msg_order["茉莉晚上好"] = "rcv_Ciallo_evening"
@@ -444,34 +453,36 @@ function rcv_Ciallo_night(msg)
             return calibration_message1
         end
         if (succ == false) then
-            return "那茉莉就回自己房间了，晚安，明早见"
+            return __REPLY_FAILED__["night"]
         end
         if (today_night <= 1) then
             local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
             -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
             CheckFavor(msg.uid, favor_ori, favor_now, affinity)
         end
+        local level = 1
         if favor < 0 then
-            return table_draw(reply_ciallo_lowest)
+            return table_draw(__REPLY__LOWEST__.ciallo)
         elseif (favor < ranint(1500 - left_limit, 1500 + right_limit)) then
-            return table_draw(reply_night_less)
+            level = 1
         elseif (favor < ranint(4500 - left_limit, 4500 + right_limit)) then
-            return table_draw(reply_night_low)
+            level = 2
         elseif (favor < ranint(6000 - left_limit, 6000 + right_limit)) then
-            return table_draw(reply_night_high)
+            level = 3
         else
-            --! 1298754454 晚安定制
-            if msg.uid == "1298754454" then
-                return table_draw(merge_reply(reply_night_highest, evening_1298754454))
-            end
-            return table_draw(reply_night_highest)
+            level = 4
         end
+        --! 1298754454 晚安定制
+        if msg.uid == "1298754454" then
+            return table_draw(merge_reply(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.uid]["night"]))
+        end
+        return table_draw(__REPLY__["night"][level][mood])
     elseif (hour >= 5 and hour <= 11) then
-        return table_draw(reply_night_morningWrong)
+        return table_draw(__REPLY_TIME_ERROR__["night"]["morning"])
     elseif (hour >= 12 and hour <= 15) then
-        return table_draw(reply_night_afternoonWrong)
+        return table_draw(__REPLY_TIME_ERROR__["night"]["noon"])
     else
-        return table_draw(reply_night_normalWrong)
+        return table_draw(__REPLY_TIME_ERROR__["night"]["other"])
     end
 end
 -- 可能的晚安问候池(前缀匹配)
@@ -485,6 +496,10 @@ msg_order["茉莉哦呀斯密"] = "rcv_Ciallo_night"
 function night_master(msg)
     local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
     if (favor >= 2000) then
+        local mood = GetUserConf("favorConf", msg.uid, "mood", 0)
+        if mood == -1 then
+            return ""
+        end
         preHandle(msg)
         if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
             return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会在你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
@@ -494,30 +509,6 @@ function night_master(msg)
 end
 
 msg_order["晚安"] = "night_master"
-
--- 关于晚安、午安的其他表达
-function Ciallo_night_2(msg)
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
-    local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
-    if (calibration_message1 ~= nil) then
-        return calibration_message1
-    end
-    if (succ == false) then
-        return ""
-    end
-
-    if (favor < ranint(1000 - left_limit, 1000 + right_limit)) then
-        return table_draw(reply_night_less)
-    elseif (favor < ranint(2000 - left_limit, 2000 + right_limit)) then
-        return table_draw(reply_night_low)
-    elseif (favor < ranint(3000 - left_limit, 3000 + right_limit)) then
-        return table_draw(reply_night_high)
-    else
-        return table_draw(reply_night_highest)
-    end
-end
-msg_order["睡了"] = "Ciallo_night_2"
-msg_order["我睡了"] = "Ciallo_night_2"
 
 -- 动作交互系统
 interaction_order = "茉莉 互动 "
@@ -569,7 +560,7 @@ function interaction(msg)
         end
     end
     local part = msg.fromMsg:match("[%s]*(%S*)", #interaction_order + 1)
-    if (part == "") then
+    if (not part) then
         return "茉莉无法解析您的指令哦"
     end
     local convert_part = {
@@ -585,19 +576,20 @@ function interaction(msg)
         ["肩膀"] = "shoulder"
     }
     part = convert_part[part]
+    --todo 肩膀互动reply的补全
+    if part == "shoulder" then
+        return table_draw(__REPLY__TODO__[part])
+    end
     return table_draw(__REPLY__[part][level][mood])
 end
 msg_order[interaction_order] = "interaction"
 
 normal_order = "茉莉"
 -- 普通问候程序
-function _Ciallo_normal(msg)
-    local ignore_qq = {959686587}
+function ciallo_normal(msg)
     --! 千音暂时不回复，以及定制reply
-    for _, v in pairs(ignore_qq) do
-        if msg.uid * 1 == v then
-            return ""
-        end
+    if search_keywords(msg.uid, {"959686587"}) then
+        return ""
     end
     if (msg.uid == "839968342") then
         if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
@@ -629,15 +621,14 @@ function _Ciallo_normal(msg)
         return ""
     end
     local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
-    if (favor < -600) then
+    if (favor < -500) then
         return ""
     end
 
     --! 定制reply
-    if msg.uid == "2595928998" then
-        reply_main = table_draw(normal_2595928998)
-    elseif msg.uid == "751766424" then
-        reply_main = table_draw(normal_751766424)
+    local reply_customized = (__REPLY__CUSTOMIZED__[msg.uid] or {})["ciallo"]
+    if reply_customized then
+        return table_draw(reply_customized)
     else
         reply_main = "{sample:嗯哼？茉莉在这哦~Ciallo|诶...是在叫茉莉吗？茉莉茉莉在哦~|我听到了！就是{nick}在叫我！这次一定没有错！}"
     end
@@ -752,9 +743,9 @@ function action(msg)
         today_cengceng = today_cengceng + 1
         SetUserToday(msg.uid, "cengceng", today_cengceng)
         if today_cengceng <= __LIMIT_PER_DAY__.cengceng then
-            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20, affinity, true)
+            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20 * coefficient, affinity, true)
         end
-        return table_draw(cengceng_2595928998)
+        return table_draw(__REPLY__CUSTOMIZED__[msg.uid]["cengceng"])
     elseif msg.fromMsg:find("膝枕") then
         local reply_main = ""
         if favor <= ranint(8000, 8000) then
@@ -782,7 +773,7 @@ function action_main(msg)
     if (reply_main) then
         return reply_main
     end
-    return _Ciallo_normal(msg)
+    return ciallo_normal(msg)
 end
 msg_order[normal_order] = "action_main"
 
@@ -824,15 +815,6 @@ function action_function(msg, boundary, favor_change, action_name, favor_ori, af
             return table_draw(__REPLY__[action_name][i][mood])
         end
     end
-end
-
-function search_keywords(str, keywords)
-    for _, v in pairs(keywords) do
-        if str:find(v) then
-            return true
-        end
-    end
-    return false
 end
 
 --! 注册指令

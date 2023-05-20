@@ -18,6 +18,7 @@ package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
 require "favorhandle"
+require "Utils"
 
 -- 主调入口
 function StoryMain(msg)
@@ -76,21 +77,6 @@ function StoryMain(msg)
     return Reply
 end
 msg_order[".f"] = "StoryMain"
-
---! 获取字符串第一个UTF-8字符
-function getNickFirst(qq, str)
-    return str:gsub("{nickFirst}", getUserConf(qq, "nick", "笨蛋"):match("[%z\1-\127\194-\244][\128-\191]*"))
-end
-
--- 构造发送卡片
-function build_music_card(qq, type, id)
-    local req = {
-        ["qq"] = qq,
-        ["type"] = type,
-        ["id"] = id
-    }
-    http.post("http://localhost:8083/musicCard", Json.encode(req))
-end
 
 -- 剧情入口点
 EntryStoryOrder = "进入剧情"
