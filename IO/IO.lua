@@ -14,7 +14,9 @@ routers = {
     ["adjustConf"] = "AdjustConf",
     ["itemConf"] = "ItemConf",
     ["storyConf"] = "StoryConf",
-    ["tradeConf"] = "TradeConf"
+    ["tradeConf"] = "TradeConf",
+    ["moodConf"] = "MoodConf",
+    ["missionConf"] = "MissionConf"
 }
 
 -- 文件名,qq,{key},{value} key和value相同索引处一一对应/qq,key,value

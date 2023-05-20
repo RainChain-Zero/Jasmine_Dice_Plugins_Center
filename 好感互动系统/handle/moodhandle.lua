@@ -1,3 +1,5 @@
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "Utils"
 -- 好坏情绪原始分界值
 __BOUNDARY__ = 0.75
 -- 单位浮动值变动的区间长度
@@ -139,6 +141,7 @@ function update_mood_list(mood_list)
             {"mood", "float_value", "special_mood", "coefficient"},
             {mood_now, float_value, special_mood, coefficient}
         )
+        address_special_mood(k, special_mood)
     end
 end
 
@@ -170,4 +173,12 @@ function get_coefficient(special_mood, coefficient, candidates)
         end
     end
     return 1
+end
+
+-- 处理特殊心情
+function address_special_mood(qq, special_mood)
+    if special_mood == "好奇" then
+        local gift = get_random_gift()
+        SetUserConf("missionConf", qq, "curiosity_gift", gift)
+    end
 end

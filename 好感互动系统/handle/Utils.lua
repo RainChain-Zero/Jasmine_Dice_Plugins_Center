@@ -6,6 +6,7 @@ function merge_reply(ori, new)
 end
 
 function search_keywords(str, keywords)
+    str = tostring(str)
     for _, v in pairs(keywords) do
         if str:find(v) then
             return true
@@ -52,4 +53,21 @@ function split(szFullString, szSeparator)
         nSplitIndex = nSplitIndex + 1
     end
     return nSplitArray, nSeparatorArray
+end
+
+function get_random_gift()
+    package.path = getDiceDir() .. "/plugin/IO/?.lua"
+    require "itemIO"
+    local item = ReadItem()
+    local gift = {}
+    for k, v in pairs(item) do
+        if v.gift == nil then
+            gift[#gift + 1] = k
+        end
+    end
+    return gift[ranint(1, #gift)]
+end
+
+function at_user(qq)
+    return "[CQ:at,qq=" .. qq .. "]"
 end

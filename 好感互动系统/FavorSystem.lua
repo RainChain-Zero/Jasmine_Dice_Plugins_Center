@@ -10,7 +10,6 @@ require "favorhandle"
 require "showfavorhandle"
 require "moodhandle"
 require "Utils"
-require "CustomizedReply"
 require "CalibrationSystem"
 msg_order = {}
 
@@ -699,7 +698,8 @@ function action(msg)
             favor_ori,
             affinity,
             mood,
-            coefficient
+            coefficient,
+            {"3358315232"}
         )
     elseif msg.fromMsg:find("脸") then
         return action_function(
@@ -788,7 +788,16 @@ msg_order[normal_order] = "action_main"
     mood: 心情
     coefficient: 心情系数
 ]]
-function action_function(msg, boundary, favor_change, action_name, favor_ori, affinity, mood, coefficient)
+function action_function(
+    msg,
+    boundary,
+    favor_change,
+    action_name,
+    favor_ori,
+    affinity,
+    mood,
+    coefficient,
+    customized_list)
     local succ, left_limit, right_limit, calibration_message = ModifyLimit(msg, favor_ori, affinity)
     local favor_now = favor_ori
     if (calibration_message) then
@@ -811,6 +820,12 @@ function action_function(msg, boundary, favor_change, action_name, favor_ori, af
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, favor_change[i], affinity, succ)
                 CheckFavor(msg.uid, favor_ori, favor_now, affinity)
                 SetUserToday(msg.uid, action_name, today_times + 1)
+            end
+            -- 定制列表的判定
+            if search_keywords(msg.uid, customized_list or {}) then
+                return table_draw(
+                    merge_reply(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.uid][action_name])
+                )
             end
             return table_draw(__REPLY__[action_name][i][mood])
         end
