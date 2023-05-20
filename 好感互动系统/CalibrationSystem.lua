@@ -1,5 +1,5 @@
-package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "moodhandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "Moodhandle"
 
 msg_order = {}
 function Calibrated()

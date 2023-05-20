@@ -16,8 +16,8 @@ require "Special4"
 require "Special5"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
-package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "favorhandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "Favorhandle"
 require "Utils"
 
 -- 主调入口

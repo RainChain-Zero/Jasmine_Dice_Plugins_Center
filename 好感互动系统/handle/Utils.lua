@@ -57,7 +57,7 @@ end
 
 function get_random_gift()
     package.path = getDiceDir() .. "/plugin/IO/?.lua"
-    require "itemIO"
+    require "IO"
     local item = ReadItem()
     local gift = {}
     for k, v in pairs(item) do

@@ -1,10 +1,7 @@
 msg_order = {}
 
-package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
-require "itemDescription"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
-require "itemIO"
 -- 商店主面板
 function ShopMenu(msg)
     local ItemShop = ReadItem()

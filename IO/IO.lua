@@ -247,3 +247,11 @@ function SetUserToday(qq, key, value)
     f2:write(json_encode)
     f2:close()
 end
+
+function ReadItem()
+    local f = assert(io.open(getDiceDir() .. "/plugin/Reply/item.json", "r"))
+    local str = f:read("a")
+    f:close()
+    local j = Json.decode(str)
+    return j
+end

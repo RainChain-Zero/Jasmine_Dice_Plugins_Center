@@ -1,16 +1,8 @@
 ---@diagnostic disable: lowercase-global
---[[
-    @author 慕北_Innocent(RainChain)
-    @version 1.3(Beta)
-    @Create 2021/11/21 0:21
-    @Last Modified 2022/03/31 23:36
-    ]] msg_order = {}
+msg_order = {}
 
-package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
-require "itemDescription"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
-require "itemIO"
 itemRequest = ""
 itemReceive = ""
 QQReceive = ""

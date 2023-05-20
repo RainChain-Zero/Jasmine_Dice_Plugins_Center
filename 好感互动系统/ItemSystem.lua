@@ -1,10 +1,7 @@
-package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
-require "itemDescription"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
-require "itemIO"
-package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "favorhandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "Favorhandle"
 msg_order = {}
 -- item为全局变量，检测合法性时不用传入
 -- 使用道具
