@@ -66,14 +66,13 @@ end
 
 function add_gift_once() -- 单次计数上升
     return 5
-    -- return ranint(1,10)
 end
 
 -- 下限黑名单判定
 function blackList(msg)
     local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
     if (favor <= -200 and favor > -500) then
-        sendMsg("Warning:检测到你的好感度过低，即将触发机体下限保护机制！", msg.gid or 0, msg.uid)
+        msg:echo("Warning:检测到你的好感度过低，即将触发机体下限保护机制！")
     end
     if (favor < -500) then
         sendMsg("Warning:检测到用户" .. msg.uid .. "触发好感下限" .. "在群" .. msg.gid, 801655697, 0)
@@ -809,18 +808,20 @@ function action_function(msg, boundary, favor_change, action_name, favor_ori, af
         CheckFavor(msg.uid, favor_ori, favor_now, affinity)
         return table_draw(__REPLY_FAILED__[action_name])
     end
+    -- 依次检查各个好感等级
     for i = 1, #boundary + 1 do
         if i == #boundary + 1 or favor_ori <= ranint(boundary[i] - left_limit, boundary[i] + right_limit) then
             local today_times = GetUserToday(msg.uid, action_name, 0)
-            if today_times < __LIMIT_PER_DAY__[action_name] or favor_change < 0 then
+            if today_times < __LIMIT_PER_DAY__[action_name] or favor_change[i] < 0 then
                 -- 如果是获取好感，则需要受到心情系数的修正
                 if favor_change[i] > 0 then
                     favor_change[i] = favor_change[i] * coefficient
                 end
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, favor_change[i], affinity, succ)
                 CheckFavor(msg.uid, favor_ori, favor_now, affinity)
-                return table_draw(__REPLY__[action_name][i][mood])
+                SetUserToday(msg.uid, action_name, today_times + 1)
             end
+            return table_draw(__REPLY__[action_name][i][mood])
         end
     end
 end

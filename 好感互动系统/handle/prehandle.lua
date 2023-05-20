@@ -303,9 +303,9 @@ function FavorPunish(msg, show_favor)
     if (subday == 0) then
         -- 一天内 间隔小于15h
         if (subhour < 15) then
-            --一天内  间隔大于15h
             Llimit, RLimit = 0, 0
         else
+            --一天内  间隔大于15h
             if (favor < 8500 and favor > 2000) then
                 Llimit, Rlimit = 30, 40
             elseif (favor >= 8500) then
@@ -330,8 +330,8 @@ function FavorPunish(msg, show_favor)
         Llimit, Rlimit = 160 * subday, 180 * subday
     else
         Llimit, Rlimit =
-            720 + 200 * (subday - 5) * math.log(2 * (subday - 5), 2),
-            780 + 225 * (subday - 5) * math.log(2 * (subday - 5), 2)
+            720 + 100 * (subday - 5) * math.log(2 * (subday - 5), 2),
+            780 + 120 * (subday - 5) * math.log(2 * (subday - 5), 2)
     end
     -- ! 道具减免
     local itemDownRate = 1 - FavorTimePunishDownRate(msg)
@@ -340,10 +340,13 @@ function FavorPunish(msg, show_favor)
     end
     -- 将左右端点取整才可带入ranint
     Llimit, Rlimit = math.modf(Llimit), math.modf(Rlimit)
-    if (Rlimit > 0) then
+    local favor_down = ranint(Llimit, Rlimit) * itemDownRate
+    if (favor_down > 0) then
         isFavorTimePunish = true
+        local special_mood, coefficient = GetUserConf("favorConf", msg.uid, {"special_mood", "coefficient"}, {0, 0})
+        coefficient = get_coefficient(special_mood, coefficient, {"开心", "焦虑"})
+        favor_down = math.modf(favor_down * coefficient)
     end
-    local favor_down = math.modf(ranint(Llimit, Rlimit) * itemDownRate)
     if favor_down > 1000 then
         favor_down = 1000
     end
@@ -353,7 +356,7 @@ function FavorPunish(msg, show_favor)
     else
         favor = favor - favor_down
     end
-    if (show_favor ~= true) then
+    if (show_favor == false and isFavorTimePunish) then
         -- 一次降低好感超过200，获得回归标记
         if (favor_down < 200) then
             SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
