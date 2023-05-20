@@ -743,6 +743,7 @@ function action(msg)
             coefficient
         )
     elseif (msg.fromQQ == "2595928998" and msg.fromMsg:find("蹭蹭")) then
+        local today_cengceng = GetUserToday(msg.fromQQ, "cengceng", 0)
         --! 灵音定制 蹭蹭
         today_cengceng = today_cengceng + 1
         SetUserToday(msg.fromQQ, "cengceng", today_cengceng)
@@ -751,6 +752,7 @@ function action(msg)
         end
         return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["cengceng"])
     elseif msg.fromMsg:find("膝枕") then
+        local today_lapPillow = GetUserToday(msg.fromQQ, "lapPillow", 0)
         local reply_main = ""
         if favor <= ranint(8000, 8000) then
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, -20, affinity, true)
