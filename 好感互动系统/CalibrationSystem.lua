@@ -1,5 +1,6 @@
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
-require "Moodhandle"
+require "MoodHandle"
+require "MissionHandle"
 
 msg_order = {}
 function Calibrated()
@@ -34,6 +35,8 @@ function Calibrated()
         else
             reply = "一次成功的校准！你成功将这些记忆保存了下来，新的周期已经开始"
         end
+        -- 检查任务完成情况
+        check_mission(calibration_list)
         -- 更新用户心情
         update_mood_list(calibration_list)
 

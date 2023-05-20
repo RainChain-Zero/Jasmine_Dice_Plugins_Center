@@ -216,6 +216,9 @@ end
 -- 好感度逢千判断亲和力是否达到100
 -- qq,原好感度,现好感度,亲和力
 function CheckFavor(qq, favor_ori, favor_now, affinity)
+    if favor_ori == favor_now then
+        return favor_now, affinity
+    end
     local pre, now = 0, 0
     -- 回归修正
     favor_now = CheckRegression(qq, favor_now, affinity)

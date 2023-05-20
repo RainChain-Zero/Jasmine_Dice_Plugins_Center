@@ -1,5 +1,5 @@
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "prehandle"
+require "PreHandle"
 -- 好感查询计算
 function ShowFavorHandle(msg, favor, affinity)
     local addFavorItem, addAffinityItem = AddFavor_Item(msg), AddAffinity_Item(msg)

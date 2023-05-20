@@ -4,12 +4,11 @@ require "Reply"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
-require "Prehandle"
-require "Favorhandle"
-require "Showfavorhandle"
-require "Moodhandle"
+require "PreHandle"
+require "FavorHandle"
+require "ShowFavorHandle"
+require "MoodHandle"
 require "Utils"
-require "CalibrationSystem"
 msg_order = {}
 
 -- 一天互动上限
@@ -757,7 +756,7 @@ function action(msg)
         else
             today_lapPillow = today_lapPillow + 1
             SetUserToday(msg.uid, "lapPillow", today_lapPillow)
-            reply_main = table_draw(reply_lapPillow)
+            reply_main = table_draw(__REPLY__TODO__["lapPillow"])
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20, affinity, true)
         end
         CheckFavor(msg.uid, favor_ori, favor_now, affinity)

@@ -1,7 +1,7 @@
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
-require "Favorhandle"
+require "FavorHandle"
 msg_order = {}
 -- item为全局变量，检测合法性时不用传入
 -- 使用道具
@@ -130,7 +130,7 @@ function GiveGift(msg)
             return calibration_message
         end
         favor_now = favor_ori + num * favor_change
-        CheckFavor(msg.uid, favor_ori, favor_now, affinity_now)
+        favor_now = CheckFavor(msg.uid, favor_ori, favor_now, affinity_now)
     end
     -- 持续性道具处理
     LastingItem(msg, item)
@@ -140,6 +140,13 @@ function GiveGift(msg)
     -- 处理“好奇”的任务
     local curiosity_gift = GetUserConf("missionConf", msg.uid, "curiosity_gift", nil)
     if curiosity_gift == item then
+        SetUserConf("missionConf", msg.uid, "curiosity_gift", nil)
+        -- 有5%概率获得300好感
+        if (ranint(1, 100) <= 5) then
+            favor_now = favor_now + 300
+            SetUserConf("favorConf", msg.uid, "favor", favor_now)
+            return "『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！"
+        end
     end
     return Gift_list[item].reply
 end
