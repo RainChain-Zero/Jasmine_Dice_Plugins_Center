@@ -7,6 +7,7 @@ package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "PreHandle"
 require "FavorHandle"
 require "ShowFavorHandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "MoodHandle"
 require "Utils"
 msg_order = {}
@@ -632,7 +633,7 @@ function ciallo_normal(msg)
     if reply_customized then
         return table_draw(reply_customized)
     else
-        reply_main = "{sample:嗯哼？茉莉在这哦~Ciallo|诶...是在叫茉莉吗？茉莉茉莉在哦~|我听到了！就是{nick}在叫我！这次一定没有错！}"
+        return "{sample:嗯哼？茉莉在这哦~Ciallo|诶...是在叫茉莉吗？茉莉茉莉在哦~|我听到了！就是{nick}在叫我！这次一定没有错！}"
     end
 end
 
@@ -773,7 +774,7 @@ end
 function action_main(msg)
     local reply_main = action(msg)
 
-    if (reply_main) then
+    if (reply_main and reply ~= "") then
         return reply_main
     end
     return ciallo_normal(msg)

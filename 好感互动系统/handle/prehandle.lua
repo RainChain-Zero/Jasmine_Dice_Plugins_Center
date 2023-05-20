@@ -19,7 +19,7 @@ function preHandle(msg)
     AddFavor_Item(msg)
     -- 道具附加亲和度
     AddAffinity_Item(msg)
-    -- Notice(msg)
+    Notice(msg)
     -- ! 好感时间惩罚
     FavorPunish(msg)
     -- 信任度和亲和度关联
@@ -98,7 +98,8 @@ end
 function TrustChange(msg)
     local favor, trust = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust"}, {0, 0})
     local admin_judge =
-        msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587" and msg.fromQQ ~= "2595928998" and
+        msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587" and
+        msg.fromQQ ~= "2595928998" and
         msg.fromQQ ~= "751766424" and
         msg.fromQQ ~= "839968342"
     -- 关联信任度
@@ -166,26 +167,24 @@ end
 function Notice(msg)
     local favorUVersion = GetUserConf("favorConf", msg.fromQQ, "favorVersion", 0)
     -- 修改版本号只需要将下面的数字修改为目前的版本号即可
-    if (favorUVersion ~= 47) then
-        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 47})
+    if (favorUVersion ~= 50) then
+        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 50})
     end
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (not msg.gid and noticeQQ == 0) then
-        noticeQQ = noticeQQ + 1
-        local content =
-            "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
-        SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
-        sendMsg(content, 0, msg.fromQQ)
-    end
-    noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (msg.gid) then
-        if (noticeQQ == 0) then
-            noticeQQ = noticeQQ + 1
-            local content =
-                "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
-            SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
-            sendMsg(content, msg.gid, msg.fromQQ)
+    if msg.gid then
+        local group_notice = getUserToday(getDiceQQ(), "group_notice", {})
+        local times = group_notice[msg.gid] or 0
+        if times >= 3 then
+            return
         end
+        group_notice[msg.gid] = times + 1
+        setUserToday(getDiceQQ(), "group_notice", group_notice)
+    end
+    if (noticeQQ == 0) then
+        msg:echo(
+            "『V4.5.0版本更新』好感系统已追加「心情子系统」，了解详情：https://rainchain-zero.github.io/JasmineDoc/appendix/moodmechanism.html"
+        )
+        SetUserConf("favorConf", msg.fromQQ, "noticeQQ", 1)
     end
 end
 
