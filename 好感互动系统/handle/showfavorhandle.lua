@@ -25,7 +25,7 @@ function ShowFavorHandle(msg, favor, affinity)
     else
         div = 200
     end
-    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n状态："
+    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n-----------------------------------------\n状态："
     if (isFavorTimePunish == true) then
         state = state .. "\n遗忘：当前好感正随时间流逝。"
     end
@@ -62,6 +62,32 @@ function ShowFavorHandle(msg, favor, affinity)
     if (getUserConf(msg.fromQQ, "musicBox", {})["enable"]) then
         state = state .. "\n残缺的旋律：你们之间的记忆暂停了（好感流逝锁定）。"
     end
-    state = state .. "\n\n"
+    state = state .. "\n-----------------------------------------\n"
+    -- 当前心情判断
+    local special_mood, float_value, coefficient =
+        GetUserConf("moodConf", msg.fromQQ, {"special_mood", "float_value", "coefficient"}, {"平常", 0, 0})
+    if special_mood == "好奇" then
+        local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
+        if curiosity_gift == nil then
+            state = state .. "好奇：茉莉的好奇心已被满足"
+        else
+            state = state .. "好奇：茉莉想要一个「" .. curiosity_gift .. "」，完成后有5%概率获得300好感，未完成则有5%概率失去100好感"
+        end
+    else
+        state = state .. special_mood .. "：" .. __MOOD_DES__[special_mood]
+    end
+    state =
+        state ..
+        "\n心情浮动：" .. float_value .. " | 心情系数：" .. coefficient .. "\n-----------------------------------------\n"
     return res .. state
 end
+
+__MOOD_DES__ = {
+    ["平常"] = "平淡的日常，最珍贵的时光",
+    ["开心"] = "随时间流逝的好感度减少",
+    ["渴望"] = "喂食、赠礼的好感获取量增加",
+    ["振奋"] = "交互的好感获取量增加（除喂食、赠礼）",
+    ["焦虑"] = "随时间流逝的好感度增加",
+    ["失望"] = "喂食、赠礼的好感获取量减少",
+    ["枯燥"] = "交互的好感获取量减少（除喂食、赠礼）"
+}

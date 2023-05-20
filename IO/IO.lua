@@ -1,4 +1,3 @@
-package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
 -- UserToday.json的路径
@@ -22,10 +21,6 @@ routers = {
 -- 文件名,qq,{key},{value} key和value相同索引处一一对应/qq,key,value
 function SetUserConf(filename, qq, key, value)
     qq = tostring(qq)
-    --! 参数不足判断
-    if (value == nil) then
-        error("SetUserConf arg#4 value==nil")
-    end
     --! 拼写错误判断
     if (filename == "stroyConf") then
         error("spelling mistake in SetUserConf arg#1 filename")
@@ -64,10 +59,6 @@ end
 -- 文件名,qq,{key},{default} key和default相同索引处一一对应/qq,key,default
 function GetUserConf(filename, qq, key, default)
     qq = tostring(qq)
-    --! 参数不足判断
-    if (default == nil) then
-        error("GetUserConf arg#4 default==nil")
-    end
     --! 拼写错误判断
     if (filename == "stroyConf") then
         error("spelling mistake in GetUserConf arg#1 filename")

@@ -1,3 +1,6 @@
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "IO"
+
 msg_order = {}
 
 function setfavor(msg)
@@ -13,13 +16,6 @@ function setfavor(msg)
 end
 admin_order1 = "设置好感"
 msg_order[admin_order1] = "setfavor"
-
-function time(msg)
-    if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596" or msg.fromQQ == "2225336268") then
-        return month .. "月" .. day .. "日" .. hour .. "时" .. minute .. "分"
-    end
-end
-msg_order["当前时间"] = "time"
 
 function reset_food(msg)
     local QQ = string.match(msg.fromMsg, "%d*", #admin_order3 + 1)

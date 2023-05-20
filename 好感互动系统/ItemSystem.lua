@@ -2,6 +2,7 @@ package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "FavorHandle"
+require "MoodHandle"
 msg_order = {}
 -- item为全局变量，检测合法性时不用传入
 -- 使用道具
@@ -10,11 +11,11 @@ function UseItem(msg)
     local reply = "唔姆姆，你这是要对着空气做什么呀？（部分物品需要赠送给茉莉才会触发：“赠送茉莉 数量 道具”数量不填默认为1）"
     local num, item, flag1, flag2 = "", "", false, false
     num, item = string.match(msg.fromMsg, "[u,U][%s]*(%d*)[%s]*(.*)")
-    if (not item) then
+    if (not item or item == "") then
         return "请输入道具名哦~（输入“道具图鉴”可查看目前支持的所有道具）"
     end
     -- 数量默认为1
-    if (not num) then
+    if (not num or num == "") then
         num = 1
     end
     -- 道具剩余数量判断
@@ -28,7 +29,7 @@ function UseItem(msg)
 
     -- 八音盒
     if item:find("八音盒") then
-        local musicBox = getUserConf(msg.uid, "musicBox", {})
+        local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
         local enable, cd = musicBox["enable"] or false, musicBox["cd"] or 0
         if enable then
             return "该道具已生效，无法重复使用哦~"
@@ -36,14 +37,14 @@ function UseItem(msg)
         if os.time() < cd then
             return "该道具冷却中，无法使用哦~"
         end
-        setUserConf(msg.uid, "musicBox", {enable = true, cd = os.time() + 432000})
-        if msg.uid == "3358315232" then
+        setUserConf(msg.fromQQ, "musicBox", {enable = true, cd = os.time() + 432000})
+        if msg.fromQQ == "3358315232" then
             return "按下暗格，流水般的乐声从八音盒中缓缓流淌出来，往日的景色渐渐浮现与你的眼前，那粉蝶花丛的香气也变得渐渐可闻。\n一曲终了，意犹未尽。\n再次按下暗格，熟悉的乐声再度入耳，而那往日的景象也愈发清晰。\n——可在这和谐的乐声之中，却忽的出现了一个不和谐的音符。\n——就像是被人刻意改了一笔的钢琴乐谱。\n再度按下暗格，可那熟悉的乐声却消逝不见，而那八音盒却转而演奏起了狂乱的乐章。\n如果是刚刚是被人刻意改了一笔的琴谱，这这次则是八音盒在自发的弹奏着那被人胡写一通，毫无规律与美感可言的谱子。\n往日的幻象逐渐破碎，而今昔的痛楚却伴随着新的乐章迅猛袭来。\n乐声愈发狂乱，可那停留于记忆之中的粉蝶花丛也渐破碎远去。\n终了，就连那狂乱的乐声也渐消逝不见，耳中只余几声嘈杂的噪音。"
         else
             return Item["八音盒"].reply
         end
     elseif item:find("投影灯") then
-        local light = getUserConf(msg.uid, "projectionLamp", {})
+        local light = getUserConf(msg.fromQQ, "projectionLamp", {})
         local lasting, cd = light["lasting"] or 0, light["cd"] or 0
         local now = os.time()
         if lasting > now then
@@ -52,17 +53,17 @@ function UseItem(msg)
         if now < cd then
             return "该道具冷却中，无法使用哦~"
         end
-        setUserConf(msg.uid, "projectionLamp", {cd = now + 432000, lasting = now + 172800})
+        setUserConf(msg.fromQQ, "projectionLamp", {cd = now + 432000, lasting = now + 172800})
         return Item["星幕投影灯"].reply
     end
 
     -- ? 是否用于解锁剧情章节
     local succ = false
-    local entryStoryCheck = GetUserConf("storyConf", msg.uid, "entryCheckStory", -1)
+    local entryStoryCheck = GetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
     if (entryStoryCheck ~= -1) then
         reply, succ = UnlockStory(msg, entryStoryCheck, item)
         if (succ == true) then
-            SetUserConf("storyConf", msg.uid, "entryCheckStory", -1)
+            SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
         end
     end
 
@@ -83,13 +84,13 @@ function GiveGift(msg)
 
     local Gift_list = ReadItem()
     local num, item, flag1, flag2 = "", "", false, false
-    local favor_ori, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.+)", #gift_order + 1)
-    if (not num) then
+    if (not num or num == "") then
         num = 1
     end
     num = num * 1
-    if (not item) then
+    if (not item or item == "") then
         return "『✖参数不足』诶诶诶？{nick}这是要送给茉莉什么呀？是...？惊喜吗！"
     end
     -- 合理性判断
@@ -119,10 +120,10 @@ function GiveGift(msg)
         if (affinity_now > 100) then
             affinity_now = 100
         end
-        SetUserConf("favorConf", msg.uid, "affinity", affinity_now)
+        SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
     end
     if (Gift_list[item].favor ~= nil) then
-        local special_mood, coefficient = GetUserConf("favorConf", msg.uid, {"special_mood", "coefficient"}, {0, 1})
+        local special_mood, coefficient = GetUserConf("moodConf", msg.fromQQ, {"special_mood", "coefficient"}, {0, 1})
         coefficient = get_coefficient(special_mood, coefficient, {"渴望", "失望"})
         local favor_change, calibration_message =
             ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor * coefficient, affinity_now)
@@ -130,21 +131,21 @@ function GiveGift(msg)
             return calibration_message
         end
         favor_now = favor_ori + num * favor_change
-        favor_now = CheckFavor(msg.uid, favor_ori, favor_now, affinity_now)
+        favor_now = CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity_now)
     end
     -- 持续性道具处理
     LastingItem(msg, item)
 
-    SetUserConf("itemConf", msg.uid, item, GetUserConf("itemConf", msg.uid, item, 0) - num)
+    SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - num)
 
     -- 处理“好奇”的任务
-    local curiosity_gift = GetUserConf("missionConf", msg.uid, "curiosity_gift", nil)
+    local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
     if curiosity_gift == item then
-        SetUserConf("missionConf", msg.uid, "curiosity_gift", nil)
+        SetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
         -- 有5%概率获得300好感
         if (ranint(1, 100) <= 5) then
             favor_now = favor_now + 300
-            SetUserConf("favorConf", msg.uid, "favor", favor_now)
+            SetUserConf("favorConf", msg.fromQQ, "favor", favor_now)
             return "『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！"
         end
     end
@@ -155,7 +156,7 @@ msg_order[gift_order] = "GiveGift"
 -- reply定制
 reply_order = "定制reply"
 function CustomizeReply(msg)
-    if (GetUserConf("itemConf", msg.uid, "定制reply", 0) == 0) then
+    if (GetUserConf("itemConf", msg.fromQQ, "定制reply", 0) == 0) then
         return "『✖余量不足』你现在并没有定制reply的剩余条数哦"
     end
     local content = string.match(msg.fromMsg, "[%s]*(.*)", #reply_order + 1)
@@ -163,7 +164,8 @@ function CustomizeReply(msg)
         return "『✖参数不足』诶？你的要求可不能为空哦~示例:“定制reply xxxx(这里填你的要求)”"
     end
     content =
-        "【系统邮件】收到了一条reply定制请求\n申请人：" .. getUserConf(msg.uid, "nick", "用户名获取失败") .. "(" .. msg.uid .. ")\n内容：" .. content
+        "【系统邮件】收到了一条reply定制请求\n申请人：" ..
+        getUserConf(msg.fromQQ, "nick", "用户名获取失败") .. "(" .. msg.fromQQ .. ")\n内容：" .. content
     sendMsg(content, 432653151, 0)
     return "已经成功将请求发送至管理员~请耐心等待答复哦~\n为了能正常接收提示消息，请添加茉莉为好友w"
 end
@@ -172,7 +174,7 @@ msg_order[reply_order] = "CustomizeReply"
 -- 完成reply定制
 finish_reply_order = "完成定制reply"
 function FinishtCustomizedReply(msg)
-    if (msg.uid ~= "3032902237" and msg.uid ~= "2677409596") then
+    if (msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "2677409596") then
         return "『✖权限不足』只有管理员才可确认定制reply完成"
     end
     local QQ, msg = string.match(msg.fromMsg, "[%s]*(%d+)%s*(%S*)", #finish_reply_order + 1)
@@ -205,7 +207,7 @@ function UseCheck(msg, num, table, item)
         return false, false
     end
     -- 判断道具余量
-    if (GetUserConf("itemConf", msg.uid, item, 0) * 1 < num * 1) then
+    if (GetUserConf("itemConf", msg.fromQQ, item, 0) * 1 < num * 1) then
         return true, false
     end
     return true, true, item
@@ -215,10 +217,10 @@ end
 function UnlockStory(msg, entryStoryCheck, item)
     if (entryStoryCheck == 1) then
         if (item:find("梦的开始") ~= nil) then
-            if (GetUserConf("itemConf", msg.uid, "梦的开始", 0) == 0) then
+            if (GetUserConf("itemConf", msg.fromQQ, "梦的开始", 0) == 0) then
                 return "『✖余量不足』您的『梦的开始』余量不足", false
             end
-            SetUserConf("storyConf", msg.uid, {"entryStoryCheck", "isStory1Unlocked"}, {-1, 1})
+            SetUserConf("storyConf", msg.fromQQ, {"entryStoryCheck", "isStory1Unlocked"}, {-1, 1})
             return "这把钥匙似乎和眼前的光芒产生了某种共鸣，倏忽间，光芒如同被某种强大的引力吸引般瞬间汇聚于钥匙上后逐渐稳定了下来...\f" .. "系统：注意，剧情模式第一章已经解锁！", true
         else
             return "你小心翼翼地将它向那团光球接近，但就在你要触及之时，一股强大的斥力将你远远弹开了...", false
@@ -231,7 +233,7 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
     local favor_now, idx, dice = 0, 0, 0
     if (item == "彩虹糖") then
         num = JudgeSpecialItemNum(msg, num)
-        SetUserConf("itemConf", msg.uid, item, GetUserConf("itemConf", msg.uid, item, 0) - 1)
+        SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - 1)
         idx = ranint(1, 3)
         local favor_change = Item[item].res[idx].favor
         if (favor_change > 0) then
@@ -239,48 +241,48 @@ function SpecialGift(msg, item, num, Item, favor_ori, affinity)
         else
             favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity)
         end
-        CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return Item[item].res[idx].reply
     elseif (item == "冰激凌") then
         num = JudgeSpecialItemNum(msg, num)
-        SetUserConf("itemConf", msg.uid, item, GetUserConf("itemConf", msg.uid, item, 0) - 1)
-        local icecreamEaten = GetUserConf("adjustConf", msg.uid, "icecreamEaten", 0)
+        SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - 1)
+        local icecreamEaten = GetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
         if (icecreamEaten == 0) then
             dice = ranint(1, 10)
             if (dice == 10) then
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorConf", msg.uid, "好感度", favor_now)
-                SetUserConf("adjustConf", msg.uid, "icecreamEaten", 0)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+                SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
-                CheckFavor(msg.uid, favor_ori, favor_now, affinity)
-                SetUserConf("adjustConf", msg.uid, "icecreamEaten", 1)
+                CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+                SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 1)
                 return Item[item].res[1].reply
             end
         elseif (icecreamEaten == 1) then
             dice = ranint(1, 3)
             if (dice == 3) then
-                SetUserConf("adjustConf", msg.uid, "icecreamEaten", 0)
+                SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorConf", msg.uid, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
-                CheckFavor(msg.uid, favor_ori, favor_now, affinity)
-                SetUserConf("adjustConf", msg.uid, "icecreamEaten", 2)
+                CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+                SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 2)
                 return Item[item].res[1].reply
             end
         elseif (icecreamEaten == 2) then
             dice = ranint(1, 2)
             if (dice == 2) then
-                SetUserConf("adjustConf", msg.uid, "icecreamEaten", 0)
+                SetUserConf("adjustConf", msg.fromQQ, "icecreamEaten", 0)
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, Item[item].res[2].favor, affinity)
-                SetUserConf("favorConf", msg.uid, "好感度", favor_now)
+                SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
                 return Item[item].res[2].reply
             else
                 favor_now = favor_ori + ModifyFavorChangeGift(msg, favor_ori, Item[item].res[1].favor, affinity)
-                CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+                CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
                 return Item[item].res[1].reply
             end
         end
@@ -299,25 +301,25 @@ end
 function LastingItem(msg, item)
     if (item == "推理小说") then
         -- !时间惩罚降低的好感减少百分之多少，同类不覆盖
-        local rate = GetUserConf("adjustConf", msg.uid, "favorTimePunishDownRate", 0)
+        local rate = GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0)
         -- 更新时间，取最新时间
         -- ! 打上标记，用做发送提醒的标记
         SetUserConf(
             "adjustConf",
-            msg.uid,
+            msg.fromQQ,
             {"favorTimePunishDownDDL", "favorTimePunishDownDDLFlag"},
             {os.time() + 5 * 24 * 60 * 60, 0}
         )
 
         if (rate < 0.3) then
-            SetUserConf("adjustConf", msg.uid, "favorTimePunishDownRate", 0.3)
+            SetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownRate", 0.3)
         end
     elseif (item == "袋装曲奇") then
         -- ! 效果不会叠加,用os.time()秒级存储到期时间，更新为最新时间
         -- ! 打上标记，用做发送提醒的标记
         SetUserConf(
             "adjustConf",
-            msg.uid,
+            msg.fromQQ,
             {"addFavorDDL_Cookie", "addFavorDDLFlag_Cookie"},
             {os.time() + 3 * 24 * 60 * 60, 0}
         )
@@ -325,7 +327,7 @@ function LastingItem(msg, item)
         --! 同类效果不叠加，打标记用于发送提醒
         SetUserConf(
             "adjustConf",
-            msg.uid,
+            msg.fromQQ,
             {"addAffinityDDL_Sushi", "addAffinityDDLFlag_Sushi"},
             {os.time() + 3 * 24 * 60 * 60, 0}
         )
@@ -333,7 +335,7 @@ function LastingItem(msg, item)
         --! 同类效果不叠加，超出当日交互上限不计
         SetUserConf(
             "adjustConf",
-            msg.uid,
+            msg.fromQQ,
             {"addFavorPerActionDDL_Hairpin", "addFavorPerActionDDLFlag_Hairpin"},
             {os.time() + 3 * 24 * 60 * 60, 0}
         )
@@ -369,17 +371,17 @@ function SearchItem(msg)
     end
     local res = 0
     if (item ~= "好感度") then
-        res = GetUserConf("itemConf", msg.uid, item, 0)
+        res = GetUserConf("itemConf", msg.fromQQ, item, 0)
     else
-        res = GetUserConf("favorConf", msg.uid, "好感度", 0)
+        res = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     end
 
     local content = "您目前的『" .. item .. "』数量为" .. string.format("%0.f", res) .. "\n(" .. Item[item].des .. ")"
     --! 查询八音盒会进入隐藏剧情
     if item:find("八音盒") then
-        local musicBoxNum = GetUserConf("itemConf", msg.uid, "八音盒", 0)
+        local musicBoxNum = GetUserConf("itemConf", msg.fromQQ, "八音盒", 0)
         if musicBoxNum >= 1 then
-            SetUserConf("storyConf", msg.uid, "specialReadNow", 4)
+            SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 4)
             content = content .. "\n提示：你可以通过输入.f来阅读此道具的隐藏剧情"
         end
     end

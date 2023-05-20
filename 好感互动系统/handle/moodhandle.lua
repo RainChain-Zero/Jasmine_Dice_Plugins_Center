@@ -1,4 +1,4 @@
-package.path = getDiceDir() .. "/plugin/IO/?.lua"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "Utils"
 -- 好坏情绪原始分界值
 __BOUNDARY__ = 0.75
@@ -41,7 +41,7 @@ end
 --[[
     从情绪概率池中抽取情绪
     标准正态分布数在负无穷到-0.75间为坏情绪
-    在-0.75到0.75间为平常情绪 P=55.42%
+    在-0.75到0.75间为平常情绪 P=52.05%
     在0.75到正无穷间为好情绪
 ]]
 function get_mood(float_value)
@@ -63,9 +63,9 @@ end
     抽取的情绪为好情绪，浮动值加1
     抽取的情绪为平常情绪，浮动值不变
 ]]
-function update_float_value(mood_pre, mood_now, float_value)
+function update_float_value(mood_now, float_value)
     -- 两次获得的情绪相反，则浮动值归零
-    if mood_pre * mood_now == -1 then
+    if float_value * mood_now < 0 then
         return 0
     end
     if mood_now == -1 then
@@ -96,8 +96,8 @@ end
 ]]
 function get_limit(float_vlaue)
     local float_weight = get_float_weight(float_vlaue)
-    -- 如果浮动加权的值超过了0.4，那么必定为另一种情绪
-    if math.abs(float_weight) >= 0.4 then
+    -- 如果浮动加权的值超过了0.3，那么必定为另一种情绪
+    if math.abs(float_weight) >= 0.3 then
         -- 若为坏情绪，必定为好情绪
         if float_weight < 0 then
             return -math.huge, -math.huge
@@ -119,22 +119,23 @@ end
     更新心情信息
     返回新的心情值，浮动值
 ]]
-function update_mood_info(mood_pre, float_value)
+function update_mood_info(float_value)
     -- 抽取新情绪
     local mood_now, random = get_mood(float_value)
     -- 更新浮动值
-    float_value = update_float_value(mood_pre, mood_now, float_value)
+    float_value = update_float_value(mood_now, float_value)
     -- 抽取具体心情
     local special_mood, coefficient = get_special_mood(mood_now, random)
+    log(coefficient)
     return mood_now, float_value, special_mood, coefficient
 end
 
 -- 校准时更新用户列表心情
 function update_mood_list(mood_list)
     for k, _ in pairs(mood_list) do
-        local mood_pre, float_value, mood_now, special_mood, coefficient
-        mood_pre, float_value = GetUserConf("moodConf", k, {"mood", "float_value"}, {0, 0})
-        mood_now, float_value, special_mood, coefficient = update_mood_info(mood_pre, float_value)
+        local float_value, mood_now, special_mood, coefficient
+        float_value = GetUserConf("moodConf", k, "float_value", 0)
+        mood_now, float_value, special_mood, coefficient = update_mood_info(float_value)
         SetUserConf(
             "moodConf",
             k,
@@ -148,20 +149,20 @@ end
 -- 获取具体心情
 function get_special_mood(mood, random)
     local random_key = nil
-    -- 对random做左右边界限定，防止有笨蛋全点了幸运
-    if random < -2 then
-        random = -2
-    elseif random > 2 then
-        random = 2
+    if random < -1 then
+        random = -1
+    elseif random > 1 then
+        random = 1
     end
-    y = math.abs(random) + 1
+    local y = math.abs(random) + 1
+    log("y：" .. tostring(y))
     if mood == 0 then
         return "平常", 1
     elseif mood == 1 then
-        random_key = __GOOD_MOOD__[math.random(#__GOOD_MOOD__)]
+        random_key = __GOOD_MOOD__[ranint(1, #__GOOD_MOOD__)]
         return random_key, __MOOD_FUNCTION__[random_key](y)
     else
-        random_key = __BAD_MOOD__[math.random(#__BAD_MOOD__)]
+        random_key = __BAD_MOOD__[ranint(1, #__BAD_MOOD__)]
         return random_key, __MOOD_FUNCTION__[random_key](y)
     end
 end

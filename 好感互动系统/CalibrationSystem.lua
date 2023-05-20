@@ -1,10 +1,15 @@
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "MoodHandle"
 require "MissionHandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "FavorHandle"
 
 msg_order = {}
 function Calibrated()
     local reply = "『✖Error』当前时钟周期仍未结束哦"
+    local calibration, calibration_limit =
+        getUserConf(getDiceQQ(), "calibration", 0),
+        getUserConf(getDiceQQ(), "calibration_limit", 12)
     if (calibration >= calibration_limit) then
         if (getUserConf(getDiceQQ(), "blockCalibration", 0) == 1) then
             return "『✖Error』当前已有『校准』在进行中！"
@@ -80,3 +85,12 @@ function setCaribrationLimit(msg)
     end
 end
 msg_order[admin_order10] = "setCaribrationLimit"
+
+function calibration_show(msg)
+    if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596") then
+        return "当前校准值为——" ..
+            getUserConf(getDiceQQ(), "calibration", 0) ..
+                ";校准上限为——" .. getUserConf(getDiceQQ(), "calibration_limit", 12)
+    end
+end
+msg_order["当前校准"] = "calibration_show"

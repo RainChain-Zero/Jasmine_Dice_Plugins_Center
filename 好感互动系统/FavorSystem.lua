@@ -68,13 +68,13 @@ end
 
 -- 下限黑名单判定
 function blackList(msg)
-    local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor <= -200 and favor > -500) then
         msg:echo("Warning:检测到你的好感度过低，即将触发机体下限保护机制！")
     end
     if (favor < -500) then
-        sendMsg("Warning:检测到用户" .. msg.uid .. "触发好感下限" .. "在群" .. msg.gid, 801655697, 0)
-        eventMsg(".group " .. msg.gid .. " ban " .. msg.uid .. " " .. tostring(-favor), msg.gid, getDiceQQ())
+        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.gid, 801655697, 0)
+        eventMsg(".group " .. msg.gid .. " ban " .. msg.fromQQ .. " " .. tostring(-favor), msg.gid, getDiceQQ())
         return "已触发！"
     end
     return ""
@@ -86,9 +86,9 @@ function rcv_food(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"渴望", "失望"})
 
     -- 匹配喂食的次数
@@ -104,7 +104,7 @@ function rcv_food(msg)
         return "参数有误请重新输入哦~"
     end
     -- 判定当日上限
-    local today_gift = GetUserToday(msg.uid, "gifts", 0)
+    local today_gift = GetUserToday(msg.fromQQ, "gifts", 0)
     if (today_gift >= __LIMIT_PER_DAY__.food) then
         return "对不起{nick}，茉莉今天...想换点别的口味呢呜QAQ"
     end
@@ -124,13 +124,13 @@ function rcv_food(msg)
             return calibration_message
         end
         today_gift = today_gift + 1
-        SetUserToday(msg.uid, "gifts", today_gift)
+        SetUserToday(msg.fromQQ, "gifts", today_gift)
         if (today_gift > __LIMIT_PER_DAY__.food) then
             break
         end
         favor = favor_ori + favor_add
-        -- SetUserConf("favorConf", msg.uid, "好感度", favor)
-        favor, affinity = CheckFavor(msg.uid, favor_ori, favor, affinity)
+        -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
+        favor, affinity = CheckFavor(msg.fromQQ, favor_ori, favor, affinity)
         cnt = cnt - 1
     end
     return "你眼前一黑，手中的食物瞬间消失，再看的时候，眼前的烧酒口中还在咀嚼着什么，扭头躲开了你的目光\n今日已收到投喂" ..
@@ -140,9 +140,9 @@ food_order = "喂食茉莉"
 msg_order[food_order] = "rcv_food"
 
 function show_favor(msg)
-    local favor, cohesion, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "cohesion", "affinity"}, {0, 0, 0})
+    local favor, cohesion, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "cohesion", "affinity"}, {0, 0, 0})
     local state = ShowFavorHandle(msg, favor, affinity)
-    local header = get_avatar(msg.uid) .. "\n\n亲密度：" .. cohesion .. " | 亲和度：" .. affinity .. " | " .. state
+    local header = get_avatar(msg.fromQQ) .. "\n亲密度：" .. cohesion .. " | 亲和度：" .. affinity .. " | " .. state
     if (favor < 3000) then
         return header ..
             "对{nick}的好感度只有" ..
@@ -170,15 +170,15 @@ function rcv_Ciallo_morning(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local today_morning = GetUserToday(msg.uid, "morning", 0)
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local today_morning = GetUserToday(msg.fromQQ, "morning", 0)
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
     today_morning = today_morning + 1
-    SetUserToday(msg.uid, "morning", today_morning)
+    SetUserToday(msg.fromQQ, "morning", today_morning)
     -- 用于判定成功/失败，增加校准
     local t1, t2, t3, calibration_message = ModifyLimit(msg, favor, affinity)
     if (calibration_message ~= nil) then
@@ -186,7 +186,7 @@ function rcv_Ciallo_morning(msg)
     end
     -- 其他用户判定
     if (hour >= 5 and hour <= 10) then
-        SetUserToday(msg.uid, "morning", today_morning + 1)
+        SetUserToday(msg.fromQQ, "morning", today_morning + 1)
         local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
         if (calibration_message1 ~= nil) then
             return calibration_message1
@@ -196,8 +196,8 @@ function rcv_Ciallo_morning(msg)
         end
         local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, true)
         if (today_morning <= 1) then
-            -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
-            CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+            -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+            CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         end
         local level = 1
         if (favor < 0) then
@@ -230,13 +230,13 @@ msg_order["早上好哟茉莉"] = "rcv_Ciallo_morning"
 msg_order["早安茉莉"] = "rcv_Ciallo_morning"
 
 function rcv_Ciallo_morning_master(msg)
-    local today_morning = GetUserToday(msg.uid, "morning", 0)
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local today_morning = GetUserToday(msg.fromQQ, "morning", 0)
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     today_morning = today_morning + 1
-    SetUserToday(msg.uid, "morning", today_morning)
+    SetUserToday(msg.fromQQ, "morning", today_morning)
     if (search_keywords(msg.fromMsg, {"早", "早上好", "早啊", "早呀", "早安", "早哟"}) and msg.fromMsg:find("茉莉") == nil) then
         if (favor >= 1500) then
-            local mood = GetUserConf("moodConf", msg.uid, "mood", 0)
+            local mood = GetUserConf("moodConf", msg.fromQQ, "mood", 0)
             -- 触发条件必须为好感度大于1500同时至少为平常心情
             if mood == -1 then
                 return ""
@@ -257,12 +257,12 @@ function rcv_Ciallo_afternoon(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
-    local today_noon = GetUserToday(msg.uid, "noon", 0)
+    local today_noon = GetUserToday(msg.fromQQ, "noon", 0)
     local favor_ori = favor
     if (favor < -500) then
         return ""
@@ -274,7 +274,7 @@ function rcv_Ciallo_afternoon(msg)
         return "茉莉这次才不会搞错呢！才不会被{nick}这种小花招骗到！外面明明那么黑（指着窗外）"
     end
 
-    SetUserToday(msg.uid, "noon", today_noon + 1)
+    SetUserToday(msg.fromQQ, "noon", today_noon + 1)
     local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
     if (calibration_message1 ~= nil) then
         return calibration_message1
@@ -284,8 +284,8 @@ function rcv_Ciallo_afternoon(msg)
     end
     if (today_noon < __LIMIT_PER_DAY__.noon) then
         local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
-        -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
-        CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+        -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     end
     if (favor < 0) then
         return table_draw(__REPLY__LOWEST__.ciallo)
@@ -305,10 +305,10 @@ msg_order["茉莉酱午安"] = "rcv_Ciallo_afternoon"
 
 -- 非指向性午安判断程序
 function afternoon_special(msg)
-    local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
 
     if (favor >= 1500) then
-        local mood = GetUserConf("moodConf", msg.uid, "mood", 0)
+        local mood = GetUserConf("moodConf", msg.fromQQ, "mood", 0)
         -- 触发条件必须为好感度大于1500同时至少为平常心情
         if mood ~= -1 then
             return "嗯嗯" .. " 午安" .. "，这是茉莉凭个 人 意 愿想对你说的哦~"
@@ -323,10 +323,10 @@ function rcv_Ciallo_noon(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local today_noon = GetUserToday(msg.uid, "noon", 0)
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local today_noon = GetUserToday(msg.fromQQ, "noon", 0)
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
@@ -334,7 +334,7 @@ function rcv_Ciallo_noon(msg)
         return "咦，现在，是中午？好吧，既然{nick}这么说，那么，中午好！"
     end
 
-    SetUserToday(msg.uid, "today_noon", today_noon + 1)
+    SetUserToday(msg.fromQQ, "today_noon", today_noon + 1)
     local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
     if (calibration_message1 ~= nil) then
         return calibration_message1
@@ -344,8 +344,8 @@ function rcv_Ciallo_noon(msg)
     end
     if (today_noon < __LIMIT_PER_DAY__.noon) then
         local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
-        -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
-        CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+        -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
     end
     if (favor < 0) then
         return table_draw(__REPLY__LOWEST__.ciallo)
@@ -368,7 +368,7 @@ msg_order["中午好哟茉莉"] = "rcv_Ciallo_noon"
 
 -- 非指向性中午好
 function Ciallo_noon_normal(msg)
-    local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor >= 1200) then
         if (hour >= 11 and hour <= 14) then
             return "诶，中午好？是…在和茉莉说吗，应该……是吧"
@@ -384,15 +384,15 @@ function rcv_Ciallo_evening(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local today_evening = GetUserToday(msg.uid, "evening", 0)
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local today_evening = GetUserToday(msg.fromQQ, "evening", 0)
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
     today_evening = today_evening + 1
-    SetUserToday(msg.uid, "evening", today_evening)
+    SetUserToday(msg.fromQQ, "evening", today_evening)
 
     if ((hour >= 18 and hour <= 24) or (hour >= 0 and hour <= 4)) then
         local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
@@ -404,7 +404,7 @@ function rcv_Ciallo_evening(msg)
         end
         if (today_evening <= 1) then
             local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
-            CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+            CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         end
         local level = 1
         if favor < 0 then
@@ -434,15 +434,15 @@ function rcv_Ciallo_night(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local today_night = GetUserToday(msg.uid, "night", 0)
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local today_night = GetUserToday(msg.fromQQ, "night", 0)
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local favor_ori = favor
     today_night = today_night + 1
-    SetUserToday(msg.uid, "night", today_night)
+    SetUserToday(msg.fromQQ, "night", today_night)
 
     if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
         local succ, left_limit, right_limit, calibration_message1 = ModifyLimit(msg, favor, affinity)
@@ -454,8 +454,8 @@ function rcv_Ciallo_night(msg)
         end
         if (today_night <= 1) then
             local favor_now = favor + ModifyFavorChangeNormal(msg, favor, 5 * coefficient, affinity, succ)
-            -- SetUserConf("favorConf", msg.uid, "好感度", favor_now)
-            CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+            -- SetUserConf("favorConf", msg.fromQQ, "好感度", favor_now)
+            CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         end
         local level = 1
         if favor < 0 then
@@ -470,8 +470,8 @@ function rcv_Ciallo_night(msg)
             level = 4
         end
         --! 1298754454 晚安定制
-        if msg.uid == "1298754454" then
-            return table_draw(merge_reply(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.uid]["night"]))
+        if msg.fromQQ == "1298754454" then
+            return table_draw(merge_reply(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.fromQQ]["night"]))
         end
         return table_draw(__REPLY__["night"][level][mood])
     elseif (hour >= 5 and hour <= 11) then
@@ -491,9 +491,9 @@ msg_order["茉莉哦呀斯密纳塞"] = "rcv_Ciallo_night"
 msg_order["茉莉哦呀斯密"] = "rcv_Ciallo_night"
 
 function night_master(msg)
-    local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor >= 2000) then
-        local mood = GetUserConf("favorConf", msg.uid, "mood", 0)
+        local mood = GetUserConf("favorConf", msg.fromQQ, "mood", 0)
         if mood == -1 then
             return ""
         end
@@ -514,15 +514,15 @@ function interaction(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
-    local today_interaction = GetUserToday(msg.uid, "今日互动", 0)
+    local today_interaction = GetUserToday(msg.fromQQ, "今日互动", 0)
     local favor_ori = favor
     today_interaction = today_interaction + 1
-    SetUserToday(msg.uid, "今日互动", today_interaction)
+    SetUserToday(msg.fromQQ, "今日互动", today_interaction)
     local blackReply = blackList(msg)
     if (blackReply ~= "" and blackReply ~= "已触发！") then
         return blackReply
@@ -539,7 +539,12 @@ function interaction(msg)
     local level, favor_now, favor_add
     if (favor <= ranint(1500 - left_limit, 1500 + right_limit)) then
         level = 1
-        SetUserConf("favorConf", msg.uid, "好感度", favor - ModifyFavorChangeNormal(msg, favor, ranint(50, 100), affinity))
+        SetUserConf(
+            "favorConf",
+            msg.fromQQ,
+            "好感度",
+            favor - ModifyFavorChangeNormal(msg, favor, ranint(50, 100), affinity)
+        )
     else
         if (favor <= ranint(3000 - left_limit, 3000 + right_limit)) then
             level = 2
@@ -553,7 +558,7 @@ function interaction(msg)
         end
         if (today_interaction <= __LIMIT_PER_DAY__.interaction) then
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, favor_add * coefficient, affinity)
-            CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+            CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         end
     end
     local part = msg.fromMsg:match("[%s]*(%S*)", #interaction_order + 1)
@@ -585,10 +590,10 @@ normal_order = "茉莉"
 -- 普通问候程序
 function ciallo_normal(msg)
     --! 千音暂时不回复，以及定制reply
-    if search_keywords(msg.uid, {"959686587"}) then
+    if search_keywords(msg.fromQQ, {"959686587"}) then
         return ""
     end
-    if (msg.uid == "839968342") then
+    if (msg.fromQQ == "839968342") then
         if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
             return ""
         end
@@ -617,13 +622,13 @@ function ciallo_normal(msg)
     if (flag == false) then
         return ""
     end
-    local favor = GetUserConf("favorConf", msg.uid, "好感度", 0)
+    local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor < -500) then
         return ""
     end
 
     --! 定制reply
-    local reply_customized = (__REPLY__CUSTOMIZED__[msg.uid] or {})["ciallo"]
+    local reply_customized = (__REPLY__CUSTOMIZED__[msg.fromQQ] or {})["ciallo"]
     if reply_customized then
         return table_draw(reply_customized)
     else
@@ -639,10 +644,10 @@ function action(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local favor, affinity = GetUserConf("favorConf", msg.uid, {"好感度", "affinity"}, {0, 0})
+    local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local favor_ori, favor_now = favor, favor
     local mood, special_mood, coefficient =
-        GetUserConf("favorConf", msg.uid, {"mood", "special_mood", "coefficient"}, {0, 0, 1})
+        GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
     coefficient = get_coefficient(special_mood, coefficient, {"振奋", "枯燥"})
 
     local blackReply = blackList(msg)
@@ -736,30 +741,30 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif (msg.uid == "2595928998" and msg.fromMsg:find("蹭蹭")) then
+    elseif (msg.fromQQ == "2595928998" and msg.fromMsg:find("蹭蹭")) then
         --! 灵音定制 蹭蹭
         today_cengceng = today_cengceng + 1
-        SetUserToday(msg.uid, "cengceng", today_cengceng)
+        SetUserToday(msg.fromQQ, "cengceng", today_cengceng)
         if today_cengceng <= __LIMIT_PER_DAY__.cengceng then
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20 * coefficient, affinity, true)
         end
-        return table_draw(__REPLY__CUSTOMIZED__[msg.uid]["cengceng"])
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["cengceng"])
     elseif msg.fromMsg:find("膝枕") then
         local reply_main = ""
         if favor <= ranint(8000, 8000) then
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, -20, affinity, true)
             reply_main = "嗯...？{nick}是生病了吧？怎么会说出这样的要求呢？茉莉无法答应哦。"
-        elseif GetUserConf("storyConf", msg.uid, "isSpecial5Read", 0) == 0 then
+        elseif GetUserConf("storyConf", msg.fromQQ, "isSpecial5Read", 0) == 0 then
             reply_main = "{nick}想要膝枕吗？现在茉莉有些忙，可以等下次再说吗？\n（解锁条件：阅读剧情『夜』）"
         elseif today_lapPillow >= __LIMIT_PER_DAY__.lapPillow then
             reply_main = "茉莉刚才不是已经安慰过{nick}了吗？真是的...怎么和小孩子一样啊....好吧，只能再休息一下下哦？"
         else
             today_lapPillow = today_lapPillow + 1
-            SetUserToday(msg.uid, "lapPillow", today_lapPillow)
+            SetUserToday(msg.fromQQ, "lapPillow", today_lapPillow)
             reply_main = table_draw(__REPLY__TODO__["lapPillow"])
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20, affinity, true)
         end
-        CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return reply_main
     end
 end
@@ -803,26 +808,26 @@ function action_function(
     end
     if not succ then
         favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, -10, affinity, succ)
-        CheckFavor(msg.uid, favor_ori, favor_now, affinity)
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return table_draw(__REPLY_FAILED__[action_name])
     end
     -- 依次检查各个好感等级
     for i = 1, #boundary + 1 do
         if i == #boundary + 1 or favor_ori <= ranint(boundary[i] - left_limit, boundary[i] + right_limit) then
-            local today_times = GetUserToday(msg.uid, action_name, 0)
+            local today_times = GetUserToday(msg.fromQQ, action_name, 0)
             if today_times < __LIMIT_PER_DAY__[action_name] or favor_change[i] < 0 then
                 -- 如果是获取好感，则需要受到心情系数的修正
                 if favor_change[i] > 0 then
                     favor_change[i] = favor_change[i] * coefficient
                 end
                 favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, favor_change[i], affinity, succ)
-                CheckFavor(msg.uid, favor_ori, favor_now, affinity)
-                SetUserToday(msg.uid, action_name, today_times + 1)
+                CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+                SetUserToday(msg.fromQQ, action_name, today_times + 1)
             end
             -- 定制列表的判定
-            if search_keywords(msg.uid, customized_list or {}) then
+            if search_keywords(msg.fromQQ, customized_list or {}) then
                 return table_draw(
-                    merge_reply(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.uid][action_name])
+                    merge_reply(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
                 )
             end
             return table_draw(__REPLY__[action_name][i][mood])
@@ -832,7 +837,7 @@ end
 
 --! 注册指令
 function register(msg)
-    setUserConf(msg.uid, "isRegister", 1)
+    setUserConf(msg.fromQQ, "isRegister", 1)
     return "信息已录入...欢迎您，{nick}，希望能和你一起创造美好的回忆~"
 end
 msg_order["我已阅读并理解茉莉协议，同意接受以上服务条款"] = "register"
