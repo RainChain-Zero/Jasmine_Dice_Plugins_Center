@@ -14,6 +14,7 @@ require "Special2"
 require "Special3"
 require "Special4"
 require "Special5"
+require "Special6"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
@@ -72,6 +73,8 @@ function StoryMain(msg)
             Reply = SpecialFour(msg)
         elseif StorySpecial == 6 then
             Reply = SpecialFive(msg)
+        elseif StorySpecial == 7 then
+            Reply = SpecialSix(msg)
         end
     end
     return Reply
@@ -83,12 +86,12 @@ EntryStoryOrder = "进入剧情"
 function EnterStory(msg)
     -- 初始化配置
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
-    Init(msg)
     local StoryTemp = string.match(msg.fromMsg, "[%s]*(.*)", #EntryStoryOrder + 1)
     local Story = ""
     if (Story == nil or StoryTemp == "") then
         return "请输入章节名哦~"
     end
+    Init(msg)
     -- 提取具体章节
     if (string.find(StoryTemp, "序章") ~= nil or string.find(StoryTemp, "惊蛰") ~= nil) then
         if (favor < 1000) then
@@ -199,16 +202,22 @@ function EnterStory(msg)
                 SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 6)
                 Story = "夜"
             else
-                msg:echo("您需要拥有1000fl来解锁此剧情哦~")
+                return "您需要拥有1000fl来解锁此剧情哦~"
             end
+        end
+    elseif StoryTemp:find("因为是家人") then
+        if favor >= 5000 then
+            SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 7)
+            Story = "因为是家人"
+        else
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足5000)"
         end
     end
     -- 是否存在章节
     if (Story == "") then
         return "请输入正确的章节名哦~"
     end
-    SetUserConf("storyConf", msg.fromQQ, {"mainIndex", "option"}, {1, 0})
-    return "您已进入剧情模式『" .. Story .. "』,请在小窗模式下输入.f一步一步进行哦~"
+    return "您已进入剧情模式「" .. Story .. "」,请在小窗模式下输入.f一步一步进行哦~"
 end
 msg_order[EntryStoryOrder] = "EnterStory"
 
@@ -272,6 +281,8 @@ function Choose(msg)
             Reply = SpecialTwoChoose(msg, res)
         elseif StorySpecial == 3 then
             Reply = SpecialThreeChoose(msg, res)
+        elseif StorySpecial == 7 then
+            Reply = SpecialSixChoose(msg, res)
         end
     end
     return Reply
@@ -326,7 +337,7 @@ function Skip(msg)
             Reply = SkipSpecial2(msg)
         elseif StorySpecial == 3 then
             Reply = SkipSpecial3(msg)
-        elseif StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 then
+        elseif StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 or StorySpecial == 7 then
             Reply = "本剧情没有选项哦~无法跳转"
         end
     end
@@ -354,9 +365,10 @@ function query_story(msg)
             "isSpecial4Read",
             "isSpecial5Read",
             "isStory4Read",
-            "isShopUnlocked"
+            "isShopUnlocked",
+            "isSpecial6Read"
         },
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         true
     )
     local reply = "收到数据库访问请求，为您检索：\n"
@@ -382,7 +394,8 @@ __STORY_NAME__ = {
     isSpecial2Read = "圣诞特典 「予你的光点」",
     isSpecial3Read = "白色情人节特典 「献给你的礼物」",
     isSpecial4Read = "「星星点灯」",
-    isSpecial5Read = "「夜」"
+    isSpecial5Read = "「夜」",
+    isSpecial6Read = "521短篇「因为是家人」"
 }
 
 __STORY_VARIABLE__ = {
@@ -396,5 +409,6 @@ __STORY_VARIABLE__ = {
     "isSpecial2Read",
     "isSpecial3Read",
     "isSpecial4Read",
-    "isSpecial5Read"
+    "isSpecial5Read",
+    "isSpecial6Read"
 }

@@ -427,7 +427,8 @@ function StoryUnlocked(msg)
         isSpecial3Read,
         isStory3Read,
         isSpecial4Read,
-        isSpecial5Read =
+        isSpecial5Read,
+        isSpecial6Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -443,9 +444,10 @@ function StoryUnlocked(msg)
             "isSpecial3Read",
             "isStory3Read",
             "isSpecial4Read",
-            "isSpecial5Read"
+            "isSpecial5Read",
+            "isSpecial6Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -540,6 +542,15 @@ function StoryUnlocked(msg)
             content = content .. "『✔提示』剧情模式『夜』已经开放,输入“进入剧情 夜”可浏览剧情\n注意：本次解锁剧情需要扣除1000FL"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 5) .. "1" .. string.sub(specialUnlockedNotice, 7)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
+    if favor >= 5000 and isSpecial6Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 7, 7)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 521短篇「因为是家人」已经开放,输入“进入剧情 梦”可浏览剧情"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 6) .. "1" .. string.sub(specialUnlockedNotice, 8)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
