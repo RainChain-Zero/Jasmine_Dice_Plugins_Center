@@ -122,7 +122,7 @@ function EnterStory(msg)
         )
         Story = "第一章 夜未央"
     elseif (string.find(StoryTemp, "第二章") ~= nil or string.find(StoryTemp, "难以言明的选择") ~= nil) then
-        if (GetUserConf("storyConf", msg.fromQQ, "isStory1Unlocked", 0) == 0) then
+        if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
             return "『✖条件未满足』您需要在第一章中解锁『商店』功能"
         elseif (favor < 3000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3000)"
@@ -336,3 +336,65 @@ function Skip(msg)
     return Reply
 end
 msg_order[".skip"] = "Skip"
+
+function query_story(msg)
+    local story_finish =
+        GetUserConf(
+        "storyConf",
+        msg.fromQQ,
+        {
+            "isStory0Read",
+            "isSpecial0Read",
+            "isShopUnlocked",
+            "story2Choice",
+            "isSpecial1Read",
+            "isSpecial2Read",
+            "isSpecial3Read",
+            "isStory3Read",
+            "isSpecial4Read",
+            "isSpecial5Read",
+            "isStory4Read",
+            "isShopUnlocked"
+        },
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        true
+    )
+    local reply = "收到数据库访问请求，为您检索：\n"
+    for _, variable in ipairs(__STORY_VARIABLE__) do
+        if story_finish[variable] == 0 then
+            reply = reply .. __STORY_NAME__[variable] .. " ✘未通过\n"
+        else
+            reply = reply .. __STORY_NAME__[variable] .. " ✔已通过\n"
+        end
+    end
+    return reply .. "茉莉，高性能ですから!"
+end
+msg_order["/剧情进度"] = "query_story"
+
+__STORY_NAME__ = {
+    isStory0Read = "序章「惊蛰」",
+    isShopUnlocked = "第一章「夜未央」",
+    story2Choice = "第二章「难以言明的选择」",
+    isStory3Read = "第三章「此般景致」",
+    isStory4Read = "第四章「众生相」",
+    isSpecial0Read = "元旦特典「预想此时应更好」",
+    isSpecial1Read = "七夕特典「近在咫尺的距离」",
+    isSpecial2Read = "圣诞特典 「予你的光点」",
+    isSpecial3Read = "白色情人节特典 「献给你的礼物」",
+    isSpecial4Read = "「星星点灯」",
+    isSpecial5Read = "「夜」"
+}
+
+__STORY_VARIABLE__ = {
+    "isStory0Read",
+    "isShopUnlocked",
+    "story2Choice",
+    "isStory3Read",
+    "isStory4Read",
+    "isSpecial0Read",
+    "isSpecial1Read",
+    "isSpecial2Read",
+    "isSpecial3Read",
+    "isSpecial4Read",
+    "isSpecial5Read"
+}

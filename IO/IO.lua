@@ -57,7 +57,7 @@ function SetUserConf(filename, qq, key, value)
 end
 
 -- 文件名,qq,{key},{default} key和default相同索引处一一对应/qq,key,default
-function GetUserConf(filename, qq, key, default)
+function GetUserConf(filename, qq, key, default, return_table)
     qq = tostring(qq)
     --! 拼写错误判断
     if (filename == "stroyConf") then
@@ -79,6 +79,9 @@ function GetUserConf(filename, qq, key, default)
     end
     -- 多值传入
     if (type(key) == "table" and type(default) == "table") then
+        if return_table then
+            return j
+        end
         -- 单值读取
         -- 存放返回值表
         local res = key

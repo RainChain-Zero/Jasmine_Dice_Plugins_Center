@@ -719,7 +719,17 @@ function action(msg)
     elseif search_keywords(msg.fromMsg, {"可爱", "萌", "卡哇伊", "kawai", "kawayi"}) then
         return action_function(msg, {1050, 3000, 4000}, {8, 10, 12, 14}, "cute", favor_ori, affinity, mood, coefficient)
     elseif search_keywords(msg.fromMsg, {"喜欢", "suki"}) then
-        return action_function(msg, {1500, 3500, 5500}, {9, 12, 15, 20}, "suki", favor_ori, affinity, mood, coefficient)
+        return action_function(
+            msg,
+            {1500, 3500, 5500},
+            {9, 12, 15, 20},
+            "suki",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"3358315232"}
+        )
     elseif search_keywords(msg.fromMsg, {"爱", "love"}) then
         return action_function(
             msg,
@@ -793,6 +803,7 @@ msg_order[normal_order] = "action_main"
     affinity: 亲密度
     mood: 心情
     coefficient: 心情系数
+    customized_list: 定制回复列表
 ]]
 function action_function(
     msg,

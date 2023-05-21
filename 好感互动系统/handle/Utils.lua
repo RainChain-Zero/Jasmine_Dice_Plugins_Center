@@ -71,3 +71,7 @@ end
 function at_user(qq)
     return "[CQ:at,qq=" .. qq .. "]"
 end
+
+function build_voice(file)
+    return "[CQ:record,file=/record/" .. file .. "]"
+end
