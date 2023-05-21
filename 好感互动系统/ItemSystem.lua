@@ -78,6 +78,8 @@ function GiveGift(msg)
     --! 防止校准时使用物品导致物品在无提示的情况下失效
     local calibration = getUserConf(getDiceQQ(), "calibration", 0)
     local calibration_limit = getUserConf(getDiceQQ(), "calibration_limit", 12)
+    -- 好奇的回复
+    local curiosity_reply = nil
     if (calibration > calibration_limit) then
         return "本轮时钟周期已结束，请进行『校准』\n(指令为“茉莉校准”)"
     end
@@ -109,6 +111,7 @@ function GiveGift(msg)
     -- 处理特殊道具
     local reply = SpecialGift(msg, item, num, Gift_list, favor_ori, affinity)
     if (reply ~= nil) then
+        check_curiosity(msg, item)
         return reply
     end
     -- 固定属性
@@ -135,9 +138,15 @@ function GiveGift(msg)
     end
     -- 持续性道具处理
     LastingItem(msg, item)
+    check_curiosity(msg, item)
 
     SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - num)
 
+    return Gift_list[item].reply
+end
+msg_order[gift_order] = "GiveGift"
+
+function check_curiosity(msg, item)
     -- 处理“好奇”的任务
     local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
     if curiosity_gift == item then
@@ -146,12 +155,10 @@ function GiveGift(msg)
         if (ranint(1, 100) <= 5) then
             favor_now = favor_now + 300
             SetUserConf("favorConf", msg.fromQQ, "favor", favor_now)
-            return "『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！"
+            msg:echo("『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！")
         end
     end
-    return Gift_list[item].reply
 end
-msg_order[gift_order] = "GiveGift"
 
 -- reply定制
 reply_order = "定制reply"
