@@ -1,10 +1,4 @@
 ---@diagnostic disable: lowercase-global
---[[
-    @author RainChain-Zero
-    @version 1.0
-    @Created 2022/04/03 16:23
-    @Last Modified 2022/04/03 16:44
-    ]]
 --! 校准值 使用Dice!函数
 calibration = getUserConf(getDiceQQ(), "calibration", 0)
 -- 校准值初始上限
@@ -41,6 +35,9 @@ end
 -- 修正好感变化值(适用于非赠礼交互)
 -- msg,原好感,当前好感变化值，亲和力,是否成功
 function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
+    if favor_change == 0 then
+        return 0
+    end
     local res = 0
     if (favor_change < 0) then
         -- 校准上限+2，亲和力减少
@@ -219,6 +216,9 @@ end
 -- 好感度逢千判断亲和力是否达到100
 -- qq,原好感度,现好感度,亲和力
 function CheckFavor(qq, favor_ori, favor_now, affinity)
+    if favor_ori == favor_now then
+        return favor_now, affinity
+    end
     local pre, now = 0, 0
     -- 回归修正
     favor_now = CheckRegression(qq, favor_now, affinity)

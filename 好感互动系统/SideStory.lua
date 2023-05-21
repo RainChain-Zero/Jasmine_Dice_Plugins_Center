@@ -13,10 +13,12 @@ require "Special1"
 require "Special2"
 require "Special3"
 require "Special4"
+require "Special5"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
-package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "favorhandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "FavorHandle"
+require "Utils"
 
 -- 主调入口
 function StoryMain(msg)
@@ -68,16 +70,13 @@ function StoryMain(msg)
             Reply = SpecialThreeExtra(msg)
         elseif StorySpecial == 5 then
             Reply = SpecialFour(msg)
+        elseif StorySpecial == 6 then
+            Reply = SpecialFive(msg)
         end
     end
     return Reply
 end
 msg_order[".f"] = "StoryMain"
-
---! 获取字符串第一个UTF-8字符
-function getNickFirst(qq, str)
-    return str:gsub("{nickFirst}", getUserConf(qq, "nick", "笨蛋"):match("[%z\1-\127\194-\244][\128-\191]*"))
-end
 
 -- 剧情入口点
 EntryStoryOrder = "进入剧情"
@@ -177,13 +176,31 @@ function EnterStory(msg)
             Story = "第四章 众生相"
         end
     elseif StoryTemp:find("星星点灯") or StoryTemp:find("生日特典") then
-        local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
-        if fl >= 900 then
-            SetUserConf("itemConf", msg.fromQQ, "fl", fl - 900)
+        local isSepcial4Read = GetUserConf("storyConf", msg.fromQQ, "isSepcial4Read", 0)
+        if isSepcial4Read == 0 then
+            local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
+            if fl >= 900 then
+                SetUserConf("itemConf", msg.fromQQ, "fl", fl - 900)
+                SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 5)
+                Story = "生日特典 星星点灯"
+            else
+                msg:echo("您需要拥有900fl来解锁此剧情哦~")
+            end
+        else
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 5)
             Story = "生日特典 星星点灯"
-        else
-            msg:echo("您需要拥有900fl来解锁此剧情哦~")
+        end
+    elseif StoryTemp:find("夜") then
+        local isSpecial5Read = GetUserConf("storyConf", msg.fromQQ, "isSpecial5Read", 0)
+        if isSpecial5Read == 0 then
+            local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
+            if fl >= 1000 then
+                SetUserConf("itemConf", msg.fromQQ, "fl", fl - 1000)
+                SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 6)
+                Story = "夜"
+            else
+                msg:echo("您需要拥有1000fl来解锁此剧情哦~")
+            end
         end
     end
     -- 是否存在章节
@@ -309,7 +326,7 @@ function Skip(msg)
             Reply = SkipSpecial2(msg)
         elseif StorySpecial == 3 then
             Reply = SkipSpecial3(msg)
-        elseif StorySpecial == 4 then
+        elseif StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 then
             Reply = "本剧情没有选项哦~无法跳转"
         end
     end

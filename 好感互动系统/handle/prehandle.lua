@@ -1,23 +1,10 @@
 ---@diagnostic disable: lowercase-global
---[[
-    @author RainChain-Zero
-    @version 1.0
-    @Created 2022/04/02 23:26
-    @Last Modified 2022/04/03 16:44
-    ]]
 -- 各条交互前预处理
 function preHandle(msg)
-    -- 强制更新提示信息
-    -- sendMsg("紧急维护，暂停服务！",msg.gid,msg.fromQQ)
-    -- os.exit()
     --! 强制阅读协议注册，一天提醒一次
-    if getUserConf(msg.fromQQ, "isRegister", 0) == 0 then
-        if getUserToday(msg.fromQQ, "registerNotice", 0) == 0 then
-            setUserToday(msg.fromQQ, "registerNotice", 1)
-            return "检测到您还未激活好感系统...\n请前往https://rainchain-zero.github.io/JasmineDoc/promise/阅读茉莉协议并查看激活指令"
-        else
-            return ""
-        end
+    local register = check_register(msg)
+    if register then
+        return register
     end
     -- 打工终止
     if (JudgeWorking(msg)) then
@@ -32,7 +19,7 @@ function preHandle(msg)
     AddFavor_Item(msg)
     -- 道具附加亲和度
     AddAffinity_Item(msg)
-    -- Notice(msg)
+    Notice(msg)
     -- ! 好感时间惩罚
     FavorPunish(msg)
     -- 信任度和亲和度关联
@@ -40,23 +27,33 @@ function preHandle(msg)
     CohesionChange(msg)
     -- 剧情解锁提示
     StoryUnlocked(msg)
+    -- 检测当前的任务
+    check_mission(msg)
 end
 
+function check_register(msg)
+    if getUserConf(msg.fromQQ, "isRegister", 0) == 0 then
+        if getUserToday(msg.fromQQ, "registerNotice", 0) == 0 then
+            setUserToday(msg.fromQQ, "registerNotice", 1)
+            return "检测到您还未激活好感系统...\n请前往https://rainchain-zero.github.io/JasmineDoc/promise/阅读茉莉协议并查看激活指令"
+        end
+    end
+end
 function JudgeFrequency(msg)
     local frequency = getUserToday(msg.fromQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     local DiceQQ = getDiceQQ()
     local frequency_bot = getUserToday(DiceQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     -- 个人冷却时间
-    if os.time() - frequency["lastTime"] < 10 then
+    if os.time() - frequency["lastTime"] < 8 then
         frequency["count"] = frequency["count"] + 1
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
-        if frequency["count"] >= 2 then
-            local favor, affinity = GetUserConf(msg.fromQQ, {"好感度", "affinity"}, {0, 0})
+        if frequency["count"] >= 3 then
+            local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
             SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
             return "您无视提醒，作为惩罚，您损失了100点好感和20点亲和度"
         end
-        return "当前交互频率过高，茉莉被你突如其来的攻势宕机了！请等待10s后再试，无视提醒将得到损失"
+        return "当前交互频率过高，请等待8s后再试哦~"
     else
         setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
         setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
@@ -170,26 +167,24 @@ end
 function Notice(msg)
     local favorUVersion = GetUserConf("favorConf", msg.fromQQ, "favorVersion", 0)
     -- 修改版本号只需要将下面的数字修改为目前的版本号即可
-    if (favorUVersion ~= 47) then
-        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 47})
+    if (favorUVersion ~= 50) then
+        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 50})
     end
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (not msg.gid and noticeQQ == 0) then
-        noticeQQ = noticeQQ + 1
-        local content =
-            "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
-        SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
-        sendMsg(content, 0, msg.fromQQ)
-    end
-    noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if (msg.gid) then
-        if (noticeQQ == 0) then
-            noticeQQ = noticeQQ + 1
-            local content =
-                "【好感互动模块V4.7更新通告】本次为茉莉412生日的更新。更新内容可以在空间找到，\n文档:https://rainchain-zero.github.io/JasmineDoc/diary"
-            SetUserConf("favorConf", msg.fromQQ, "noticeQQ", noticeQQ)
-            sendMsg(content, msg.gid, msg.fromQQ)
+    if msg.gid then
+        local group_notice = getUserToday(getDiceQQ(), "group_notice", {})
+        local times = group_notice[msg.gid] or 0
+        if times >= 3 then
+            return
         end
+        group_notice[msg.gid] = times + 1
+        setUserToday(getDiceQQ(), "group_notice", group_notice)
+    end
+    if (noticeQQ == 0) then
+        msg:echo(
+            "『V4.5.0版本更新』好感系统已追加「心情子系统」，了解详情：https://rainchain-zero.github.io/JasmineDoc/appendix/moodmechanism.html"
+        )
+        SetUserConf("favorConf", msg.fromQQ, "noticeQQ", 1)
     end
 end
 
@@ -308,9 +303,9 @@ function FavorPunish(msg, show_favor)
     if (subday == 0) then
         -- 一天内 间隔小于15h
         if (subhour < 15) then
-            --一天内  间隔大于15h
             Llimit, RLimit = 0, 0
         else
+            --一天内  间隔大于15h
             if (favor < 8500 and favor > 2000) then
                 Llimit, Rlimit = 30, 40
             elseif (favor >= 8500) then
@@ -335,8 +330,8 @@ function FavorPunish(msg, show_favor)
         Llimit, Rlimit = 160 * subday, 180 * subday
     else
         Llimit, Rlimit =
-            720 + 200 * (subday - 5) * math.log(2 * (subday - 5), 2),
-            780 + 225 * (subday - 5) * math.log(2 * (subday - 5), 2)
+            720 + 100 * (subday - 5) * math.log(2 * (subday - 5), 2),
+            780 + 120 * (subday - 5) * math.log(2 * (subday - 5), 2)
     end
     -- ! 道具减免
     local itemDownRate = 1 - FavorTimePunishDownRate(msg)
@@ -345,10 +340,13 @@ function FavorPunish(msg, show_favor)
     end
     -- 将左右端点取整才可带入ranint
     Llimit, Rlimit = math.modf(Llimit), math.modf(Rlimit)
-    if (Rlimit > 0) then
+    local favor_down = ranint(Llimit, Rlimit) * itemDownRate
+    if (favor_down > 0) then
         isFavorTimePunish = true
+        local special_mood, coefficient = GetUserConf("favorConf", msg.fromQQ, {"special_mood", "coefficient"}, {0, 0})
+        coefficient = get_coefficient(special_mood, coefficient, {"开心", "焦虑"})
+        favor_down = math.modf(favor_down * coefficient)
     end
-    local favor_down = math.modf(ranint(Llimit, Rlimit) * itemDownRate)
     if favor_down > 1000 then
         favor_down = 1000
     end
@@ -358,7 +356,7 @@ function FavorPunish(msg, show_favor)
     else
         favor = favor - favor_down
     end
-    if (show_favor ~= true) then
+    if (show_favor == false and isFavorTimePunish) then
         -- 一次降低好感超过200，获得回归标记
         if (favor_down < 200) then
             SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
@@ -428,7 +426,8 @@ function StoryUnlocked(msg)
         isSpecial2Read,
         isSpecial3Read,
         isStory3Read,
-        isSpecial4Read =
+        isSpecial4Read,
+        isSpecial5Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -443,9 +442,10 @@ function StoryUnlocked(msg)
             "isSpecial2Read",
             "isSpecial3Read",
             "isStory3Read",
-            "isSpecial4Read"
+            "isSpecial4Read",
+            "isSpecial5Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -534,6 +534,15 @@ function StoryUnlocked(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
+    if favor >= 4000 and isSpecial5Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 6, 6)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式『夜』已经开放,输入“进入剧情 夜”可浏览剧情\n注意：本次解锁剧情需要扣除1000FL"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 5) .. "1" .. string.sub(specialUnlockedNotice, 7)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
     if content ~= "" then
         msg:echo("[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. content)
     end
@@ -541,11 +550,38 @@ end
 
 -- 动作类交互预处理
 function Actionprehandle(str)
-    local list = {"抱", "摸", "举高", "亲", "牵手", "捏", "揉", "可爱", "萌", "kawa", "喜欢", "suki", "爱", "love", "贴贴", "蹭蹭"}
+    local list = {
+        "抱",
+        "摸",
+        "举高",
+        "亲",
+        "牵手",
+        "捏",
+        "揉",
+        "可爱",
+        "萌",
+        "kawa",
+        "喜欢",
+        "suki",
+        "爱",
+        "love",
+        "贴贴",
+        "蹭蹭",
+        "膝枕",
+        "肩膀"
+    }
     for _, v in pairs(list) do
         if (string.find(str, v) ~= nil) then
             return true
         end
     end
     return false
+end
+
+function check_mission(msg)
+    --检验“好奇”心情的任务
+    local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
+    if curiosity_gift then
+        msg:echo(at_user(msg.fromQQ) .. "提示：茉莉当前处于「好奇」心情，赠送茉莉" .. curiosity_gift .. "可完成任务")
+    end
 end

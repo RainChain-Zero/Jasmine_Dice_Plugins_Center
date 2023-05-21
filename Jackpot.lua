@@ -2,7 +2,6 @@ msg_order = {}
 msg_order["/抽奖"] = "draw_lottery"
 
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
-require "itemIO"
 require "IO"
 
 function draw_lottery(msg)

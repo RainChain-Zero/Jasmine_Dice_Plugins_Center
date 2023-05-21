@@ -1,6 +1,5 @@
 msg_order = {}
 
-package.path = getDiceDir() .. "/plugin/IO/?.lua"
 Json = require "json"
 
 function draw(msg)

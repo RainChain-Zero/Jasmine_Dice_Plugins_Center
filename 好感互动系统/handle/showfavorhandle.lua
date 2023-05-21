@@ -1,5 +1,5 @@
 package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "prehandle"
+require "PreHandle"
 -- 好感查询计算
 function ShowFavorHandle(msg, favor, affinity)
     local addFavorItem, addAffinityItem = AddFavor_Item(msg), AddAffinity_Item(msg)
@@ -15,27 +15,28 @@ function ShowFavorHandle(msg, favor, affinity)
         state = state .. "\n打工人：打工期间无法进行喂食以及交互。"
     end
     if (favor < 3000) then
-        div = 100
+        div = 90
     elseif (favor < 8500) then
-        div = 140
+        div = 95
+    elseif (favor < 12000) then
+        div = 110
     elseif (favor < 15000) then
-        div = 170
+        div = 130
     else
         div = 200
     end
-    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n状态："
+    local res = "边际抵抗：" .. math.modf(favor / div) .. "%\n-----------------------------------------\n状态："
     if (isFavorTimePunish == true) then
         state = state .. "\n遗忘：当前好感正随时间流逝。"
     end
     if (calibration_limit > 16) then
         state = state .. "\n逻辑并发过载：某些安全隐患正在提升。"
     end
-    if
-        (math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10) < 0 and
-            (getUserConf(msg.fromQQ, "projectionLamp", {}).lasting or 0) < os.time())
-     then
+    local cal = math.modf(-1 * ((calibration + 1) * favor / div / (affinity + 1)) + affinity / 10)
+    if cal < 0 then
         state = state .. "\n情感单元过载：当前好感获取量减少。"
-    else
+    end
+    if cal > 0 or (getUserConf(msg.fromQQ, "projectionLamp", {}).lasting or 0) > os.time() then
         state = state .. "\n情感单元谐振：当前好感获取量增加。"
     end
     -- 判断回归
@@ -61,6 +62,32 @@ function ShowFavorHandle(msg, favor, affinity)
     if (getUserConf(msg.fromQQ, "musicBox", {})["enable"]) then
         state = state .. "\n残缺的旋律：你们之间的记忆暂停了（好感流逝锁定）。"
     end
-    state = state .. "\n\n"
+    state = state .. "\n-----------------------------------------\n"
+    -- 当前心情判断
+    local special_mood, float_value, coefficient =
+        GetUserConf("moodConf", msg.fromQQ, {"special_mood", "float_value", "coefficient"}, {"平常", 0, 0})
+    if special_mood == "好奇" then
+        local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
+        if curiosity_gift == nil then
+            state = state .. "好奇：茉莉的好奇心已被满足"
+        else
+            state = state .. "好奇：茉莉想要一个「" .. curiosity_gift .. "」，完成后有5%概率获得300好感，未完成则有5%概率失去100好感"
+        end
+    else
+        state = state .. special_mood .. "：" .. __MOOD_DES__[special_mood]
+    end
+    state =
+        state ..
+        "\n心情浮动：" .. float_value .. " | 心情系数：" .. coefficient .. "\n-----------------------------------------\n"
     return res .. state
 end
+
+__MOOD_DES__ = {
+    ["平常"] = "平淡的日常，最珍贵的时光",
+    ["开心"] = "随时间流逝的好感度减少",
+    ["渴望"] = "喂食、赠礼的好感获取量增加",
+    ["振奋"] = "交互的好感获取量增加（除喂食、赠礼）",
+    ["焦虑"] = "随时间流逝的好感度增加",
+    ["失望"] = "喂食、赠礼的好感获取量减少",
+    ["枯燥"] = "交互的好感获取量减少（除喂食、赠礼）"
+}

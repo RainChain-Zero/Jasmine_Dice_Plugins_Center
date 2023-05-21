@@ -1,10 +1,8 @@
-package.path = getDiceDir() .. "/plugin/ReplyAndDescription/?.lua"
-require "itemDescription"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
-require "itemIO"
-package.path = getDiceDir() .. "/plugin/handle/?.lua"
-require "favorhandle"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "FavorHandle"
+require "MoodHandle"
 msg_order = {}
 -- item为全局变量，检测合法性时不用传入
 -- 使用道具
@@ -13,19 +11,12 @@ function UseItem(msg)
     local reply = "唔姆姆，你这是要对着空气做什么呀？（部分物品需要赠送给茉莉才会触发：“赠送茉莉 数量 道具”数量不填默认为1）"
     local num, item, flag1, flag2 = "", "", false, false
     num, item = string.match(msg.fromMsg, "[u,U][%s]*(%d*)[%s]*(.*)")
-    if (item == nil or item == "") then
+    if (not item or item == "") then
         return "请输入道具名哦~（输入“道具图鉴”可查看目前支持的所有道具）"
     end
     -- 数量默认为1
-    if (num == "" or num == nil) then
+    if (not num or num == "") then
         num = 1
-    end
-    --! 梦的开始bug判断
-    if
-        (GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 1 and
-            GetUserConf("itemConf", msg.fromQQ, "梦的开始", 0) == 0)
-     then
-        SetUserConf("itemConf", msg.fromQQ, "梦的开始", 1)
     end
     -- 道具剩余数量判断
     flag1, flag2, item = UseCheck(msg, num, Item, item)
@@ -95,15 +86,15 @@ function GiveGift(msg)
     local num, item, flag1, flag2 = "", "", false, false
     local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     num, item = string.match(msg.fromMsg, "[%s]*(%d*)[%s]*(.+)", #gift_order + 1)
-    if (num == "" or num == nil) then
+    if (not num or num == "") then
         num = 1
     end
     num = num * 1
-    if (item == "" or item == nil) then
+    if (not item or item == "") then
         return "『✖参数不足』诶诶诶？{nick}这是要送给茉莉什么呀？是...？惊喜吗！"
     end
     -- 合理性判断
-    flag1, flag2, item = UseCheck(msg, num * 1, Gift_list, item)
+    flag1, flag2, item = UseCheck(msg, num, Gift_list, item)
     if (not flag1) then
         return "『✖Error』嗯嗯嗯？原来这世上还存在这种东西的吗×"
     end
@@ -132,14 +123,32 @@ function GiveGift(msg)
         SetUserConf("favorConf", msg.fromQQ, "affinity", affinity_now)
     end
     if (Gift_list[item].favor ~= nil) then
-        favor_now = favor_ori + num * ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor, affinity_now)
-        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity_now)
+        local special_mood, coefficient = GetUserConf("moodConf", msg.fromQQ, {"special_mood", "coefficient"}, {0, 1})
+        coefficient = get_coefficient(special_mood, coefficient, {"渴望", "失望"})
+        local favor_change, calibration_message =
+            ModifyFavorChangeGift(msg, favor_ori, Gift_list[item].favor * coefficient, affinity_now)
+        if (calibration_message ~= nil) then
+            return calibration_message
+        end
+        favor_now = favor_ori + num * favor_change
+        favor_now = CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity_now)
     end
-
     -- 持续性道具处理
     LastingItem(msg, item)
 
     SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - num)
+
+    -- 处理“好奇”的任务
+    local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
+    if curiosity_gift == item then
+        SetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
+        -- 有5%概率获得300好感
+        if (ranint(1, 100) <= 5) then
+            favor_now = favor_now + 300
+            SetUserConf("favorConf", msg.fromQQ, "favor", favor_now)
+            return "『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！"
+        end
+    end
     return Gift_list[item].reply
 end
 msg_order[gift_order] = "GiveGift"
@@ -157,8 +166,7 @@ function CustomizeReply(msg)
     content =
         "【系统邮件】收到了一条reply定制请求\n申请人：" ..
         getUserConf(msg.fromQQ, "nick", "用户名获取失败") .. "(" .. msg.fromQQ .. ")\n内容：" .. content
-    sendMsg(content, 0, 3032902237)
-    sendMsg(content, 0, 2677409596)
+    sendMsg(content, 432653151, 0)
     return "已经成功将请求发送至管理员~请耐心等待答复哦~\n为了能正常接收提示消息，请添加茉莉为好友w"
 end
 msg_order[reply_order] = "CustomizeReply"
@@ -169,11 +177,14 @@ function FinishtCustomizedReply(msg)
     if (msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "2677409596") then
         return "『✖权限不足』只有管理员才可确认定制reply完成"
     end
-    local QQ = string.match(msg.fromMsg, "[%s]*(%d+)", #finish_reply_order + 1)
+    local QQ, msg = string.match(msg.fromMsg, "[%s]*(%d+)%s*(%S*)", #finish_reply_order + 1)
     if (QQ == nil or QQ == "") then
         return "『✖参数不足』请输入确认完成reply的目标QQ"
     end
     local content = "【系统邮件】您的定制reply已经完成，如有问题请通过“.send [消息内容]”进行反馈哦~"
+    if msg then
+        content = content .. "\n附加消息：" .. msg
+    end
     SetUserConf("itemConf", QQ, "定制reply", GetUserConf("itemConf", QQ, "定制reply", 0) - 1)
     sendMsg(content, 0, QQ)
     return "已确认完成该reply定制"
@@ -185,7 +196,7 @@ function UseCheck(msg, num, table, item)
     local flag1 = false
     -- 判断道具是否存在
     for k, _ in pairs(table) do
-        if (string.find(k, item) ~= nil) then
+        if (k:find(item) ~= nil) then
             flag1 = true
             item = k
             break
@@ -205,7 +216,7 @@ end
 -- 解锁剧情章节
 function UnlockStory(msg, entryStoryCheck, item)
     if (entryStoryCheck == 1) then
-        if (string.find(item, "梦的开始") ~= nil) then
+        if (item:find("梦的开始") ~= nil) then
             if (GetUserConf("itemConf", msg.fromQQ, "梦的开始", 0) == 0) then
                 return "『✖余量不足』您的『梦的开始』余量不足", false
             end
@@ -349,7 +360,7 @@ function SearchItem(msg)
 
     -- 判断道具是否存在
     for k, _ in pairs(Item) do
-        if (string.find(k, item) ~= nil) then
+        if (k:find(item) ~= nil) then
             flag = true
             item = k
             break
