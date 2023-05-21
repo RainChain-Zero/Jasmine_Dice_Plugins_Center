@@ -157,11 +157,12 @@ function get_special_mood(qq, mood, random)
     if mood == 0 then
         return "平常", 1
     elseif mood == 1 then
+        local good_mood = __GOOD_MOOD__
         -- 好感不足2000时，不会出现好奇心情
         if GetUserConf("favorConf", qq, "好感度", 0) < 2000 then
-            __GOOD_MOOD__["好奇"] = nil
+            good_mood["好奇"] = nil
         end
-        random_key = __GOOD_MOOD__[ranint(1, #__GOOD_MOOD__)]
+        random_key = good_mood[ranint(1, #good_mood)]
         return random_key, __MOOD_FUNCTION__[random_key](y)
     else
         random_key = __BAD_MOOD__[ranint(1, #__BAD_MOOD__)]

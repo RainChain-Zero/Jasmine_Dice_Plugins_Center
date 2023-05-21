@@ -472,7 +472,7 @@ function rcv_Ciallo_night(msg)
         end
         --! 1298754454 晚安定制
         if msg.fromQQ == "1298754454" then
-            return table_draw(merge_reply(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.fromQQ]["night"]))
+            return table_draw(merge_table(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.fromQQ]["night"]))
         end
         return table_draw(__REPLY__["night"][level][mood])
     elseif (hour >= 5 and hour <= 11) then
@@ -830,7 +830,7 @@ function action_function(
             -- 定制列表的判定
             if search_keywords(msg.fromQQ, customized_list or {}) then
                 return table_draw(
-                    merge_reply(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
+                    merge_table(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
                 )
             end
             return table_draw(__REPLY__[action_name][i][mood])

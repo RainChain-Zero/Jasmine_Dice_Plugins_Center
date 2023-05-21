@@ -1,4 +1,4 @@
-function merge_reply(ori, new)
+function merge_table(ori, new)
     for _, v in pairs(new) do
         table.insert(ori, v)
     end
