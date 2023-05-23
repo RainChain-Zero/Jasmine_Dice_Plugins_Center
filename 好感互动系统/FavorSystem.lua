@@ -570,7 +570,6 @@ function interaction(msg)
         ["头"] = "head",
         ["脸"] = "face",
         ["身体"] = "body",
-        ["脖子"] = "neck",
         ["背"] = "back",
         ["腰"] = "waist",
         ["腿"] = "leg",
@@ -638,9 +637,9 @@ function ciallo_normal(msg)
 end
 
 function action(msg)
-    if (Actionprehandle(msg.fromMsg) == false) then
-        return ""
-    end
+    -- if (Actionprehandle(msg.fromMsg) == false) then
+    --     return ""
+    -- end
     local preReply = preHandle(msg)
     if (preReply ~= nil) then
         return preReply
@@ -671,7 +670,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("亲") then
+    elseif search_keywords(msg.fromMsg, {"亲", "親"}) then
         return action_function(
             msg,
             {2000, 3200, 7000},
@@ -682,7 +681,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("举高高") then
+    elseif search_keywords(msg.fromMsg, {"举高高", "舉高高"}) then
         return action_function(
             msg,
             {1550, 3200, 6800},
@@ -693,7 +692,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("牵手") then
+    elseif search_keywords(msg.fromMsg, {"牵手", "牽手"}) then
         return action_function(
             msg,
             {1200, 3000, 5500},
@@ -705,7 +704,7 @@ function action(msg)
             coefficient,
             {"3358315232"}
         )
-    elseif msg.fromMsg:find("脸") then
+    elseif search_keywords(msg.fromMsg, {"臉", "脸"}) then
         return action_function(
             msg,
             {1100, 3000, 5000},
@@ -716,9 +715,9 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif search_keywords(msg.fromMsg, {"可爱", "萌", "卡哇伊", "kawai", "kawayi"}) then
+    elseif search_keywords(msg.fromMsg, {"可爱", "可愛", "萌", "卡哇伊", "kawai", "kawayi"}) then
         return action_function(msg, {1050, 3000, 4000}, {8, 10, 12, 14}, "cute", favor_ori, affinity, mood, coefficient)
-    elseif search_keywords(msg.fromMsg, {"喜欢", "suki"}) then
+    elseif search_keywords(msg.fromMsg, {"喜欢", "喜歡", "suki"}) then
         return action_function(
             msg,
             {1500, 3500, 5500},
@@ -730,7 +729,7 @@ function action(msg)
             coefficient,
             {"3358315232"}
         )
-    elseif search_keywords(msg.fromMsg, {"爱", "love"}) then
+    elseif search_keywords(msg.fromMsg, {"爱", "愛", "love"}) then
         return action_function(
             msg,
             {2000, 4500, 6500},
@@ -741,7 +740,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("贴贴") then
+    elseif search_keywords(msg.fromMsg, {"贴贴", "貼貼"}) then
         return action_function(
             msg,
             {1500, 3500, 5500},

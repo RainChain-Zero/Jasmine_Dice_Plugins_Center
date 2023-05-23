@@ -93,19 +93,19 @@ function EnterStory(msg)
     end
     Init(msg)
     -- 提取具体章节
-    if (string.find(StoryTemp, "序章") ~= nil or string.find(StoryTemp, "惊蛰") ~= nil) then
+    if search_keywords(StoryTemp, {"序章", "惊蛰", "驚蟄"}) then
         if (favor < 1000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1000)"
         end
         Story = "序章 惊蛰"
         SetUserConf("storyConf", msg.fromQQ, {"storyReadNow", "choiceSelected0"}, {0, 0})
-    elseif (string.find(StoryTemp, "元旦特典") ~= nil or string.find(StoryTemp, "预想此时应更好") ~= nil) then
+    elseif (search_keywords(StoryTemp, {"元旦特典", "预想此时应更好", "預想此時應更好"})) then
         if (favor < 1500) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1500)"
         end
         Story = "元旦特典 预想此时应更好"
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 0)
-    elseif (string.find(StoryTemp, "第一章") ~= nil or string.find(StoryTemp, "夜未央") ~= nil) then
+    elseif (search_keywords(StoryTemp, {"第壹章", "第一章", "夜未央"})) then
         if (favor < 2000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
@@ -124,7 +124,7 @@ function EnterStory(msg)
             {4, 1, -1}
         )
         Story = "第一章 夜未央"
-    elseif (string.find(StoryTemp, "第二章") ~= nil or string.find(StoryTemp, "难以言明的选择") ~= nil) then
+    elseif (search_keywords(StoryTemp, {"第二章", "難以言明的選擇", "难以言明的选择"})) then
         if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
             return "『✖条件未满足』您需要在第一章中解锁『商店』功能"
         elseif (favor < 3000) then
@@ -142,19 +142,19 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 3)
             Story = "第三章 此般景致"
         end
-    elseif string.find(StoryTemp, "七夕特典") or string.find(StoryTemp, "近在咫尺的距离") then
+    elseif search_keywords(StoryTemp, {"近在咫尺的距離", "七夕特典", "近在咫尺的距离"}) then
         if favor < 3500 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3500)"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 1)
         Story = "七夕特典 近在咫尺的距离"
-    elseif StoryTemp:find("圣诞特典") or StoryTemp:find("予你的光点") then
+    elseif search_keywords(StoryTemp, {"聖誕特典", "予妳的光點", "圣诞特典", "予你的光点"}) then
         if favor < 2000 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 2)
         Story = "圣诞特典 予你的光点"
-    elseif StoryTemp:find("白色情人节特典") or StoryTemp:find("献给你的礼物") then
+    elseif search_keywords(StoryTemp, {"白色情人節特典", "白色情人节特典", "獻給妳的禮物", "献给你的礼物"}) then
         local isSpecial3Read = GetUserConf("storyConf", msg.fromQQ, "isSpecial3Read", 0)
         if isSpecial3Read == 0 then
             local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
@@ -169,7 +169,7 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
             Story = "白色情人节特典 献给你的礼物"
         end
-    elseif StoryTemp:find("第四章") or StoryTemp:find("众生相") then
+    elseif search_keywords(StoryTemp, {"衆生相", "众生相", "第四章"}) then
         if GetUserConf("storyConf", msg.fromQQ, "isStory3Read", 0) == 0 then
             return "『✖条件未满足』您需要通过第三章 此般景致"
         elseif favor < 4000 then
@@ -178,7 +178,7 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 4)
             Story = "第四章 众生相"
         end
-    elseif StoryTemp:find("星星点灯") or StoryTemp:find("生日特典") then
+    elseif search_keywords(StoryTemp, {"星星點燈", "星星点灯", "生日特典"}) then
         local isSepcial4Read = GetUserConf("storyConf", msg.fromQQ, "isSepcial4Read", 0)
         if isSepcial4Read == 0 then
             local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
@@ -205,7 +205,7 @@ function EnterStory(msg)
                 return "您需要拥有1000fl来解锁此剧情哦~"
             end
         end
-    elseif StoryTemp:find("因为是家人") then
+    elseif search_keywords(StoryTemp, {"因爲是家人", "因为是家人"}) then
         if favor >= 5000 then
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 7)
             Story = "因为是家人"
@@ -220,6 +220,7 @@ function EnterStory(msg)
     return "您已进入剧情模式「" .. Story .. "」,请在小窗模式下输入.f一步一步进行哦~"
 end
 msg_order[EntryStoryOrder] = "EnterStory"
+msg_order["進入劇情"] = "EnterStory"
 
 -- 配置初始化
 function Init(msg)
@@ -382,6 +383,7 @@ function query_story(msg)
     return reply .. "茉莉，高性能ですから!"
 end
 msg_order["/剧情进度"] = "query_story"
+msg_order["劇情進度"] = "query_story"
 
 __STORY_NAME__ = {
     isStory0Read = "序章「惊蛰」",

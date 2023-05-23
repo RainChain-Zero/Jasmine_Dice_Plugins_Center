@@ -19,7 +19,7 @@ function preHandle(msg)
     AddFavor_Item(msg)
     -- 道具附加亲和度
     AddAffinity_Item(msg)
-    Notice(msg)
+    -- Notice(msg)
     -- ! 好感时间惩罚
     FavorPunish(msg)
     -- 信任度和亲和度关联
@@ -548,7 +548,7 @@ function StoryUnlocked(msg)
     if favor >= 5000 and isSpecial6Read == 0 then
         flag = string.sub(specialUnlockedNotice, 7, 7)
         if (flag == "0") then
-            content = content .. "『✔提示』剧情模式 521短篇「因为是家人」已经开放,输入“进入剧情 梦”可浏览剧情"
+            content = content .. "『✔提示』剧情模式 521短篇「因为是家人」已经开放,输入“进入剧情 因为是家人”可浏览剧情"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 6) .. "1" .. string.sub(specialUnlockedNotice, 8)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)

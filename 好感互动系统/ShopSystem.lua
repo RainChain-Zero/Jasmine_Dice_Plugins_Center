@@ -26,6 +26,7 @@ function ShopMenu(msg)
     return reply
 end
 msg_order["进入商店"] = "ShopMenu"
+msg_order["進入商店"] = "ShopMenu"
 
 -- 购买商品
 purchase_order = "购买"
@@ -84,3 +85,4 @@ function BuyItem(msg)
     end
 end
 msg_order[purchase_order] = "BuyItem"
+msg_order["購買"] = "BuyItem"

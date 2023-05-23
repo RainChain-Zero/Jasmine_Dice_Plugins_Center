@@ -46,6 +46,7 @@ function Work(msg)
     return "你和茉莉走进刚开门的咖啡馆，跟常青打了个招呼，就和茉莉换上工作服，开始上班。\n下班时间：" .. os.date("%Y.%m.%d %H:%M:%S", time)
 end
 msg_order[work_order] = "Work"
+msg_order["開始打工"] = "Work"
 
 function WorkTime_Item(msg)
     local change = 0

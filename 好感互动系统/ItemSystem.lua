@@ -150,6 +150,7 @@ function GiveGift(msg)
     return Gift_list[item].reply
 end
 msg_order[gift_order] = "GiveGift"
+msg_order["贈送茉莉"] = "GiveGift"
 
 function check_curiosity(msg, item)
     -- 处理“好奇”的任务
@@ -206,6 +207,7 @@ msg_order[finish_reply_order] = "FinishtCustomizedReply"
 -- 道具使用合理性判断
 function UseCheck(msg, num, table, item)
     local flag1 = false
+    item = covert_traditional_simplified(item)
     -- 判断道具是否存在
     for k, _ in pairs(table) do
         if (k:find(item) ~= nil) then
@@ -369,7 +371,7 @@ function SearchItem(msg)
     if item == "FL" then
         item = "fl"
     end
-
+    item = covert_traditional_simplified(item)
     -- 判断道具是否存在
     for k, _ in pairs(Item) do
         if (k:find(item) ~= nil) then
@@ -400,6 +402,7 @@ function SearchItem(msg)
     return content
 end
 msg_order[check_order] = "SearchItem"
+msg_order["查詢"] = "SearchItem"
 
 -- 道具图鉴
 function HandBook()
@@ -426,3 +429,21 @@ function HandBook()
     return reply
 end
 msg_order["道具图鉴"] = "HandBook"
+msg_order["道具圖鑒"] = "HandBook"
+
+-- 道具繁体转简体
+function covert_traditional_simplified(item)
+    local covert_table = {
+        ["夢的開始"] = "梦的开始",
+        ["星幕投影燈"] = "星幕投影灯",
+        ["野餐籃"] = "野餐篮",
+        ["袋裝曲奇"] = "袋装曲奇",
+        ["快樂水"] = "快乐水",
+        ["推理小說"] = "推理小说",
+        ["冰激淩"] = "冰激凌",
+        ["可頌"] = "可颂",
+        ["發簪"] = "发簪",
+        ["壽司"] = "寿司"
+    }
+    return covert_table[item] or item
+end
