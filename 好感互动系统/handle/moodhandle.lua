@@ -184,5 +184,6 @@ function address_special_mood(qq, special_mood)
     if special_mood == "好奇" then
         local gift = get_random_gift()
         SetUserConf("missionConf", qq, "curiosity_gift", gift)
+        SetUserToday(qq, "curiosity_gift_notice", 0)
     end
 end

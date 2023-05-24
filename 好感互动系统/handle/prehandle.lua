@@ -592,7 +592,9 @@ end
 function check_mission(msg)
     --检验“好奇”心情的任务
     local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
-    if curiosity_gift then
+    local today_curiosity = GetUserToday(msg.fromQQ, "curiosity_gift_notice", 0)
+    if curiosity_gift and today_curiosity == 0 then
         msg:echo(at_user(msg.fromQQ) .. "提示：茉莉当前处于「好奇」心情，赠送茉莉" .. curiosity_gift .. "可完成任务")
+        SetUserToday(msg.fromQQ, "curiosity_gift_notice", 1)
     end
 end

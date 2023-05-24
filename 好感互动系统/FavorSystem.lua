@@ -30,7 +30,9 @@ __LIMIT_PER_DAY__ = {
     cute = 1,
     tietie = 1,
     cengceng = 1,
-    lapPillow = 1
+    lapPillow = 1,
+    sit = 1,
+    hugry_cat = 1
 }
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
@@ -743,9 +745,20 @@ function action(msg)
     elseif search_keywords(msg.fromMsg, {"贴贴", "貼貼"}) then
         return action_function(
             msg,
-            {1500, 3500, 5500},
+            {2000, 4000, 6000},
             {-40, 10, 13, 15},
             "tietie",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient
+        )
+    elseif search_keywords(msg.fromMsg, {"坐"}) then
+        return action_function(
+            msg,
+            {1500, 3500, 5500},
+            {-20, 10, 13, 15},
+            "sit",
             favor_ori,
             affinity,
             mood,
@@ -759,6 +772,7 @@ function action(msg)
         if today_cengceng <= __LIMIT_PER_DAY__.cengceng then
             favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20 * coefficient, affinity, true)
         end
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["cengceng"])
     elseif msg.fromMsg:find("膝枕") then
         local today_lapPillow = GetUserToday(msg.fromQQ, "lapPillow", 0)
@@ -778,6 +792,14 @@ function action(msg)
         end
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return reply_main
+    elseif search_keywords(msg.fromMsg, {"小馋猫"}) and msg.fromQQ == "2277861699" then
+        local today_hungry_cat = GetUserToday(msg.fromQQ, "hungry_cat", 0)
+        if today_hungry_cat <= __LIMIT_PER_DAY__.hugry_cat then
+            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 6 * coefficient, affinity, true)
+            SetUserToday(msg.fromQQ, "hungry_cat", today_hungry_cat + 1)
+        end
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["hungry_cat"])
     end
 end
 
@@ -785,7 +807,7 @@ end
 function action_main(msg)
     local reply_main = action(msg)
 
-    if (reply_main and reply ~= "") then
+    if (reply_main and reply_main ~= "") then
         return reply_main
     end
     return ciallo_normal(msg)
