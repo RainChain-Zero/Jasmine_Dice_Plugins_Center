@@ -577,12 +577,20 @@ function interaction(msg)
         ["腿"] = "leg",
         ["手"] = "hand",
         ["肩"] = "shoulder",
-        ["肩膀"] = "shoulder"
+        ["肩膀"] = "shoulder",
+        ["眼"] = "eye",
+        ["脚"] = "foot"
     }
     part = convert_part[part]
+    if not part then
+        return ""
+    end
     --todo 肩膀互动reply的补全
     if part == "shoulder" then
         return table_draw(__REPLY__TODO__[part])
+    end
+    if part == "foot" and msg.fromQQ == "3358315232" or msg.fromQQ == "2677402349" then
+        return table_draw(__REPLY__CUSTOMIZED__["3358315232"]["foot"])
     end
     return table_draw(__REPLY__[part][level][mood])
 end
@@ -597,7 +605,7 @@ function ciallo_normal(msg)
     end
     if (msg.fromQQ == "839968342") then
         if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
-            return ""
+            return "“没有繁星的夜晚，我是月亮的影子。”欸？茉莉在看书喔…{nick}要一起来嘛？"
         end
     end
     local str = string.match(msg.fromMsg, "(.*)", #normal_order + 1)
@@ -800,6 +808,8 @@ function action(msg)
         end
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["hungry_cat"])
+    elseif search_keywords(msg.fromMsg, {"喝点饮料"}) and msg.fromQQ == "1502506971" then
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["drink"])
     end
 end
 
