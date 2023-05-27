@@ -500,7 +500,7 @@ function night_master(msg)
         if mood == -1 then
             return ""
         end
-        preHandle(msg)
+        -- preHandle(msg)
         if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
             return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会在你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
         end
@@ -582,15 +582,15 @@ function interaction(msg)
         ["脚"] = "foot"
     }
     part = convert_part[part]
-    if not part then
-        return ""
-    end
     --todo 肩膀互动reply的补全
     if part == "shoulder" then
         return table_draw(__REPLY__TODO__[part])
     end
-    if part == "foot" and msg.fromQQ == "3358315232" or msg.fromQQ == "2677402349" then
+    if part == "foot" and (msg.fromQQ == "3358315232" or msg.fromQQ == "2677402349") then
         return table_draw(__REPLY__CUSTOMIZED__["3358315232"]["foot"])
+    end
+    if not __REPLY__[part] then
+        return ""
     end
     return table_draw(__REPLY__[part][level][mood])
 end
