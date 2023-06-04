@@ -537,6 +537,9 @@ function interaction(msg)
         return calibration_message1
     end
     if (succ == false) then
+        if msg.fromQQ == "839968342" then
+            return "“没有繁星的夜晚，我是月亮的影子。”"
+        end
         return "茉莉向后退了一步，并对你比了个“×”的手势×"
     end
     local level, favor_now, favor_add
@@ -603,11 +606,7 @@ function ciallo_normal(msg)
     if search_keywords(msg.fromQQ, {"959686587"}) then
         return ""
     end
-    if (msg.fromQQ == "839968342") then
-        if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
-            return "“没有繁星的夜晚，我是月亮的影子。”欸？茉莉在看书喔…{nick}要一起来嘛？"
-        end
-    end
+
     local str = string.match(msg.fromMsg, "(.*)", #normal_order + 1)
     local flag =
         search_keywords(
@@ -631,6 +630,11 @@ function ciallo_normal(msg)
     end
     if (flag == false) then
         return ""
+    end
+    if (msg.fromQQ == "839968342") then
+        if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
+            return "“没有繁星的夜晚，我是月亮的影子。”欸？茉莉在看书喔…{nick}要一起来嘛？"
+        end
     end
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor < -500) then
@@ -854,7 +858,10 @@ function action_function(
     if not succ then
         favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, -10, affinity, succ)
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
-        return table_draw(__REPLY_FAILED__[action_name])
+        if msg.fromQQ == "839968342" then
+            return "“没有繁星的夜晚，我是月亮的影子。”"
+        end
+        return __REPLY_FAILED__[action_name]
     end
     -- 依次检查各个好感等级
     for i = 1, #boundary + 1 do

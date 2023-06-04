@@ -393,7 +393,8 @@ function isFavorSilent(msg, favor, show_favor)
             msg.fromQQ == "3578788465" or
             msg.fromQQ == "1530045447" or
             msg.fromQQ == "1549554054" or
-            msg.fromQQ == "996518321")
+            msg.fromQQ == "996518321" or
+            msg.fromQQ == "819357315")
      then
         return true
     end

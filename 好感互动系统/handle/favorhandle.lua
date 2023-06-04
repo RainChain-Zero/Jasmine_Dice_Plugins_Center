@@ -237,7 +237,7 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         now = favor_now % 10000
         now = math.modf(now / 1000)
     end
-    if (now >= (pre + 1) % 10) then
+    if (now >= (pre + 1) % 10 and now ~= pre) then
         if (affinity == 100) then
             affinity = 0
             SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})

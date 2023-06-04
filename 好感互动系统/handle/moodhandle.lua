@@ -4,7 +4,7 @@ require "Utils"
 __BOUNDARY__ = 0.75
 -- 单位浮动值变动的区间长度
 __FLOAT_WEIGHT_CHANGE__ = 0.1
-__GOOD_MOOD__ = {"开心", "渴望", "好奇", "振奋"}
+__GOOD_MOOD__ = {"好奇", "开心", "渴望", "振奋"}
 __BAD_MOOD__ = {"焦虑", "失望", "枯燥"}
 __MOOD_FUNCTION__ = {
     ["开心"] = function(y)
@@ -160,7 +160,7 @@ function get_special_mood(qq, mood, random)
         local good_mood = __GOOD_MOOD__
         -- 好感不足2000时，不会出现好奇心情
         if GetUserConf("favorConf", qq, "好感度", 0) < 2000 then
-            good_mood["好奇"] = nil
+            table.remove(good_mood, 1)
         end
         random_key = good_mood[ranint(1, #good_mood)]
         return random_key, __MOOD_FUNCTION__[random_key](y)

@@ -159,6 +159,7 @@ function check_curiosity(msg, item)
         SetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
         -- 有5%概率获得300好感
         if (ranint(1, 100) <= 5) then
+            local favor_now = GetUserConf("favorConf", msg.fromQQ, "favor", 0)
             favor_now = favor_now + 300
             SetUserConf("favorConf", msg.fromQQ, "favor", favor_now)
             msg:echo("『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！")
