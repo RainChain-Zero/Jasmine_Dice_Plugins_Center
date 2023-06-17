@@ -356,7 +356,7 @@ function FavorPunish(msg, show_favor)
     else
         favor = favor - favor_down
     end
-    if (show_favor == false and isFavorTimePunish) then
+    if (not show_favor and isFavorTimePunish) then
         -- 一次降低好感超过200，获得回归标记
         if (favor_down < 200) then
             SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
