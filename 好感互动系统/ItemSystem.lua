@@ -60,6 +60,25 @@ function UseItem(msg)
         end
         setUserConf(msg.fromQQ, "projectionLamp", {cd = now + 432000, lasting = now + 172800})
         return Item["星幕投影灯"].reply
+    elseif item:find("风车发饰") then
+        local isSpecial7Read, specialUnlockedNotice =
+            GetUserConf(
+            "storyConf",
+            msg.fromQQ,
+            {"isSpecial7Read", "specialUnlockedNotice"},
+            {0, 0000000000000000000000000}
+        )
+        local flag = string.sub(specialUnlockedNotice, 9, 9)
+        if isSpecial7Read == 0 and flag == "0" then
+            SetUserConf(
+                "storyConf",
+                msg.fromQQ,
+                "specialUnlockedNotice",
+                string.sub(specialUnlockedNotice, 1, 8) .. "1" .. string.sub(specialUnlockedNotice, 10)
+            )
+            msg:echo("『✔提示』「流希」支线「我所希冀的」已经开放,输入“进入剧情 我所希冀的”可浏览剧情")
+        end
+        return Item["风车发饰"].reply
     end
 
     -- ? 是否用于解锁剧情章节
@@ -71,7 +90,6 @@ function UseItem(msg)
             SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
         end
     end
-
     return reply
 end
 msg_order["/u"] = "UseItem"
@@ -444,7 +462,8 @@ function covert_traditional_simplified(item)
         ["冰激淩"] = "冰激凌",
         ["可頌"] = "可颂",
         ["發簪"] = "发簪",
-        ["壽司"] = "寿司"
+        ["壽司"] = "寿司",
+        ["風車發飾"] = "风车发饰"
     }
     return covert_table[item] or item
 end
