@@ -69,7 +69,9 @@ function UseItem(msg)
             {0, 0000000000000000000000000}
         )
         local flag = string.sub(specialUnlockedNotice, 9, 9)
-        if isSpecial7Read == 0 and flag == "0" then
+        -- “我所希冀的”阅读完毕后才会出发提示
+        -- 追忆篇也会占用一格specialUnlockedNotice
+        if isSpecial7Read == 1 and flag == "0" then
             SetUserConf(
                 "storyConf",
                 msg.fromQQ,
