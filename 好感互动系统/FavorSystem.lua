@@ -7,7 +7,6 @@ package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "PreHandle"
 require "FavorHandle"
 require "ShowFavorHandle"
-package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "MoodHandle"
 require "Utils"
 msg_order = {}
@@ -76,8 +75,10 @@ function blackList(msg)
         msg:echo("Warning:检测到你的好感度过低，即将触发机体下限保护机制！")
     end
     if (favor < -500) then
-        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.gid, 801655697, 0)
-        eventMsg(".group " .. msg.gid .. " ban " .. msg.fromQQ .. " " .. tostring(-favor), msg.gid, getDiceQQ())
+        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. (msg.gid or 0), 801655697, 0)
+        if not msg.gid then
+            eventMsg(".group " .. (msg.gid) .. " ban " .. msg.fromQQ .. " " .. tostring(-favor), msg.gid, getDiceQQ())
+        end
         return "已触发！"
     end
     return ""
@@ -326,7 +327,7 @@ function rcv_Ciallo_noon(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local today_noon = GetUserToday(msg.fromQQ, "noon", 0)
+    local today_noon = GetUserToday(msg.fromQQ, "today_noon", 0)
     local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
         GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})

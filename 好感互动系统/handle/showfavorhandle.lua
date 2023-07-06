@@ -1,4 +1,4 @@
-package.path = getDiceDir() .. "/plugin/handle/?.lua"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "PreHandle"
 -- 好感查询计算
 function ShowFavorHandle(msg, favor, affinity)

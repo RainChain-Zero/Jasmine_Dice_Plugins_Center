@@ -75,3 +75,7 @@ end
 function build_voice(file)
     return "[CQ:record,file=/record/" .. file .. "]"
 end
+
+function build_image(file)
+    return "[CQ:image,file=/image/" .. file .. "]"
+end
