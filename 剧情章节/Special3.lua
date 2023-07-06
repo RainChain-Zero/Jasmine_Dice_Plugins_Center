@@ -63,7 +63,7 @@ end
 -- 八音盒额外剧情
 function SpecialThreeExtra(msg)
     local mainIndex = GetUserConf("storyConf", msg.fromQQ, "mainIndex", 1)
-    local content = Special3_extra[mainIndex]
+    local content = Special3Extra[mainIndex]
     SetUserConf("storyConf", msg.fromQQ, "mainIndex", mainIndex + 1)
     if mainIndex == 15 then
         content = content .. "\n\n......(end)"

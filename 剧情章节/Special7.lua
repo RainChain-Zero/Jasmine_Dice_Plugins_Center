@@ -1,5 +1,5 @@
 -- 我所希冀的
-function Story7(msg)
+function Special7(msg)
     local mainIndex, isSpecial7Read, option, choice =
         GetUserConf("storyConf", msg.fromQQ, {"mainIndex", "isSpecial7Read", "option", "choice"}, {1, 0, 0, 0})
     local content = "剧情出现未知错误，请联系管理员"
@@ -46,4 +46,20 @@ function SkipSpecial7(msg)
     end
     local MainIndex = {[1] = 2, [2] = 12}
     OptionNormalInit(msg, MainIndex[nextOption])
+end
+
+-- 流希 追忆·其一
+function SpecialSevenExtra(msg)
+    local mainIndex = GetUserConf("storyConf", msg.fromQQ, "mainIndex", 1)
+    local content = Special7Extra[mainIndex]
+    SetUserConf("storyConf", msg.fromQQ, "mainIndex", mainIndex + 1)
+    if mainIndex == 7 then
+        content = content .. "{wait:500}追忆·其一 End"
+        Init(msg)
+    elseif mainIndex == 1 then
+        -- 播放歌曲
+        build_music_card(msg.fromQQ, "163", 1869161372)
+        sleepTime(1500)
+    end
+    return content
 end

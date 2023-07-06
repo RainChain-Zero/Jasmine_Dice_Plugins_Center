@@ -429,7 +429,8 @@ function StoryUnlocked(msg)
         isStory3Read,
         isSpecial4Read,
         isSpecial5Read,
-        isSpecial6Read =
+        isSpecial6Read,
+        isSpecial7Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -446,9 +447,10 @@ function StoryUnlocked(msg)
             "isStory3Read",
             "isSpecial4Read",
             "isSpecial5Read",
-            "isSpecial6Read"
+            "isSpecial6Read",
+            "isSpecial7Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -555,6 +557,16 @@ function StoryUnlocked(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
+    -- 我所希冀的
+    if favor >= 1500 and isSpecial7Read == 0 then
+    -- flag = string.sub(specialUnlockedNotice, 8, 8)
+    -- if (flag == "0") then
+    --     content = content .. "『✔提示』「流希」支线「我所希冀的」已经开放,输入“进入剧情 我所希冀的”可浏览剧情"
+    --     specialUnlockedNotice =
+    --         string.sub(specialUnlockedNotice, 1, 7) .. "1" .. string.sub(specialUnlockedNotice, 9)
+    --     SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+    -- end
+    end
     if content ~= "" then
         msg:echo("[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. content)
     end
@@ -572,7 +584,7 @@ function Actionprehandle(str)
         "揉",
         "可爱",
         "萌",
-        "kawa",
+        "kawai",
         "喜欢",
         "suki",
         "爱",
