@@ -1,5 +1,5 @@
 -- 我所希冀的
-function Special7(msg)
+function SpecialSeven(msg)
     local mainIndex, isSpecial7Read, option, choice =
         GetUserConf("storyConf", msg.fromQQ, {"mainIndex", "isSpecial7Read", "option", "choice"}, {1, 0, 0, 0})
     local content = "剧情出现未知错误，请联系管理员"
