@@ -7,7 +7,7 @@ function SpecialSeven(msg)
         content = Special7[mainIndex]
         SetUserConf("storyConf", msg.fromQQ, "mainIndex", mainIndex + 1)
         if mainIndex == 12 then
-            content = content .. "{wait:500}「我所希冀的」Fin."
+            content = content .. "{FormFeed}{FormFeed}「我所希冀的」Fin."
             if isSpecial7Read == 0 then
                 content = content .. "\n提示：您得到了道具「风车发饰」x1；好感变化：+100\n" .. build_image("我所希冀的二维码.png")
                 SetUserConf("itemConf", msg.fromQQ, "风车发饰", 1)
@@ -54,7 +54,7 @@ function SpecialSevenExtra(msg)
     local content = Special7Extra[mainIndex]
     SetUserConf("storyConf", msg.fromQQ, "mainIndex", mainIndex + 1)
     if mainIndex == 7 then
-        content = content .. "{wait:500}追忆·其一 End"
+        content = content .. "{FormFeed}{FormFeed}追忆·其一 End"
         Init(msg)
     elseif mainIndex == 1 then
         -- 播放歌曲
