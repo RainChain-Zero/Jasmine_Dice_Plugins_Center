@@ -777,6 +777,19 @@ function action(msg)
             mood,
             coefficient
         )
+    elseif search_keywords(msg.fromMsg, {"啃啃"}) then
+        return action_function(
+            msg,
+            nil,
+            10,
+            "eat",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"408301639", "614671889", "2595928998"},
+            true
+        )
     elseif (msg.fromQQ == "2595928998" and msg.fromMsg:find("蹭蹭")) then
         local today_cengceng = GetUserToday(msg.fromQQ, "cengceng", 0)
         --! 灵音定制 蹭蹭
@@ -840,6 +853,7 @@ msg_order[normal_order] = "action_main"
     mood: 心情
     coefficient: 心情系数
     customized_list: 定制回复列表
+    only_customized: 是否只使用定制回复，默为nil（合并定制和原先的）
 ]]
 function action_function(
     msg,
@@ -850,7 +864,8 @@ function action_function(
     affinity,
     mood,
     coefficient,
-    customized_list)
+    customized_list,
+    only_customized)
     local succ, left_limit, right_limit, calibration_message = ModifyLimit(msg, favor_ori, affinity)
     local favor_now = favor_ori
     if (calibration_message) then
@@ -863,6 +878,11 @@ function action_function(
             return "“没有繁星的夜晚，我是月亮的影子。”"
         end
         return __REPLY_FAILED__[action_name]
+    end
+    -- 是否只使用定制回复（不考虑心情、好感限定），好感变化固定为favor_change（单个值）
+    if only_customized then
+        CheckFavor(msg.fromQQ, favor_ori, favor_ori + favor_change, affinity)
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
     end
     -- 依次检查各个好感等级
     for i = 1, #boundary + 1 do
