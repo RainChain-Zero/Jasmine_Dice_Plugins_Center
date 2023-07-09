@@ -78,7 +78,7 @@ function UseItem(msg)
                 "specialUnlockedNotice",
                 string.sub(specialUnlockedNotice, 1, 8) .. "1" .. string.sub(specialUnlockedNotice, 10)
             )
-            msg:echo("『✔提示』「流希」支线「我所希冀的」已经开放,输入“进入剧情 我所希冀的”可浏览剧情")
+            msg:echo("『✔提示』「流希」支线「追忆·其一」已经开放,输入“进入剧情 追忆·其一”可浏览剧情")
         end
         return Item["风车发饰"].reply
     end

@@ -16,6 +16,7 @@ require "Special4"
 require "Special5"
 require "Special6"
 require "Special7"
+require "Special8"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
@@ -80,6 +81,8 @@ function StoryMain(msg)
             Reply = SpecialSeven(msg)
         elseif StorySpecial == 9 then
             Reply = SpecialSevenExtra(msg)
+        elseif StorySpecial == 10 then
+            Reply = SpecialEight(msg)
         end
     end
     return Reply
@@ -229,6 +232,12 @@ function EnterStory(msg)
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 9)
         Story = "流希支线 追忆·其一"
+    elseif search_keywords(StoryTemp, {"海边旅行", "海邊旅行"}) then
+        if GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 4000 then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足4000)"
+        end
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 10)
+        Story = "海边旅行"
     end
     -- 是否存在章节
     if (Story == "") then
@@ -359,7 +368,10 @@ function Skip(msg)
             Reply = SkipSpecial3(msg)
         elseif StorySpecial == 8 then
             Reply = SkipSpecial7(msg)
-        elseif StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 or StorySpecial == 7 and StorySpecial == 9 then
+        elseif
+            StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 or
+                StorySpecial == 7 and StorySpecial == 9 and StorySpecial == 10
+         then
             Reply = "本剧情没有选项哦~无法跳转"
         end
     end
@@ -420,7 +432,8 @@ __STORY_NAME__ = {
     isSpecial4Read = "「星星点灯」",
     isSpecial5Read = "「夜」",
     isSpecial6Read = "521短篇「因为是家人」",
-    isSpecial7Read = "流希支线「我所希冀的」"
+    isSpecial7Read = "流希支线「我所希冀的」",
+    isSpecial8Read = "海边旅行"
 }
 
 __STORY_VARIABLE__ = {
@@ -436,5 +449,6 @@ __STORY_VARIABLE__ = {
     "isSpecial4Read",
     "isSpecial5Read",
     "isSpecial6Read",
-    "isSpecial7Read"
+    "isSpecial7Read",
+    "isSpecial8Read"
 }
