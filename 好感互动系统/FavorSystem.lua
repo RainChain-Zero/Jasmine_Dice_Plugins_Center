@@ -31,7 +31,8 @@ __LIMIT_PER_DAY__ = {
     cengceng = 1,
     lapPillow = 1,
     sit = 1,
-    hugry_cat = 1
+    hugry_cat = 1,
+    circle = 1
 }
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
@@ -790,16 +791,49 @@ function action(msg)
             {"408301639", "614671889", "2595928998"},
             true
         )
-    elseif (msg.fromQQ == "2595928998" and msg.fromMsg:find("蹭蹭")) then
-        local today_cengceng = GetUserToday(msg.fromQQ, "cengceng", 0)
-        --! 灵音定制 蹭蹭
-        today_cengceng = today_cengceng + 1
-        SetUserToday(msg.fromQQ, "cengceng", today_cengceng)
-        if today_cengceng <= __LIMIT_PER_DAY__.cengceng then
-            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20 * coefficient, affinity, true)
-        end
-        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
-        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["cengceng"])
+    elseif search_keywords(msg.fromMsg, {"转圈圈", "轉圈圈"}) then
+        return action_function(
+            msg,
+            nil,
+            7,
+            "circle",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"2043789473"},
+            true,
+            false,
+            true
+        )
+    elseif search_keywords(msg.fromMsg, {"蹭蹭"}) then
+        return action_function(
+            msg,
+            nil,
+            20,
+            "cengceng",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"2595928998", "1309598436"},
+            true,
+            true
+        )
+    elseif search_keywords(msg.fromMsg, {"我回来啦"}) then
+        return action_function(
+            msg,
+            nil,
+            10,
+            "welcome",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"748076270"},
+            true,
+            true
+        )
     elseif msg.fromMsg:find("膝枕") then
         local today_lapPillow = GetUserToday(msg.fromQQ, "lapPillow", 0)
         local reply_main = ""
@@ -854,6 +888,8 @@ msg_order[normal_order] = "action_main"
     coefficient: 心情系数
     customized_list: 定制回复列表
     only_customized: 是否只使用定制回复，默为nil（合并定制和原先的）
+    always_succ: 是否总是成功，默为nil
+    public: 是否公开，默为nil
 ]]
 function action_function(
     msg,
@@ -865,13 +901,15 @@ function action_function(
     mood,
     coefficient,
     customized_list,
-    only_customized)
+    only_customized,
+    always_succ,
+    public)
     local succ, left_limit, right_limit, calibration_message = ModifyLimit(msg, favor_ori, affinity)
     local favor_now = favor_ori
     if (calibration_message) then
         return calibration_message
     end
-    if not succ then
+    if not succ and not always_succ then
         favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, -10, affinity, succ)
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         if msg.fromQQ == "839968342" then
@@ -879,9 +917,19 @@ function action_function(
         end
         return __REPLY_FAILED__[action_name]
     end
-    -- 是否只使用定制回复（不考虑心情、好感限定），好感变化固定为favor_change（单个值）
+    -- 是否只使用定制回复（不考虑好感限定），好感变化固定为favor_change（单个值）
     if only_customized then
-        CheckFavor(msg.fromQQ, favor_ori, favor_ori + favor_change, affinity)
+        if not search_keywords(msg.fromQQ, customized_list) and not public then
+            return
+        end
+        local today_times = GetUserToday(msg.fromQQ, action_name, 0)
+        if today_times < __LIMIT_PER_DAY__[action_name] then
+            CheckFavor(msg.fromQQ, favor_ori, favor_ori + favor_change * coefficient, affinity)
+            SetUserToday(msg.fromQQ, action_name, today_times + 1)
+        end
+        if public then
+            msg.fromQQ = customized_list[1]
+        end
         return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
     end
     -- 依次检查各个好感等级

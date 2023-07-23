@@ -401,7 +401,8 @@ function query_story(msg)
             "isStory4Read",
             "isShopUnlocked",
             "isSpecial6Read",
-            "isSpecial7Read"
+            "isSpecial7Read",
+            "isSpecial8Read"
         },
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         true
