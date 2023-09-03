@@ -17,23 +17,9 @@ __LIMIT_PER_DAY__ = {
     morning = 1,
     noon = 1,
     night = 1,
-    hug = 1,
-    head = 1,
-    lift = 1,
-    kiss = 1,
-    hand = 1,
-    face = 1,
-    suki = 1,
-    love = 1,
     interaction = 3,
-    cute = 1,
-    tietie = 1,
-    cengceng = 1,
     lapPillow = 1,
-    sit = 1,
     hugry_cat = 1,
-    circle = 1,
-    eat = 1
 }
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
@@ -840,6 +826,24 @@ function action(msg)
             true,
             true
         )
+    elseif search_keywords(msg.fromMsg, {"挽手", "挽臂"}) then
+        return action_function(msg, nil, 10, "arm", favor_ori, affinity, mood, coefficient, {"2703373761"}, true, true)
+    elseif search_keywords(msg.fromMsg, {"咕噜咕噜"}) then
+        return action_function(msg, nil, 10, "gulu", favor_ori, affinity, mood, coefficient, {"793247024"}, true, true)
+    elseif search_keywords(msg.fromMsg, {"饿饿饭饭"}) then
+        return action_function(
+            msg,
+            nil,
+            10,
+            "hungry",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"2596185907"},
+            true,
+            true
+        )
     elseif msg.fromMsg:find("膝枕") then
         local today_lapPillow = GetUserToday(msg.fromQQ, "lapPillow", 0)
         local reply_main = ""
@@ -929,7 +933,7 @@ function action_function(
             return
         end
         local today_times = GetUserToday(msg.fromQQ, action_name, 0)
-        if today_times < __LIMIT_PER_DAY__[action_name] then
+        if today_times < (__LIMIT_PER_DAY__[action_name] or 1) then
             CheckFavor(msg.fromQQ, favor_ori, favor_ori + favor_change * coefficient, affinity)
             SetUserToday(msg.fromQQ, action_name, today_times + 1)
         end
@@ -942,7 +946,7 @@ function action_function(
     for i = 1, #boundary + 1 do
         if i == #boundary + 1 or favor_ori <= ranint(boundary[i] - left_limit, boundary[i] + right_limit) then
             local today_times = GetUserToday(msg.fromQQ, action_name, 0)
-            if today_times < __LIMIT_PER_DAY__[action_name] or favor_change[i] < 0 then
+            if today_times < (__LIMIT_PER_DAY__[action_name] or 1) or favor_change[i] < 0 then
                 -- 如果是获取好感，则需要受到心情系数的修正
                 if favor_change[i] > 0 then
                     favor_change[i] = favor_change[i] * coefficient
