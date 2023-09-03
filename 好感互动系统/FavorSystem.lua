@@ -7,7 +7,6 @@ package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "PreHandle"
 require "FavorHandle"
 require "ShowFavorHandle"
-package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "MoodHandle"
 require "Utils"
 msg_order = {}
@@ -30,7 +29,11 @@ __LIMIT_PER_DAY__ = {
     cute = 1,
     tietie = 1,
     cengceng = 1,
-    lapPillow = 1
+    lapPillow = 1,
+    sit = 1,
+    hugry_cat = 1,
+    circle = 1,
+    eat = 1
 }
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
@@ -74,8 +77,10 @@ function blackList(msg)
         msg:echo("Warning:检测到你的好感度过低，即将触发机体下限保护机制！")
     end
     if (favor < -500) then
-        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. msg.gid, 801655697, 0)
-        eventMsg(".group " .. msg.gid .. " ban " .. msg.fromQQ .. " " .. tostring(-favor), msg.gid, getDiceQQ())
+        sendMsg("Warning:检测到用户" .. msg.fromQQ .. "触发好感下限" .. "在群" .. (msg.gid or 0), 801655697, 0)
+        if not msg.gid then
+            eventMsg(".group " .. (msg.gid) .. " ban " .. msg.fromQQ .. " " .. tostring(-favor), msg.gid, getDiceQQ())
+        end
         return "已触发！"
     end
     return ""
@@ -139,6 +144,7 @@ function rcv_food(msg)
 end
 food_order = "喂食茉莉"
 msg_order[food_order] = "rcv_food"
+msg_order["餵食茉莉"] = "rcv_food"
 
 function show_favor(msg)
     local favor, cohesion, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "cohesion", "affinity"}, {0, 0, 0})
@@ -231,6 +237,9 @@ msg_order["早上好哟茉莉"] = "rcv_Ciallo_morning"
 msg_order["早安茉莉"] = "rcv_Ciallo_morning"
 
 function rcv_Ciallo_morning_master(msg)
+    if msg.fromMsg ~= "早" then
+        return
+    end
     local today_morning = GetUserToday(msg.fromQQ, "morning", 0)
     local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     today_morning = today_morning + 1
@@ -324,7 +333,7 @@ function rcv_Ciallo_noon(msg)
     if (preReply ~= nil) then
         return preReply
     end
-    local today_noon = GetUserToday(msg.fromQQ, "noon", 0)
+    local today_noon = GetUserToday(msg.fromQQ, "today_noon", 0)
     local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local mood, special_mood, coefficient =
         GetUserConf("moodConf", msg.fromQQ, {"mood", "special_mood", "coefficient"}, {0, "平常", 1})
@@ -472,7 +481,7 @@ function rcv_Ciallo_night(msg)
         end
         --! 1298754454 晚安定制
         if msg.fromQQ == "1298754454" then
-            return table_draw(merge_reply(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.fromQQ]["night"]))
+            return table_draw(merge_table(__REPLY__["night"][level][mood], __REPLY__CUSTOMIZED__[msg.fromQQ]["night"]))
         end
         return table_draw(__REPLY__["night"][level][mood])
     elseif (hour >= 5 and hour <= 11) then
@@ -498,7 +507,7 @@ function night_master(msg)
         if mood == -1 then
             return ""
         end
-        preHandle(msg)
+        -- preHandle(msg)
         if ((hour >= 21 and hour <= 23) or (hour >= 0 and hour <= 4)) then
             return "{sample:晚安哦，虽然不知道为什么，但茉莉想主动对你说晚安~|希望明天我们能依然保持赤诚和热爱|晚安，茉莉会在你身边安心陪你睡着的哦？|晚安~愿你梦中星河烂漫，美好依旧}"
         end
@@ -535,6 +544,9 @@ function interaction(msg)
         return calibration_message1
     end
     if (succ == false) then
+        if msg.fromQQ == "839968342" then
+            return "“没有繁星的夜晚，我是月亮的影子。”"
+        end
         return "茉莉向后退了一步，并对你比了个“×”的手势×"
     end
     local level, favor_now, favor_add
@@ -570,22 +582,30 @@ function interaction(msg)
         ["头"] = "head",
         ["脸"] = "face",
         ["身体"] = "body",
-        ["脖子"] = "neck",
         ["背"] = "back",
         ["腰"] = "waist",
         ["腿"] = "leg",
         ["手"] = "hand",
         ["肩"] = "shoulder",
-        ["肩膀"] = "shoulder"
+        ["肩膀"] = "shoulder",
+        ["眼"] = "eye",
+        ["脚"] = "foot"
     }
     part = convert_part[part]
     --todo 肩膀互动reply的补全
     if part == "shoulder" then
         return table_draw(__REPLY__TODO__[part])
     end
+    if part == "foot" and (msg.fromQQ == "3358315232" or msg.fromQQ == "2677402349") then
+        return table_draw(__REPLY__CUSTOMIZED__["3358315232"]["foot"])
+    end
+    if not __REPLY__[part] then
+        return ""
+    end
     return table_draw(__REPLY__[part][level][mood])
 end
 msg_order[interaction_order] = "interaction"
+msg_order["茉莉 互動"] = "interaction"
 
 normal_order = "茉莉"
 -- 普通问候程序
@@ -594,11 +614,7 @@ function ciallo_normal(msg)
     if search_keywords(msg.fromQQ, {"959686587"}) then
         return ""
     end
-    if (msg.fromQQ == "839968342") then
-        if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
-            return ""
-        end
-    end
+
     local str = string.match(msg.fromMsg, "(.*)", #normal_order + 1)
     local flag =
         search_keywords(
@@ -623,6 +639,11 @@ function ciallo_normal(msg)
     if (flag == false) then
         return ""
     end
+    if (msg.fromQQ == "839968342") then
+        if (search_keywords(msg.fromMsg, {"茉莉?", "茉莉？"})) then
+            return "“没有繁星的夜晚，我是月亮的影子。”欸？茉莉在看书喔…{nick}要一起来嘛？"
+        end
+    end
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     if (favor < -500) then
         return ""
@@ -638,9 +659,9 @@ function ciallo_normal(msg)
 end
 
 function action(msg)
-    if (Actionprehandle(msg.fromMsg) == false) then
-        return ""
-    end
+    -- if (Actionprehandle(msg.fromMsg) == false) then
+    --     return ""
+    -- end
     local preReply = preHandle(msg)
     if (preReply ~= nil) then
         return preReply
@@ -671,7 +692,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("亲") then
+    elseif search_keywords(msg.fromMsg, {"亲", "親"}) then
         return action_function(
             msg,
             {2000, 3200, 7000},
@@ -682,7 +703,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("举高高") then
+    elseif search_keywords(msg.fromMsg, {"举高高", "舉高高"}) then
         return action_function(
             msg,
             {1550, 3200, 6800},
@@ -693,7 +714,7 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("牵手") then
+    elseif search_keywords(msg.fromMsg, {"牵手", "牽手"}) then
         return action_function(
             msg,
             {1200, 3000, 5500},
@@ -705,7 +726,7 @@ function action(msg)
             coefficient,
             {"3358315232"}
         )
-    elseif msg.fromMsg:find("脸") then
+    elseif search_keywords(msg.fromMsg, {"臉", "脸"}) then
         return action_function(
             msg,
             {1100, 3000, 5000},
@@ -716,11 +737,21 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif search_keywords(msg.fromMsg, {"可爱", "萌", "卡哇伊", "kawai", "kawayi"}) then
+    elseif search_keywords(msg.fromMsg, {"可爱", "可愛", "萌", "卡哇伊", "kawai", "kawayi"}) then
         return action_function(msg, {1050, 3000, 4000}, {8, 10, 12, 14}, "cute", favor_ori, affinity, mood, coefficient)
-    elseif search_keywords(msg.fromMsg, {"喜欢", "suki"}) then
-        return action_function(msg, {1500, 3500, 5500}, {9, 12, 15, 20}, "suki", favor_ori, affinity, mood, coefficient)
-    elseif search_keywords(msg.fromMsg, {"爱", "love"}) then
+    elseif search_keywords(msg.fromMsg, {"喜欢", "喜歡", "suki"}) then
+        return action_function(
+            msg,
+            {1500, 3500, 5500},
+            {9, 12, 15, 20},
+            "suki",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"3358315232"}
+        )
+    elseif search_keywords(msg.fromMsg, {"爱", "愛", "love"}) then
         return action_function(
             msg,
             {2000, 4500, 6500},
@@ -731,10 +762,10 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif msg.fromMsg:find("贴贴") then
+    elseif search_keywords(msg.fromMsg, {"贴贴", "貼貼"}) then
         return action_function(
             msg,
-            {1500, 3500, 5500},
+            {2000, 4000, 6000},
             {-40, 10, 13, 15},
             "tietie",
             favor_ori,
@@ -742,15 +773,73 @@ function action(msg)
             mood,
             coefficient
         )
-    elseif (msg.fromQQ == "2595928998" and msg.fromMsg:find("蹭蹭")) then
-        local today_cengceng = GetUserToday(msg.fromQQ, "cengceng", 0)
-        --! 灵音定制 蹭蹭
-        today_cengceng = today_cengceng + 1
-        SetUserToday(msg.fromQQ, "cengceng", today_cengceng)
-        if today_cengceng <= __LIMIT_PER_DAY__.cengceng then
-            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 20 * coefficient, affinity, true)
-        end
-        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["cengceng"])
+    elseif search_keywords(msg.fromMsg, {"坐"}) then
+        return action_function(
+            msg,
+            {1500, 3500, 5500},
+            {-20, 10, 13, 15},
+            "sit",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient
+        )
+    elseif search_keywords(msg.fromMsg, {"啃啃"}) then
+        return action_function(
+            msg,
+            nil,
+            10,
+            "eat",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"408301639", "614671889", "2595928998"},
+            true
+        )
+    elseif search_keywords(msg.fromMsg, {"转圈圈", "轉圈圈"}) then
+        return action_function(
+            msg,
+            nil,
+            7,
+            "circle",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"2043789473"},
+            true,
+            false,
+            true
+        )
+    elseif search_keywords(msg.fromMsg, {"蹭蹭"}) then
+        return action_function(
+            msg,
+            nil,
+            20,
+            "cengceng",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"2595928998", "1309598436"},
+            true,
+            true
+        )
+    elseif search_keywords(msg.fromMsg, {"我回来啦"}) then
+        return action_function(
+            msg,
+            nil,
+            10,
+            "welcome",
+            favor_ori,
+            affinity,
+            mood,
+            coefficient,
+            {"748076270"},
+            true,
+            true
+        )
     elseif msg.fromMsg:find("膝枕") then
         local today_lapPillow = GetUserToday(msg.fromQQ, "lapPillow", 0)
         local reply_main = ""
@@ -769,6 +858,16 @@ function action(msg)
         end
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
         return reply_main
+    elseif search_keywords(msg.fromMsg, {"小馋猫"}) and msg.fromQQ == "2277861699" then
+        local today_hungry_cat = GetUserToday(msg.fromQQ, "hungry_cat", 0)
+        if today_hungry_cat <= __LIMIT_PER_DAY__.hugry_cat then
+            favor_now = favor + ModifyFavorChangeNormal(msg, favor, 6 * coefficient, affinity, true)
+            SetUserToday(msg.fromQQ, "hungry_cat", today_hungry_cat + 1)
+        end
+        CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["hungry_cat"])
+    elseif search_keywords(msg.fromMsg, {"喝点饮料"}) and msg.fromQQ == "1502506971" then
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ]["drink"])
     end
 end
 
@@ -776,7 +875,7 @@ end
 function action_main(msg)
     local reply_main = action(msg)
 
-    if (reply_main and reply ~= "") then
+    if (reply_main and reply_main ~= "") then
         return reply_main
     end
     return ciallo_normal(msg)
@@ -793,6 +892,10 @@ msg_order[normal_order] = "action_main"
     affinity: 亲密度
     mood: 心情
     coefficient: 心情系数
+    customized_list: 定制回复列表
+    only_customized: 是否只使用定制回复，默为nil（合并定制和原先的）
+    always_succ: 是否总是成功，默为nil
+    public: 是否公开，默为nil
 ]]
 function action_function(
     msg,
@@ -803,16 +906,37 @@ function action_function(
     affinity,
     mood,
     coefficient,
-    customized_list)
+    customized_list,
+    only_customized,
+    always_succ,
+    public)
     local succ, left_limit, right_limit, calibration_message = ModifyLimit(msg, favor_ori, affinity)
     local favor_now = favor_ori
     if (calibration_message) then
         return calibration_message
     end
-    if not succ then
+    if not succ and not always_succ then
         favor_now = favor_ori + ModifyFavorChangeNormal(msg, favor_ori, -10, affinity, succ)
         CheckFavor(msg.fromQQ, favor_ori, favor_now, affinity)
-        return table_draw(__REPLY_FAILED__[action_name])
+        if msg.fromQQ == "839968342" then
+            return "“没有繁星的夜晚，我是月亮的影子。”"
+        end
+        return __REPLY_FAILED__[action_name]
+    end
+    -- 是否只使用定制回复（不考虑好感限定），好感变化固定为favor_change（单个值）
+    if only_customized then
+        if not search_keywords(msg.fromQQ, customized_list) and not public then
+            return
+        end
+        local today_times = GetUserToday(msg.fromQQ, action_name, 0)
+        if today_times < __LIMIT_PER_DAY__[action_name] then
+            CheckFavor(msg.fromQQ, favor_ori, favor_ori + favor_change * coefficient, affinity)
+            SetUserToday(msg.fromQQ, action_name, today_times + 1)
+        end
+        if public then
+            msg.fromQQ = customized_list[1]
+        end
+        return table_draw(__REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
     end
     -- 依次检查各个好感等级
     for i = 1, #boundary + 1 do
@@ -830,7 +954,7 @@ function action_function(
             -- 定制列表的判定
             if search_keywords(msg.fromQQ, customized_list or {}) then
                 return table_draw(
-                    merge_reply(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
+                    merge_table(__REPLY__[action_name][i][mood], __REPLY__CUSTOMIZED__[msg.fromQQ][action_name])
                 )
             end
             return table_draw(__REPLY__[action_name][i][mood])

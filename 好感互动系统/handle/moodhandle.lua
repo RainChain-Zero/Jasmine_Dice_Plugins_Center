@@ -4,7 +4,7 @@ require "Utils"
 __BOUNDARY__ = 0.75
 -- 单位浮动值变动的区间长度
 __FLOAT_WEIGHT_CHANGE__ = 0.1
-__GOOD_MOOD__ = {"开心", "渴望", "好奇", "振奋"}
+__GOOD_MOOD__ = {"好奇", "开心", "渴望", "振奋"}
 __BAD_MOOD__ = {"焦虑", "失望", "枯燥"}
 __MOOD_FUNCTION__ = {
     ["开心"] = function(y)
@@ -119,14 +119,13 @@ end
     更新心情信息
     返回新的心情值，浮动值
 ]]
-function update_mood_info(float_value)
+function update_mood_info(qq, float_value)
     -- 抽取新情绪
     local mood_now, random = get_mood(float_value)
     -- 更新浮动值
     float_value = update_float_value(mood_now, float_value)
     -- 抽取具体心情
-    local special_mood, coefficient = get_special_mood(mood_now, random)
-    log(coefficient)
+    local special_mood, coefficient = get_special_mood(qq, mood_now, random)
     return mood_now, float_value, special_mood, coefficient
 end
 
@@ -135,7 +134,7 @@ function update_mood_list(mood_list)
     for k, _ in pairs(mood_list) do
         local float_value, mood_now, special_mood, coefficient
         float_value = GetUserConf("moodConf", k, "float_value", 0)
-        mood_now, float_value, special_mood, coefficient = update_mood_info(float_value)
+        mood_now, float_value, special_mood, coefficient = update_mood_info(k, float_value)
         SetUserConf(
             "moodConf",
             k,
@@ -147,7 +146,7 @@ function update_mood_list(mood_list)
 end
 
 -- 获取具体心情
-function get_special_mood(mood, random)
+function get_special_mood(qq, mood, random)
     local random_key = nil
     if random < -1 then
         random = -1
@@ -155,11 +154,15 @@ function get_special_mood(mood, random)
         random = 1
     end
     local y = math.abs(random) + 1
-    log("y：" .. tostring(y))
     if mood == 0 then
         return "平常", 1
     elseif mood == 1 then
-        random_key = __GOOD_MOOD__[ranint(1, #__GOOD_MOOD__)]
+        local good_mood = __GOOD_MOOD__
+        -- 好感不足2000时，不会出现好奇心情
+        if GetUserConf("favorConf", qq, "好感度", 0) < 2000 then
+            table.remove(good_mood, 1)
+        end
+        random_key = good_mood[ranint(1, #good_mood)]
         return random_key, __MOOD_FUNCTION__[random_key](y)
     else
         random_key = __BAD_MOOD__[ranint(1, #__BAD_MOOD__)]
@@ -181,5 +184,6 @@ function address_special_mood(qq, special_mood)
     if special_mood == "好奇" then
         local gift = get_random_gift()
         SetUserConf("missionConf", qq, "curiosity_gift", gift)
+        SetUserToday(qq, "curiosity_gift_notice", 0)
     end
 end

@@ -3,6 +3,7 @@ require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "FavorHandle"
 require "MoodHandle"
+require "Utils"
 msg_order = {}
 -- item为全局变量，检测合法性时不用传入
 -- 使用道具
@@ -39,10 +40,14 @@ function UseItem(msg)
         end
         setUserConf(msg.fromQQ, "musicBox", {enable = true, cd = os.time() + 432000})
         if msg.fromQQ == "3358315232" then
-            return "按下暗格，流水般的乐声从八音盒中缓缓流淌出来，往日的景色渐渐浮现与你的眼前，那粉蝶花丛的香气也变得渐渐可闻。\n一曲终了，意犹未尽。\n再次按下暗格，熟悉的乐声再度入耳，而那往日的景象也愈发清晰。\n——可在这和谐的乐声之中，却忽的出现了一个不和谐的音符。\n——就像是被人刻意改了一笔的钢琴乐谱。\n再度按下暗格，可那熟悉的乐声却消逝不见，而那八音盒却转而演奏起了狂乱的乐章。\n如果是刚刚是被人刻意改了一笔的琴谱，这这次则是八音盒在自发的弹奏着那被人胡写一通，毫无规律与美感可言的谱子。\n往日的幻象逐渐破碎，而今昔的痛楚却伴随着新的乐章迅猛袭来。\n乐声愈发狂乱，可那停留于记忆之中的粉蝶花丛也渐破碎远去。\n终了，就连那狂乱的乐声也渐消逝不见，耳中只余几声嘈杂的噪音。"
+            msg:echo(
+                "按下暗格，流水般的乐声从八音盒中缓缓流淌出来，往日的景色渐渐浮现与你的眼前，那粉蝶花丛的香气也变得渐渐可闻。\n一曲终了，意犹未尽。\n再次按下暗格，熟悉的乐声再度入耳，而那往日的景象也愈发清晰。\n——可在这和谐的乐声之中，却忽的出现了一个不和谐的音符。\n——就像是被人刻意改了一笔的钢琴乐谱。\n再度按下暗格，可那熟悉的乐声却消逝不见，而那八音盒却转而演奏起了狂乱的乐章。\n如果是刚刚是被人刻意改了一笔的琴谱，这这次则是八音盒在自发的弹奏着那被人胡写一通，毫无规律与美感可言的谱子。\n往日的幻象逐渐破碎，而今昔的痛楚却伴随着新的乐章迅猛袭来。\n乐声愈发狂乱，可那停留于记忆之中的粉蝶花丛也渐破碎远去。\n终了，就连那狂乱的乐声也渐消逝不见，耳中只余几声嘈杂的噪音。"
+            )
         else
-            return Item["八音盒"].reply
+            msg:echo(Item["八音盒"].reply)
         end
+        -- 八音盒将发送bgm
+        return build_voice("八音盒bgm.mp3")
     elseif item:find("投影灯") then
         local light = getUserConf(msg.fromQQ, "projectionLamp", {})
         local lasting, cd = light["lasting"] or 0, light["cd"] or 0
@@ -55,6 +60,27 @@ function UseItem(msg)
         end
         setUserConf(msg.fromQQ, "projectionLamp", {cd = now + 432000, lasting = now + 172800})
         return Item["星幕投影灯"].reply
+    elseif item:find("风车发饰") then
+        local isSpecial7Read, specialUnlockedNotice =
+            GetUserConf(
+            "storyConf",
+            msg.fromQQ,
+            {"isSpecial7Read", "specialUnlockedNotice"},
+            {0, 0000000000000000000000000}
+        )
+        local flag = string.sub(specialUnlockedNotice, 9, 9)
+        -- “我所希冀的”阅读完毕后才会出发提示
+        -- 追忆篇也会占用一格specialUnlockedNotice
+        if isSpecial7Read == 1 and flag == "0" then
+            SetUserConf(
+                "storyConf",
+                msg.fromQQ,
+                "specialUnlockedNotice",
+                string.sub(specialUnlockedNotice, 1, 8) .. "1" .. string.sub(specialUnlockedNotice, 10)
+            )
+            msg:echo("『✔提示』「流希」支线「追忆·其一」已经开放,输入“进入剧情 追忆·其一”可浏览剧情")
+        end
+        return Item["风车发饰"].reply
     end
 
     -- ? 是否用于解锁剧情章节
@@ -66,7 +92,6 @@ function UseItem(msg)
             SetUserConf("storyConf", msg.fromQQ, "entryCheckStory", -1)
         end
     end
-
     return reply
 end
 msg_order["/u"] = "UseItem"
@@ -78,6 +103,8 @@ function GiveGift(msg)
     --! 防止校准时使用物品导致物品在无提示的情况下失效
     local calibration = getUserConf(getDiceQQ(), "calibration", 0)
     local calibration_limit = getUserConf(getDiceQQ(), "calibration_limit", 12)
+    -- 好奇的回复
+    local curiosity_reply = nil
     if (calibration > calibration_limit) then
         return "本轮时钟周期已结束，请进行『校准』\n(指令为“茉莉校准”)"
     end
@@ -109,6 +136,7 @@ function GiveGift(msg)
     -- 处理特殊道具
     local reply = SpecialGift(msg, item, num, Gift_list, favor_ori, affinity)
     if (reply ~= nil) then
+        check_curiosity(msg, item)
         return reply
     end
     -- 固定属性
@@ -135,23 +163,29 @@ function GiveGift(msg)
     end
     -- 持续性道具处理
     LastingItem(msg, item)
+    check_curiosity(msg, item)
 
     SetUserConf("itemConf", msg.fromQQ, item, GetUserConf("itemConf", msg.fromQQ, item, 0) - num)
 
+    return Gift_list[item].reply
+end
+msg_order[gift_order] = "GiveGift"
+msg_order["贈送茉莉"] = "GiveGift"
+
+function check_curiosity(msg, item)
     -- 处理“好奇”的任务
     local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
     if curiosity_gift == item then
         SetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
         -- 有5%概率获得300好感
         if (ranint(1, 100) <= 5) then
+            local favor_now = GetUserConf("favorConf", msg.fromQQ, "favor", 0)
             favor_now = favor_now + 300
             SetUserConf("favorConf", msg.fromQQ, "favor", favor_now)
-            return "『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！"
+            msg:echo("『✧任务达成』{nick}送给茉莉的礼物竟然是茉莉最想要的东西！\n茉莉对{nick}的好感度额外上升了300！")
         end
     end
-    return Gift_list[item].reply
 end
-msg_order[gift_order] = "GiveGift"
 
 -- reply定制
 reply_order = "定制reply"
@@ -194,6 +228,7 @@ msg_order[finish_reply_order] = "FinishtCustomizedReply"
 -- 道具使用合理性判断
 function UseCheck(msg, num, table, item)
     local flag1 = false
+    item = covert_traditional_simplified(item)
     -- 判断道具是否存在
     for k, _ in pairs(table) do
         if (k:find(item) ~= nil) then
@@ -357,7 +392,7 @@ function SearchItem(msg)
     if item == "FL" then
         item = "fl"
     end
-
+    item = covert_traditional_simplified(item)
     -- 判断道具是否存在
     for k, _ in pairs(Item) do
         if (k:find(item) ~= nil) then
@@ -388,22 +423,25 @@ function SearchItem(msg)
     return content
 end
 msg_order[check_order] = "SearchItem"
+msg_order["查詢"] = "SearchItem"
 
 -- 道具图鉴
-function HandBook()
+function HandBook(msg)
     local Item = ReadItem()
     local res = {}
+    local item_num = GetUserConf("itemConf", msg.fromQQ, {}, {}, true)
     for k, _ in pairs(Item) do
+        local num = item_num[k] or 0
         if (Item[k].cohesion == nil) then
             if (res[0] == nil) then
                 res[0] = ""
             end
-            res[0] = res[0] .. k .. "\n"
+            res[0] = res[0] .. k .. "  " .. num .. "\n"
         else
             if (res[Item[k].cohesion] == nil) then
                 res[Item[k].cohesion] = ""
             end
-            res[Item[k].cohesion] = res[Item[k].cohesion] .. k .. Item[k].class .. "\n"
+            res[Item[k].cohesion] = res[Item[k].cohesion] .. k .. Item[k].class .. "  " .. num .. "\n"
         end
     end
     local reply = ""
@@ -414,3 +452,22 @@ function HandBook()
     return reply
 end
 msg_order["道具图鉴"] = "HandBook"
+msg_order["道具圖鑒"] = "HandBook"
+
+-- 道具繁体转简体
+function covert_traditional_simplified(item)
+    local covert_table = {
+        ["夢的開始"] = "梦的开始",
+        ["星幕投影燈"] = "星幕投影灯",
+        ["野餐籃"] = "野餐篮",
+        ["袋裝曲奇"] = "袋装曲奇",
+        ["快樂水"] = "快乐水",
+        ["推理小說"] = "推理小说",
+        ["冰激淩"] = "冰激凌",
+        ["可頌"] = "可颂",
+        ["發簪"] = "发簪",
+        ["壽司"] = "寿司",
+        ["風車發飾"] = "风车发饰"
+    }
+    return covert_table[item] or item
+end

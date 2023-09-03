@@ -1,3 +1,4 @@
+__FAVOR_GOT_LOWEST__ = 3
 ---@diagnostic disable: lowercase-global
 --! 校准值 使用Dice!函数
 calibration = getUserConf(getDiceQQ(), "calibration", 0)
@@ -85,8 +86,8 @@ function ModifyFavorChangeNormal(msg, favor_ori, favor_change, affinity, succ)
         end
         favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
         -- 保底5
-        if (favor_change + favor_modify < 5) then
-            res = 5
+        if (favor_change + favor_modify < __FAVOR_GOT_LOWEST__) then
+            res = __FAVOR_GOT_LOWEST__
         else
             res = favor_change + favor_modify
         end
@@ -200,8 +201,8 @@ function ModifyFavorChangeGift(msg, favor_ori, favor_change, affinity, lock)
     end
     favor_modify = math.modf(-1 * ((calibration + 1) * favor_ori / div / (affinity + 1)) + affinity / 10)
     -- 保底5
-    if (favor_change + favor_modify < 5) then
-        res = 5
+    if (favor_change + favor_modify < __FAVOR_GOT_LOWEST__) then
+        res = __FAVOR_GOT_LOWEST__
     else
         res = favor_change + favor_modify
     end
@@ -236,7 +237,7 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
         now = favor_now % 10000
         now = math.modf(now / 1000)
     end
-    if (now >= (pre + 1) % 10) then
+    if (now >= (pre + 1) % 10 and now ~= pre) then
         if (affinity == 100) then
             affinity = 0
             SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})

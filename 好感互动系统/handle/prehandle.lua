@@ -19,7 +19,7 @@ function preHandle(msg)
     AddFavor_Item(msg)
     -- 道具附加亲和度
     AddAffinity_Item(msg)
-    Notice(msg)
+    -- Notice(msg)
     -- ! 好感时间惩罚
     FavorPunish(msg)
     -- 信任度和亲和度关联
@@ -356,7 +356,7 @@ function FavorPunish(msg, show_favor)
     else
         favor = favor - favor_down
     end
-    if (show_favor == false and isFavorTimePunish) then
+    if (not show_favor and isFavorTimePunish) then
         -- 一次降低好感超过200，获得回归标记
         if (favor_down < 200) then
             SetUserConf("favorConf", msg.fromQQ, "好感度", favor)
@@ -393,7 +393,8 @@ function isFavorSilent(msg, favor, show_favor)
             msg.fromQQ == "3578788465" or
             msg.fromQQ == "1530045447" or
             msg.fromQQ == "1549554054" or
-            msg.fromQQ == "996518321")
+            msg.fromQQ == "996518321" or
+            msg.fromQQ == "819357315")
      then
         return true
     end
@@ -427,7 +428,10 @@ function StoryUnlocked(msg)
         isSpecial3Read,
         isStory3Read,
         isSpecial4Read,
-        isSpecial5Read =
+        isSpecial5Read,
+        isSpecial6Read,
+        isSpecial7Read,
+        isSpecial8Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -443,9 +447,12 @@ function StoryUnlocked(msg)
             "isSpecial3Read",
             "isStory3Read",
             "isSpecial4Read",
-            "isSpecial5Read"
+            "isSpecial5Read",
+            "isSpecial6Read",
+            "isSpecial7Read",
+            "isSpecial8Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -543,6 +550,35 @@ function StoryUnlocked(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end
+    if favor >= 5000 and isSpecial6Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 7, 7)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式 521短篇「因为是家人」已经开放,输入“进入剧情 因为是家人”可浏览剧情"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 6) .. "1" .. string.sub(specialUnlockedNotice, 8)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
+    -- 我所希冀的
+    if favor >= 1500 and isSpecial7Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 8, 8)
+        if (flag == "0") then
+            content = content .. "『✔提示』「流希」支线「我所希冀的」已经开放,输入“进入剧情 我所希冀的”可浏览剧情"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 7) .. "1" .. string.sub(specialUnlockedNotice, 9)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
+    -- 海边旅行
+    if favor >= 4000 and isSpecial8Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 10, 10)
+        if (flag == "0") then
+            content = content .. "『✔提示』「流希」支线「海边旅行」已经开放,输入“进入剧情 海边旅行”可浏览剧情"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 9) .. "1" .. string.sub(specialUnlockedNotice, 11)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
     if content ~= "" then
         msg:echo("[CQ:at,qq=" .. msg.fromQQ .. "]\n" .. content)
     end
@@ -560,7 +596,7 @@ function Actionprehandle(str)
         "揉",
         "可爱",
         "萌",
-        "kawa",
+        "kawai",
         "喜欢",
         "suki",
         "爱",
@@ -581,7 +617,9 @@ end
 function check_mission(msg)
     --检验“好奇”心情的任务
     local curiosity_gift = GetUserConf("missionConf", msg.fromQQ, "curiosity_gift", nil)
-    if curiosity_gift then
+    local today_curiosity = GetUserToday(msg.fromQQ, "curiosity_gift_notice", 0)
+    if curiosity_gift and today_curiosity == 0 then
         msg:echo(at_user(msg.fromQQ) .. "提示：茉莉当前处于「好奇」心情，赠送茉莉" .. curiosity_gift .. "可完成任务")
+        SetUserToday(msg.fromQQ, "curiosity_gift_notice", 1)
     end
 end

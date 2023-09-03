@@ -57,7 +57,7 @@ function SetUserConf(filename, qq, key, value)
 end
 
 -- 文件名,qq,{key},{default} key和default相同索引处一一对应/qq,key,default
-function GetUserConf(filename, qq, key, default)
+function GetUserConf(filename, qq, key, default, return_table)
     qq = tostring(qq)
     --! 拼写错误判断
     if (filename == "stroyConf") then
@@ -79,22 +79,24 @@ function GetUserConf(filename, qq, key, default)
     end
     -- 多值传入
     if (type(key) == "table" and type(default) == "table") then
-        -- 单值读取
-        -- 存放返回值表
-        local res = key
-        for k, v in ipairs(key) do
-            local v_now = v
-            if v == "好感度" then
-                v_now = "favor"
+        if return_table then
+            return j
+        else
+            local res = key
+            for k, v in ipairs(key) do
+                local v_now = v
+                if v == "好感度" then
+                    v_now = "favor"
+                end
+                if (j[v_now] == nil) then
+                    res[k] = default[k]
+                else
+                    res[k] = j[v_now]
+                end
             end
-            if (j[v_now] == nil) then
-                res[k] = default[k]
-            else
-                res[k] = j[v_now]
-            end
+            -- unpack res表,统一返回所有值
+            return table.unpack(res)
         end
-        -- unpack res表,统一返回所有值
-        return table.unpack(res)
     else
         if key == "好感度" then
             key = "favor"
