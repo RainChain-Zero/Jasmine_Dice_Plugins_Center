@@ -80,19 +80,7 @@ function GetUserConf(filename, qq, key, default, return_table)
     -- 多值传入
     if (type(key) == "table" and type(default) == "table") then
         if return_table then
-            local res = {}
-            for k, v in ipairs(key) do
-                local v_now = v
-                if v == "好感度" then
-                    v_now = "favor"
-                end
-                if (j[v_now] == nil) then
-                    res[v] = default[k]
-                else
-                    res[v] = j[v_now]
-                end
-            end
-            return res
+            return j
         else
             local res = key
             for k, v in ipairs(key) do
