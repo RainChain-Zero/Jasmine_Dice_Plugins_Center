@@ -32,7 +32,8 @@ __LIMIT_PER_DAY__ = {
     lapPillow = 1,
     sit = 1,
     hugry_cat = 1,
-    circle = 1
+    circle = 1,
+    eat = 1
 }
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
@@ -143,6 +144,7 @@ function rcv_food(msg)
 end
 food_order = "喂食茉莉"
 msg_order[food_order] = "rcv_food"
+msg_order["餵食茉莉"] = "rcv_food"
 
 function show_favor(msg)
     local favor, cohesion, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "cohesion", "affinity"}, {0, 0, 0})
@@ -235,6 +237,9 @@ msg_order["早上好哟茉莉"] = "rcv_Ciallo_morning"
 msg_order["早安茉莉"] = "rcv_Ciallo_morning"
 
 function rcv_Ciallo_morning_master(msg)
+    if msg.fromMsg ~= "早" then
+        return
+    end
     local today_morning = GetUserToday(msg.fromQQ, "morning", 0)
     local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     today_morning = today_morning + 1
@@ -600,6 +605,7 @@ function interaction(msg)
     return table_draw(__REPLY__[part][level][mood])
 end
 msg_order[interaction_order] = "interaction"
+msg_order["茉莉 互動"] = "interaction"
 
 normal_order = "茉莉"
 -- 普通问候程序
