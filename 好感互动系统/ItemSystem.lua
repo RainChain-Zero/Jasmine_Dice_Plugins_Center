@@ -426,20 +426,22 @@ msg_order[check_order] = "SearchItem"
 msg_order["查詢"] = "SearchItem"
 
 -- 道具图鉴
-function HandBook()
+function HandBook(msg)
     local Item = ReadItem()
     local res = {}
+    local item_num = GetUserConf("itemConf", msg.fromQQ, {}, {}, true)
     for k, _ in pairs(Item) do
+        local num = item_num[k] or 0
         if (Item[k].cohesion == nil) then
             if (res[0] == nil) then
                 res[0] = ""
             end
-            res[0] = res[0] .. k .. "\n"
+            res[0] = res[0] .. k .. "  " .. num .. "\n"
         else
             if (res[Item[k].cohesion] == nil) then
                 res[Item[k].cohesion] = ""
             end
-            res[Item[k].cohesion] = res[Item[k].cohesion] .. k .. Item[k].class .. "\n"
+            res[Item[k].cohesion] = res[Item[k].cohesion] .. k .. Item[k].class .. "  " .. num .. "\n"
         end
     end
     local reply = ""
