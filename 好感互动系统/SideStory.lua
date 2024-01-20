@@ -17,12 +17,16 @@ require "Special5"
 require "Special6"
 require "Special7"
 require "Special8"
+require "Special9"
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 package.path = getDiceDir() .. "/plugin/Handle/?.lua"
 require "FavorHandle"
 require "Utils"
 
+UNSELECTED_OPTION = "请选择其中一个选项以推进哦~"
+ILLEGAL_OPTION = "您必须输入一个有效的选项数字哦~"
+STORY_BUSY = "当前阅读人数过多，请稍后再试"
 -- 主调入口
 function StoryMain(msg)
     local Reply = "系统：剧情出现未知错误，请报告系统管理员"
@@ -83,6 +87,8 @@ function StoryMain(msg)
             Reply = SpecialSevenExtra(msg)
         elseif StorySpecial == 10 then
             Reply = SpecialEight(msg)
+        elseif StorySpecial == 11 then
+            Reply = SpecialNine(msg)
         end
     end
     return Reply
@@ -238,6 +244,16 @@ function EnterStory(msg)
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 10)
         Story = "海边旅行"
+    elseif search_keywords(StoryTemp, {"我想一直待在从树叶空隙照进的阳光里·上"}) then
+        if GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 2000 then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
+        end
+        -- 同时阅读人数
+        if story_queue("Special9", msg.uid, 1) == false then
+            return STORY_BUSY
+        end
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 11)
+        Story = "我想一直待在从树叶空隙照进的阳光里·上"
     end
     -- 是否存在章节
     if (Story == "") then
@@ -283,7 +299,7 @@ function Choose(msg)
     local res = string.match(msg.fromMsg, "[%s]*(%d)", 3)
     res = tonumber(res or 0)
     if (res < 1 or res > 3) then
-        return "您必须输入一个有效的选项数字哦~"
+        return ILLEGAL_OPTION
     end
 
     -- 不同章节一一处理
@@ -312,6 +328,8 @@ function Choose(msg)
             Reply = SpecialSixChoose(msg, res)
         elseif StorySpecial == 8 then
             Reply = StorySevenChoose(msg, res)
+        elseif StorySpecial == 11 then
+            Reply = SpecialNineChoose(msg, res)
         end
     end
     return Reply
@@ -368,6 +386,8 @@ function Skip(msg)
             Reply = SkipSpecial3(msg)
         elseif StorySpecial == 8 then
             Reply = SkipSpecial7(msg)
+        elseif StorySpecial == 11 then
+            Reply = SkipSpecial9(msg)
         elseif
             StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 or
                 StorySpecial == 7 and StorySpecial == 9 and StorySpecial == 10
@@ -401,9 +421,10 @@ function query_story(msg)
             "isStory4Read",
             "isSpecial6Read",
             "isSpecial7Read",
-            "isSpecial8Read"
+            "isSpecial8Read",
+            "isSpecial9Read"
         },
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         true
     )
     local reply = "收到数据库访问请求，为您检索：\n"
@@ -433,7 +454,8 @@ __STORY_NAME__ = {
     isSpecial5Read = "「夜」",
     isSpecial6Read = "521短篇「因为是家人」",
     isSpecial7Read = "流希支线「我所希冀的」",
-    isSpecial8Read = "海边旅行"
+    isSpecial8Read = "海边旅行",
+    isSpecial9Read = "我想一直待在从树叶空隙照进的阳光里·上"
 }
 
 __STORY_VARIABLE__ = {
@@ -450,5 +472,6 @@ __STORY_VARIABLE__ = {
     "isSpecial5Read",
     "isSpecial6Read",
     "isSpecial7Read",
-    "isSpecial8Read"
+    "isSpecial8Read",
+    "isSpecial9Read"
 }

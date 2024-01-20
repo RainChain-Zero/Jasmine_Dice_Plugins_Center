@@ -267,7 +267,7 @@ function FavorPunish(msg, show_favor)
     -- 测试群通告
     if favor >= 3000 and getUserConf(msg.fromQQ, "testGroupNotice", 0) == 0 then
         local at = "[CQ:at,qq=" .. msg.fromQQ .. "]"
-        msg:echo(at .. "【重要通知】您的好感已达3000，为了保证您的正常使用，我们诚挚邀请您加入茉莉测试群（517343442）\n若有特殊情况&被冻结，将只在此群启用备用机。")
+        msg:echo(at .. "【重要通知】您的好感已达3000，为了保证您的正常使用，我们诚挚邀请您加入茉莉测试群（517343442）\n若有特殊情况&被冻结，将只在此群启用备用机。主群：921454429 ")
         setUserConf(msg.fromQQ, "testGroupNotice", 1)
     end
 
@@ -386,15 +386,14 @@ function isFavorSilent(msg, favor, show_favor)
     if
         (favor < 5000 or msg.fromQQ == "318242040" or msg.fromQQ == "3272364628" or msg.fromQQ == "2908078197" or
             msg.fromQQ == "614671889" or
-            msg.fromQQ == "2043789473" or
-            msg.fromQQ == "2677402349" or
             msg.fromQQ == "1530045447" or
             msg.fromQQ == "4786515" or
             msg.fromQQ == "3578788465" or
             msg.fromQQ == "1530045447" or
             msg.fromQQ == "1549554054" or
             msg.fromQQ == "996518321" or
-            msg.fromQQ == "819357315")
+            msg.fromQQ == "819357315" or
+            msg.fromQQ == "751766424")
      then
         return true
     end
@@ -431,7 +430,8 @@ function StoryUnlocked(msg)
         isSpecial5Read,
         isSpecial6Read,
         isSpecial7Read,
-        isSpecial8Read =
+        isSpecial8Read,
+        isSpecial9Read =
         GetUserConf(
         "storyConf",
         msg.fromQQ,
@@ -450,9 +450,10 @@ function StoryUnlocked(msg)
             "isSpecial5Read",
             "isSpecial6Read",
             "isSpecial7Read",
-            "isSpecial8Read"
+            "isSpecial8Read",
+            "isSpecial9Read"
         },
-        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
@@ -535,7 +536,7 @@ function StoryUnlocked(msg)
     if favor >= 2000 and isSpecial4Read == 0 then
         flag = string.sub(specialUnlockedNotice, 5, 5)
         if (flag == "0") then
-            content = content .. "『✔提示』剧情模式『星星点灯』已经开放,输入“进入剧情 星星点灯”可浏览剧情\n注意：本次解锁剧情需要扣除900FL"
+            content = content .. "『✔提示』剧情模式『星星点灯』已经开放,输入“进入剧情 星星点灯”可浏览剧情\n注意：本次解锁剧情需要扣除900FL\n"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 4) .. "1" .. string.sub(specialUnlockedNotice, 6)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
@@ -544,7 +545,7 @@ function StoryUnlocked(msg)
     if favor >= 4000 and isSpecial5Read == 0 then
         flag = string.sub(specialUnlockedNotice, 6, 6)
         if (flag == "0") then
-            content = content .. "『✔提示』剧情模式『夜』已经开放,输入“进入剧情 夜”可浏览剧情\n注意：本次解锁剧情需要扣除1000FL"
+            content = content .. "『✔提示』剧情模式『夜』已经开放,输入“进入剧情 夜”可浏览剧情\n注意：本次解锁剧情需要扣除1000FL\n"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 5) .. "1" .. string.sub(specialUnlockedNotice, 7)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
@@ -553,7 +554,7 @@ function StoryUnlocked(msg)
     if favor >= 5000 and isSpecial6Read == 0 then
         flag = string.sub(specialUnlockedNotice, 7, 7)
         if (flag == "0") then
-            content = content .. "『✔提示』剧情模式 521短篇「因为是家人」已经开放,输入“进入剧情 因为是家人”可浏览剧情"
+            content = content .. "『✔提示』剧情模式 521短篇「因为是家人」已经开放,输入“进入剧情 因为是家人”可浏览剧情\n"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 6) .. "1" .. string.sub(specialUnlockedNotice, 8)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
@@ -563,7 +564,7 @@ function StoryUnlocked(msg)
     if favor >= 1500 and isSpecial7Read == 0 then
         flag = string.sub(specialUnlockedNotice, 8, 8)
         if (flag == "0") then
-            content = content .. "『✔提示』「流希」支线「我所希冀的」已经开放,输入“进入剧情 我所希冀的”可浏览剧情"
+            content = content .. "『✔提示』「流希」支线「我所希冀的」已经开放,输入“进入剧情 我所希冀的”可浏览剧情\n"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 7) .. "1" .. string.sub(specialUnlockedNotice, 9)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
@@ -573,9 +574,20 @@ function StoryUnlocked(msg)
     if favor >= 4000 and isSpecial8Read == 0 then
         flag = string.sub(specialUnlockedNotice, 10, 10)
         if (flag == "0") then
-            content = content .. "『✔提示』「流希」支线「海边旅行」已经开放,输入“进入剧情 海边旅行”可浏览剧情"
+            content = content .. "『✔提示』「流希」支线「海边旅行」已经开放,输入“进入剧情 海边旅行”可浏览剧情\n"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 9) .. "1" .. string.sub(specialUnlockedNotice, 11)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
+    if favor >= 2000 and isSpecial9Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 11, 11)
+        if (flag == "0") then
+            content =
+                content ..
+                "『✔提示』「仁光」支线「我想一直待在从树叶空隙照进的阳光里·上」已经开放,输入“进入剧情 我想一直待在从树叶空隙照进的阳光里·上”可浏览剧情\n注意：由于本次剧情较长，同一时间只能2人观看\n"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 10) .. "1" .. string.sub(specialUnlockedNotice, 12)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end

@@ -6,10 +6,11 @@ function merge_table(ori, new)
 end
 
 function search_keywords(str, keywords)
-    str = tostring(str)
-    for _, v in pairs(keywords) do
-        if str:find(v) then
-            return true
+    for k, v in ipairs(keywords) do
+        if type(str) == "string" and str:find(v) then
+            return k
+        elseif type(str) == "number" and str == v then
+            return k
         end
     end
     return false
@@ -78,4 +79,62 @@ end
 
 function build_image(file)
     return "[CQ:image,file=/image/" .. file .. "]"
+end
+
+-- 较长的剧情只能同时固定人数观看，返回true表示可以观看，false表示不可以观看
+function story_queue(story_name, qq, max_num, timeout)
+    qq = tostring(qq)
+    -- 如果观看人较长时间（10分钟）未操作，则清除
+    timeout = timeout or 600
+    -- setUserConf(getDiceQQ(), "storyQueue", {})
+    -- return false
+    --[[
+        {
+            ["story_name"]={
+                ["qq"] = time
+            }
+        }
+]]
+    local queue_all = read_queue()
+    local queue = queue_all[story_name] or {}
+    -- 标记本人是否在观看队列中
+    local is_in_queue = false
+    -- 计算表长
+    local count = 0
+    for k, v in pairs(queue) do
+        if k == qq then
+            is_in_queue = true
+        elseif os.time() - v > timeout then
+            table.remove(queue, k)
+            count = count - 1
+        end
+        count = count + 1
+    end
+    if not is_in_queue and count >= max_num then
+        return false
+    end
+    queue[qq] = os.time()
+    queue_all[story_name] = queue
+    write_queue(queue_all)
+    return true
+end
+
+function read_queue()
+    QUEUE_PATH = getDiceDir() .. "/user/Queue.json"
+    local f = assert(io.open(QUEUE_PATH, "r"))
+    local str = f:read("a")
+    f:close()
+    if (#str == 0) then
+        str = "{}"
+    end
+    local j = Json.decode(str)
+    return j
+end
+
+function write_queue(queue)
+    QUEUE_PATH = getDiceDir() .. "/user/Queue.json"
+    local json_encode = Json.encode(queue)
+    local f = assert(io.open(QUEUE_PATH, "w"))
+    f:write(json_encode)
+    f:close()
 end
