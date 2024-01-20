@@ -399,7 +399,6 @@ function query_story(msg)
             "isSpecial4Read",
             "isSpecial5Read",
             "isStory4Read",
-            "isShopUnlocked",
             "isSpecial6Read",
             "isSpecial7Read",
             "isSpecial8Read"
@@ -409,16 +408,16 @@ function query_story(msg)
     )
     local reply = "收到数据库访问请求，为您检索：\n"
     for _, variable in ipairs(__STORY_VARIABLE__) do
-        if story_finish[variable] == 0 then
-            reply = reply .. __STORY_NAME__[variable] .. " ✘未通过\n"
-        else
+        if story_finish[variable] ~= 0 and story_finish[variable] ~= nil then
             reply = reply .. __STORY_NAME__[variable] .. " ✔已通过\n"
+        else
+            reply = reply .. __STORY_NAME__[variable] .. " ✘未通过\n"
         end
     end
     return reply .. "茉莉，高性能ですから!"
 end
 msg_order["/剧情进度"] = "query_story"
-msg_order["劇情進度"] = "query_story"
+msg_order["/劇情進度"] = "query_story"
 
 __STORY_NAME__ = {
     isStory0Read = "序章「惊蛰」",
