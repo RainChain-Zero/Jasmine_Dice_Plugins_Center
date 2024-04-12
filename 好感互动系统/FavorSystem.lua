@@ -19,7 +19,7 @@ __LIMIT_PER_DAY__ = {
     night = 1,
     interaction = 3,
     lapPillow = 1,
-    hugry_cat = 1,
+    hugry_cat = 1
 }
 flag_food = 0 -- 用于标记多次喂食只回复一次
 cnt = 0 -- 用户输入的喂食次数
