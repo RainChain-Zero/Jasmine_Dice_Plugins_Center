@@ -105,7 +105,7 @@ function story_queue(story_name, qq, max_num, timeout)
         if k == qq then
             is_in_queue = true
         elseif os.time() - v > timeout then
-            table.remove(queue, k)
+            queue[k] = nil
             count = count - 1
         end
         count = count + 1
@@ -117,6 +117,15 @@ function story_queue(story_name, qq, max_num, timeout)
     queue_all[story_name] = queue
     write_queue(queue_all)
     return true
+end
+
+function quit_story_queue(story_name, qq)
+    qq = tostring(qq)
+    local queue_all = read_queue()
+    local queue = queue_all[story_name] or {}
+    queue[qq] = nil
+    queue_all[story_name] = queue
+    write_queue(queue_all)
 end
 
 function read_queue()
