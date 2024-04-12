@@ -38,7 +38,7 @@ function SpecialNine(msg)
     if option == 0 then
         content = main_storyline(msg, mainIndex, isSpecial9Read)
     else
-        content = branch_stroyline(msg, option, choice, choiceIndex)
+        content = branch_storyline(msg, option, choice, choiceIndex)
     end
     return content
 end
@@ -56,6 +56,7 @@ function main_storyline(msg, mainIndex, isSpecial9Read)
             SetUserConf("storyConf", msg.uid, "isSpecial9Read", 1)
         end
         Init(msg)
+        quit_story_queue("Special9", msg.uid)
     elseif index then
         SetUserConf("storyConf", msg.uid, "option", index)
     end
@@ -64,10 +65,9 @@ function main_storyline(msg, mainIndex, isSpecial9Read)
 end
 
 -- 分支
-function branch_stroyline(msg, option, choice, choice_index)
+function branch_storyline(msg, option, choice, choice_index)
     if choice == 0 then
-        msg:echo(option)
-    -- return UNSELECTED_OPTION
+        return UNSELECTED_OPTION
     end
     -- 判断伪分支
     if search_keywords(option, FAKE_BRANCH) then
