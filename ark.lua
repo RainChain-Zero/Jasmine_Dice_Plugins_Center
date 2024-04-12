@@ -32,11 +32,11 @@ function col()
   total2 = phy + agi + psy + pow + exp + ori + app
   per = total2 / 352.5
   sum =
-    "{nick}的泰拉人作成:\n身体素质:" ..
+    "{nick}的泰拉人作成:\n生理耐受:" ..
     string.format("%.0f", phy) ..
       "\n反应机动:" ..
         string.format("%.0f", agi) ..
-          "\n生理强度:" ..
+          "\n物理强度:" ..
             string.format("%.0f", psy) ..
               "\n精神意志:" ..
                 string.format("%.0f", pow) ..

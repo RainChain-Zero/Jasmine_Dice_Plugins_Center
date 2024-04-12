@@ -9,7 +9,12 @@ function setfavor(msg)
     if (first == "" or second == "") then
         return "请输入正确的参数×"
     end
-    if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596" or msg.fromQQ == "2225336268") then
+    if
+        (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596" or msg.fromQQ == "2225336268" or
+            msg.fromQQ == "2595928998" or
+            msg.fromQQ == "839968342" or
+            msg.fromQQ == "751766424")
+     then
         SetUserConf("favorConf", first, "好感度", second * 1)
         return "权限确认：已将目标好感度设置为" .. second
     end

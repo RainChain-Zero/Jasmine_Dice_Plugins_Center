@@ -1,6 +1,15 @@
 package.path = getDiceDir() .. "/plugin/IO/?.lua"
 require "IO"
 msg_order = {}
+
+function restart_qsign(msg)
+    if msg.gid == 921454429 then
+        http.post("http://lt51.mccn.pro:205/close_process")
+        return "正在重启签名服务器...请等待十几秒后重试"
+    end
+end
+msg_order["/重启签名"] = "restart_qsign"
+
 Trade_order = "禁言"
 function Mute(msg)
     if (msg.fromQQ == "3032902237" or msg.fromQQ == "2677409596") then
