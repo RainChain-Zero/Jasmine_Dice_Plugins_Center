@@ -1,7 +1,7 @@
 --[[
     @Author RainChain-Zero
-    @Version 2.1
-    @Last Modified 2024/02/24
+    @Version 2.2
+    @Last Modified 2024/04/18
     @Description：适用于方舟泰拉trpg的规则检定
 ]]
 ---@diagnostic disable: lowercase-global, assign-type-mismatch, cast-local-type
@@ -16,6 +16,26 @@ BASIC_ATTR = {
    ["妙手，急救，驾驶，杂耍，短兵，暗器，弓弩，身法"] = "反应机动",
    ["长兵，刀剑，钝器，格斗，软兵，拳术，盾术"] = "物理强度",
    ["兵械操作，生物驯养，军事理论，领导力，自然学，工程学，医药学，源石学，社会学，政法学，经管学，神秘学，机械工程，电子工程，农林牧渔，加工工艺"] = "经验智慧"
+}
+
+ATTR_INIT = {
+   ['投掷'] = 20,
+   ['侦查'] = 25,
+   ['聆听'] = 20,
+   ['取悦'] = 15,
+   ['舞蹈'] = 5,
+   ['厨艺'] = 5,
+   ['妙手'] = 10,
+   ['乔装'] = 5,
+   ['驯兽'] = 5,
+   ['急救'] = 10,
+   ['追踪'] = 10,
+   ['潜行'] = 20,
+   ['爆破'] = 1,
+   ['炮术'] = 1,
+   ['心理学'] = 10,
+   ['医学'] = 1,
+   ['神秘学'] = 5
 }
 
 objTemp, obj, num, sign, add = "", "", "", "", ""
@@ -193,10 +213,6 @@ function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
       --如果存在难度条目，此时hardness即为难度条目，提取检定条目
       obj = objTemp:match(hardness .. "([^%s^%d^%+^%-]*)[%+|%-]?")
    end
-   --侦查和侦察统一
-   if (obj == "侦查") then
-      obj = "侦察"
-   end
    local sign_judge = type(sign) == "string" and (sign ~= "" and sign ~= nil)
    -- 处理修正值
    if sign_judge then
@@ -206,9 +222,11 @@ function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
    --不存在即时检定也无修订值
    if ((type(num) == "string" and (num == "" or num == nil)) and not sign_judge) then
       --存在即时检定但无修订值
-      --! 已知问题：如果检定条目为“力量”，将会取出nil
+      --! 如果输入条目和COC7默认值相同会失效
       num = getPlayerCardAttr(msg.uid, msg.gid, obj, 0)
-
+      if num == 0 then
+         num = ATTR_INIT[obj] or 0
+      end
       if (num == nil) then
          return ""
       end
@@ -222,12 +240,20 @@ function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
    elseif (type(num) == "string" and (num == "" or num == nil) and sign_judge) then
       --既有即时检定又有修订值
       if (sign == "+") then
-         num = getPlayerCardAttr(msg.uid, msg.gid, obj, 0) - ac + add * 1
+         num = getPlayerCardAttr(msg.uid, msg.gid, obj, 0)
+         if num == 0 then
+            num = ATTR_INIT[obj] or 0
+         end
+         num = num - ac + add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
       elseif (sign == "-") then
-         num = getPlayerCardAttr(msg.uid, msg.gid, obj, 0) - ac - add * 1
+         num = getPlayerCardAttr(msg.uid, msg.gid, obj, 0)
+         if num == 0 then
+            num = ATTR_INIT[obj] or 0
+         end
+         num = num - ac - add * 1
          if (num <= 0) then
             return "成功率<=0，这样可成功不了哦？"
          end
@@ -284,49 +310,49 @@ end
 function NormalJudge()
    if (res <= 5) then
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" ..
-               "\nD100" ..
-                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" ..
+          "\nD100" ..
+          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
    elseif (res <= num - 40) then
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" ..
-               "\nD100" ..
-                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" ..
+          "\nD100" ..
+          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
    elseif (res <= num - 25) then
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" ..
-               "\nD100" ..
-                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" ..
+          "\nD100" ..
+          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
    elseif (res <= num - 10) then
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" .. "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" .. "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
    elseif (res <= num) then
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" ..
-               "\nD100" ..
-                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollRegularSuccess}"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" ..
+          "\nD100" ..
+          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollRegularSuccess}"
    elseif (res <= 95) then
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" ..
-               "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" ..
+          "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
    else
       reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:" ..
-               "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:" ..
+          "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
    end
    return reply
 end
@@ -336,119 +362,119 @@ Hardness = {
    ["较难"] = function()
       if (res <= 5) then
          reply =
-            "{pc}进行ark的较难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+             "{pc}进行ark的较难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
-            "{pc}进行ark的较难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+             "{pc}进行ark的较难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" ..
+             string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
       elseif (res <= num - 25) then
          reply =
-            "{pc}进行ark的较难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
+             "{pc}进行ark的较难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
       elseif (res <= num - 10) then
          reply =
-            "{pc}进行ark的较难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
+             "{pc}进行ark的较难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
       elseif (res <= 95) then
          reply =
-            "{pc}进行ark的较难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+             "{pc}进行ark的较难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
       else
          reply =
-            "{pc}进行ark的较难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+             "{pc}进行ark的较难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
       end
       return reply
    end,
    ["困难"] = function()
       if (res <= 5) then
          reply =
-            "{pc}进行ark的困难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+             "{pc}进行ark的困难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
-            "{pc}进行ark的困难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+             "{pc}进行ark的困难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" ..
+             string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
       elseif (res <= num - 25) then
          reply =
-            "{pc}进行ark的困难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess}"
+             "{pc}进行ark的困难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess}"
       elseif (res <= 95) then
          reply =
-            "{pc}进行ark的困难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+             "{pc}进行ark的困难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
       else
          reply =
-            "{pc}进行ark的困难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+             "{pc}进行ark的困难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
       end
       return reply
    end,
    ["极难"] = function()
       if (res <= 5) then
          reply =
-            "{pc}进行ark的极难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+             "{pc}进行ark的极难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
-            "{pc}进行ark的极难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" ..
-                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+             "{pc}进行ark的极难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" ..
+             string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
       elseif (res <= 95) then
          reply =
-            "{pc}进行ark的极难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+             "{pc}进行ark的极难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
       else
          reply =
-            "{pc}进行ark的极难" ..
-            obj ..
-               "检定:" ..
-                  "\nD100" ..
-                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+             "{pc}进行ark的极难" ..
+             obj ..
+             "检定:" ..
+             "\nD100" ..
+             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
       end
       return reply
    end,
@@ -486,16 +512,16 @@ function rkc(msg, dc)
    if res >= dc then
       if basic_attr_input then
          return "{pc}进行ark的" ..
-            obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res .. "/" .. dc .. "，{strRollRegularSuccess}"
+             obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res .. "/" .. dc .. "，{strRollRegularSuccess}"
       end
       return "{pc}进行ark的" ..
-         obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollRegularSuccess}"
+          obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollRegularSuccess}"
    else
       if basic_attr_input then
          return "{pc}进行ark的" .. obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res .. "/" .. dc .. "，{strRollFailure}"
       end
       return "{pc}进行ark的" ..
-         obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
+          obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
    end
 end
 
@@ -517,11 +543,11 @@ function rkd(msg, dice, dc, at_qq)
    dc = tonumber(dc)
    if res >= dc then
       local reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:\n" ..
-               num ..
-                  "d" .. dice .. "+" .. basic_attr_value .. "-" .. dc .. "=" .. (res - dc) .. "，{strRollRegularSuccess}"
+          "{pc}进行ark的" ..
+          obj ..
+          "检定:\n" ..
+          num ..
+          "d" .. dice .. "+" .. basic_attr_value .. "-" .. dc .. "=" .. (res - dc) .. "，{strRollRegularSuccess}"
       -- at_qq的hp减去res
       if not at_qq then
          return reply
@@ -538,8 +564,8 @@ function rkd(msg, dice, dc, at_qq)
       return reply
    else
       return "{pc}进行ark的" ..
-         obj ..
-            "检定:\n" .. num .. "d" .. dice .. "+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
+          obj ..
+          "检定:\n" .. num .. "d" .. dice .. "+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
    end
 end
 
