@@ -19,23 +19,23 @@ BASIC_ATTR = {
 }
 
 ATTR_INIT = {
-   ['投掷'] = 20,
-   ['侦查'] = 25,
-   ['聆听'] = 20,
-   ['取悦'] = 15,
-   ['舞蹈'] = 5,
-   ['厨艺'] = 5,
-   ['妙手'] = 10,
-   ['乔装'] = 5,
-   ['驯兽'] = 5,
-   ['急救'] = 10,
-   ['追踪'] = 10,
-   ['潜行'] = 20,
-   ['爆破'] = 1,
-   ['炮术'] = 1,
-   ['心理学'] = 10,
-   ['医学'] = 1,
-   ['神秘学'] = 5
+   ["投掷"] = 20,
+   ["侦查"] = 25,
+   ["聆听"] = 20,
+   ["取悦"] = 15,
+   ["舞蹈"] = 5,
+   ["厨艺"] = 5,
+   ["妙手"] = 10,
+   ["乔装"] = 5,
+   ["驯兽"] = 5,
+   ["急救"] = 10,
+   ["追踪"] = 10,
+   ["潜行"] = 20,
+   ["爆破"] = 1,
+   ["炮术"] = 1,
+   ["心理学"] = 10,
+   ["医学"] = 1,
+   ["神秘学"] = 5
 }
 
 objTemp, obj, num, sign, add = "", "", "", "", ""
@@ -310,49 +310,49 @@ end
 function NormalJudge()
    if (res <= 5) then
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" ..
-          "\nD100" ..
-          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" ..
+               "\nD100" ..
+                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
    elseif (res <= num - 40) then
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" ..
-          "\nD100" ..
-          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" ..
+               "\nD100" ..
+                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
    elseif (res <= num - 25) then
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" ..
-          "\nD100" ..
-          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" ..
+               "\nD100" ..
+                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
    elseif (res <= num - 10) then
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" .. "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" .. "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
    elseif (res <= num) then
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" ..
-          "\nD100" ..
-          "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollRegularSuccess}"
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" ..
+               "\nD100" ..
+                  "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollRegularSuccess}"
    elseif (res <= 95) then
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" ..
-          "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" ..
+               "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
    else
       reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:" ..
-          "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:" ..
+               "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
    end
    return reply
 end
@@ -362,119 +362,119 @@ Hardness = {
    ["较难"] = function()
       if (res <= 5) then
          reply =
-             "{pc}进行ark的较难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+            "{pc}进行ark的较难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
-             "{pc}进行ark的较难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" ..
-             string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+            "{pc}进行ark的较难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" ..
+                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
       elseif (res <= num - 25) then
          reply =
-             "{pc}进行ark的较难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
+            "{pc}进行ark的较难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess} "
       elseif (res <= num - 10) then
          reply =
-             "{pc}进行ark的较难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
+            "{pc}进行ark的较难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" .. "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，是较难成功，还可以吧"
       elseif (res <= 95) then
          reply =
-             "{pc}进行ark的较难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+            "{pc}进行ark的较难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
       else
          reply =
-             "{pc}进行ark的较难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+            "{pc}进行ark的较难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
       end
       return reply
    end,
    ["困难"] = function()
       if (res <= 5) then
          reply =
-             "{pc}进行ark的困难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+            "{pc}进行ark的困难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
-             "{pc}进行ark的困难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" ..
-             string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+            "{pc}进行ark的困难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" ..
+                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
       elseif (res <= num - 25) then
          reply =
-             "{pc}进行ark的困难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess}"
+            "{pc}进行ark的困难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollHardSuccess}"
       elseif (res <= 95) then
          reply =
-             "{pc}进行ark的困难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+            "{pc}进行ark的困难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
       else
          reply =
-             "{pc}进行ark的困难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+            "{pc}进行ark的困难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
       end
       return reply
    end,
    ["极难"] = function()
       if (res <= 5) then
          reply =
-             "{pc}进行ark的极难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
+            "{pc}进行ark的极难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strCriticalSuccess}"
       elseif (res <= num - 40) then
          reply =
-             "{pc}进行ark的极难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" ..
-             string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
+            "{pc}进行ark的极难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" ..
+                        string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollExtremeSuccess}"
       elseif (res <= 95) then
          reply =
-             "{pc}进行ark的极难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
+            "{pc}进行ark的极难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFailure}"
       else
          reply =
-             "{pc}进行ark的极难" ..
-             obj ..
-             "检定:" ..
-             "\nD100" ..
-             "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
+            "{pc}进行ark的极难" ..
+            obj ..
+               "检定:" ..
+                  "\nD100" ..
+                     "=" .. string.format("%.0f", res) .. "/" .. string.format("%.0f", num) .. "，{strRollFumble}"
       end
       return reply
    end,
@@ -484,97 +484,168 @@ Hardness = {
 
 -- rkc检定，技能值d6+基础属性值和dc比较
 function rkc(msg, dc)
-   local res, random, basic_attr_value, res
+   local random_values, res_sum, basic_attr_value, res_display
    -- 判断是否是基础属性
    local basic_attr_input = is_basic_attr(obj)
    if basic_attr_input then
       basic_attr_value = getPlayerCardAttr(msg.uid, msg.gid, basic_attr_input, 0)
-      res = ndm(basic_attr_value, 6)
+      random_values = ndm(basic_attr_value, 6) -- 获取每次掷骰的值
+      res_sum = random_values.sum
+      res_display = table.concat(random_values.values, "+") -- 格式化为a+b+c
    else
-      --获取技能对应的基础属性
+      -- 获取技能对应的基础属性
       local basic_attr = find_basic_attr(obj)
       if not basic_attr then
          return "未找到对应的基础属性，请检查技能名是否正确"
       end
-      random = ndm(num, 6)
+      random_values = ndm(num, 6)
+      res_sum = random_values.sum
+      res_display = table.concat(random_values.values, "+")
       basic_attr_value = getPlayerCardAttr(msg.uid, msg.gid, basic_attr, 0)
       -- 技能值d6+基础属性值
-      res = random + basic_attr_value
+      res_sum = res_sum + basic_attr_value
    end
-   -- 没有dc
+
+   -- 构建返回信息
+   local result_message
    if not dc then
       if basic_attr_input then
-         return "{pc}进行ark的" .. obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res .. "，希望你成功吧"
+         result_message =
+            "{pc}进行ark的" .. obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res_display .. "=" .. res_sum .. "，希望你成功吧"
+      else
+         result_message =
+            "{pc}进行ark的" ..
+            obj ..
+               "检定:\n" ..
+                  num ..
+                     "d6+" ..
+                        basic_attr_value .. "=" .. res_display .. "+" .. basic_attr_value .. "=" .. res_sum .. "，希望你成功吧"
       end
-      return "{pc}进行ark的" .. obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "，希望你成功吧"
-   end
-   dc = tonumber(dc)
-   if res >= dc then
-      if basic_attr_input then
-         return "{pc}进行ark的" ..
-             obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res .. "/" .. dc .. "，{strRollRegularSuccess}"
-      end
-      return "{pc}进行ark的" ..
-          obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollRegularSuccess}"
    else
-      if basic_attr_input then
-         return "{pc}进行ark的" .. obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res .. "/" .. dc .. "，{strRollFailure}"
+      dc = tonumber(dc)
+      if res_sum >= dc then
+         if basic_attr_input then
+            result_message =
+               "{pc}进行ark的" ..
+               obj ..
+                  "检定:\n" ..
+                     basic_attr_value ..
+                        "d6=" .. res_display .. "=" .. res_sum .. "/" .. dc .. "，{strRollRegularSuccess}"
+         else
+            result_message =
+               "{pc}进行ark的" ..
+               obj ..
+                  "检定:\n" ..
+                     num ..
+                        "d6+" ..
+                           basic_attr_value ..
+                              "=" ..
+                                 res_display ..
+                                    "+" .. basic_attr_value .. "=" .. res_sum .. "/" .. dc .. "，{strRollRegularSuccess}"
+         end
+      else
+         if basic_attr_input then
+            result_message =
+               "{pc}进行ark的" ..
+               obj ..
+                  "检定:\n" ..
+                     basic_attr_value .. "d6=" .. res_display .. "=" .. res_sum .. "/" .. dc .. "，{strRollFailure}"
+         else
+            result_message =
+               "{pc}进行ark的" ..
+               obj ..
+                  "检定:\n" ..
+                     num ..
+                        "d6+" ..
+                           basic_attr_value ..
+                              "=" ..
+                                 res_display ..
+                                    "+" .. basic_attr_value .. "=" .. res_sum .. "/" .. dc .. "，{strRollFailure}"
+         end
       end
-      return "{pc}进行ark的" ..
-          obj .. "检定:\n" .. num .. "d6+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
    end
+
+   return result_message
 end
 
--- rkd检定，技能值d骰面+基础属性和dc比较，并将at_qq的hp减去res
+-- rkd检定，技能值d骰面+基础属性和dc比较，并将at_qq的hp减去res-- rkd检定，技能值d骰面+基础属性和dc比较，并将at_qq的hp减去res
 function rkd(msg, dice, dc, at_qq)
-   --dice和dc不为空
+   -- dice和dc不为空
    if not dice or not dc then
       return "请指定骰面和dc值"
    end
-   --获取技能对应的基础属性
+   -- 获取技能对应的基础属性
    local basic_attr = find_basic_attr(obj)
    if not basic_attr then
       return "未找到对应的基础属性，请检查技能名是否正确"
    end
-   local random = ndm(num, dice)
+   -- 掷骰过程
+   local random_result = ndm(num, dice)
+   local random_sum = random_result.sum
+   local random_display = table.concat(random_result.values, "+")
    local basic_attr_value = getPlayerCardAttr(msg.uid, msg.gid, basic_attr, 0)
    -- 技能值d骰面+基础属性值
-   local res = random + basic_attr_value
+   local res = random_sum + basic_attr_value
    dc = tonumber(dc)
+
+   -- 构建返回信息
+   local reply
    if res >= dc then
-      local reply =
-          "{pc}进行ark的" ..
-          obj ..
-          "检定:\n" ..
-          num ..
-          "d" .. dice .. "+" .. basic_attr_value .. "-" .. dc .. "=" .. (res - dc) .. "，{strRollRegularSuccess}"
-      -- at_qq的hp减去res
-      if not at_qq then
-         return reply
+      reply =
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:\n" ..
+               num ..
+                  "d" ..
+                     dice ..
+                        "+" ..
+                           basic_attr_value ..
+                              "-" ..
+                                 dc ..
+                                    "=" ..
+                                       random_display ..
+                                          "+" ..
+                                             basic_attr_value ..
+                                                "-" .. dc .. "=" .. (res - dc) .. "，{strRollRegularSuccess}"
+      -- at_qq的hp减去 res - dc
+      if at_qq then
+         local hp = getPlayerCardAttr(at_qq, msg.gid, "hp", 0)
+         local damage = res - dc
+         hp = hp - damage
+         if hp <= 0 then
+            hp = 0
+            reply = reply .. "\n警告：目标hp已经归零"
+         else
+            reply = reply .. "\n目标hp已减少" .. damage .. "点"
+         end
+         setPlayerCardAttr(at_qq, msg.gid, "hp", hp)
       end
-      local hp = getPlayerCardAttr(at_qq, msg.gid, "hp", 0)
-      hp = hp - (res - dc)
-      if hp <= 0 then
-         hp = 0
-         reply = reply .. "\n警告：目标hp已经归零"
-      else
-         reply = reply .. "\n目标hp已减少" .. (res - dc) .. "点"
-      end
-      setPlayerCardAttr(at_qq, msg.gid, "hp", hp)
-      return reply
    else
-      return "{pc}进行ark的" ..
-          obj ..
-          "检定:\n" .. num .. "d" .. dice .. "+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
+      reply =
+         "{pc}进行ark的" ..
+         obj ..
+            "检定:\n" ..
+               num ..
+                  "d" ..
+                     dice ..
+                        "+" ..
+                           basic_attr_value ..
+                              "=" ..
+                                 random_display ..
+                                    "+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
    end
+   return reply
 end
 
 function ndm(n, m)
-   local res = 0
+   local res_sum = 0
+   local rolls = {}
    for _ = 1, n do
-      res = res + ranint(1, m)
+      local roll = ranint(1, m)
+      table.insert(rolls, roll)
+      res_sum = res_sum + roll
    end
-   return math.floor(res)
+   return {values = rolls, sum = res_sum}
 end
 
 function find_basic_attr(str)
