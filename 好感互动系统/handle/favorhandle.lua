@@ -110,11 +110,11 @@ function AddFavorPerAction(msg, favor_ori, affinity)
     -- 发簪
     local hairpinDDL, hairpinDDLFlag =
         GetUserConf(
-        "adjustConf",
-        msg.fromQQ,
-        {"addFavorPerActionDDL_Hairpin", "addFavorPerActionDDLFlag_Hairpin"},
-        {0, 0}
-    )
+            "adjustConf",
+            msg.fromQQ,
+            { "addFavorPerActionDDL_Hairpin", "addFavorPerActionDDLFlag_Hairpin" },
+            { 0, 0 }
+        )
     if (os.time() < hairpinDDL) then
         res = res + ModifyFavorChangeSpecial(favor_ori, 10, affinity)
     elseif (hairpinDDLFlag == 0) then
@@ -224,10 +224,10 @@ function CheckFavor(qq, favor_ori, favor_now, affinity)
     favor_now = CheckRegression(qq, favor_now, affinity)
     -- 每次交互对好感的修正道具
     favor_now = favor_now + add_favor_per_action(qq)
-    if (favor_now // 1000 - favor_ori // 1000 >= 1) then
+    if (favor_ori >= 0 and favor_now // 1000 - favor_ori // 1000 >= 1) then
         if (affinity == 100) then
             affinity = 0
-            SetUserConf("favorConf", qq, {"好感度", "affinity"}, {favor_now, 0})
+            SetUserConf("favorConf", qq, { "好感度", "affinity" }, { favor_now, 0 })
         else
             favor_now = favor_ori // 10000 * 10000 + (favor_ori // 1000 % 10) * 1000 + 999
             SetUserConf("favorConf", qq, "好感度", favor_now)
@@ -250,7 +250,7 @@ end
 
 -- 检验回归加成
 function CheckRegression(qq, favor_now, affinity)
-    local regression = GetUserConf("favorConf", qq, "regression", {["flag"] = false})
+    local regression = GetUserConf("favorConf", qq, "regression", { ["flag"] = false })
     if (regression["flag"] == true) then
         local affinity_now = affinity + ranint(1, 2)
         if (affinity_now > 100) then
@@ -268,7 +268,7 @@ function CheckRegression(qq, favor_now, affinity)
         favor_now = favor_now + favor_add
         -- 达到原先好感，效果结束
         if (favor_now > regression["favor_ori"]) then
-            SetUserConf("favorConf", qq, "regression", {["flag"] = false, ["protection"] = 0})
+            SetUserConf("favorConf", qq, "regression", { ["flag"] = false, ["protection"] = 0 })
         end
     end
     return favor_now

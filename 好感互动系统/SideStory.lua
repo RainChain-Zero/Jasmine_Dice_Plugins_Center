@@ -1,5 +1,10 @@
 msg_order = {}
 
+package.path = getDiceDir() .. "/plugin/IO/?.lua"
+require "IO"
+package.path = getDiceDir() .. "/plugin/Handle/?.lua"
+require "FavorHandle"
+require "Utils"
 package.path = getDiceDir() .. "/plugin/Story/?.lua"
 require "Story"
 require "Special"
@@ -17,13 +22,9 @@ require "Special5"
 require "Special6"
 require "Special7"
 require "Special8"
-
+require "Special9"
 require "Special10"
-package.path = getDiceDir() .. "/plugin/IO/?.lua"
-require "IO"
-package.path = getDiceDir() .. "/plugin/Handle/?.lua"
-require "FavorHandle"
-require "Utils"
+require "Special11"
 
 UNSELECTED_OPTION = "请选择其中一个选项以推进哦~"
 ILLEGAL_OPTION = "您必须输入一个有效的选项数字哦~"
@@ -33,14 +34,14 @@ function StoryMain(msg)
     local Reply = "系统：剧情出现未知错误，请报告系统管理员"
     local StoryNormal, StorySpecial =
         GetUserConf(
-            "storyConf",
-            msg.fromQQ,
-            {
-                "storyReadNow",
-                "specialReadNow"
-            },
-            { -1, -1 }
-        )
+        "storyConf",
+        msg.fromQQ,
+        {
+            "storyReadNow",
+            "specialReadNow"
+        },
+        {-1, -1}
+    )
 
     -- 未进入剧情模式不触发
     if (StoryNormal + StorySpecial == -2) then
@@ -89,11 +90,11 @@ function StoryMain(msg)
         elseif StorySpecial == 10 then
             Reply = SpecialEight(msg)
         elseif StorySpecial == 11 then
-            require "Special9"
             Reply = SpecialNine(msg)
         elseif StorySpecial == 12 then
-            require "Special10"
             Reply = SpecialTen(msg)
+        elseif StorySpecial == 13 then
+            Reply = SpecialEleven(msg)
         end
     end
     return Reply
@@ -113,19 +114,19 @@ function EnterStory(msg)
     end
     Init(msg)
     -- 提取具体章节
-    if search_keywords(StoryTemp, { "序章", "惊蛰", "驚蟄" }) then
+    if search_keywords(StoryTemp, {"序章", "惊蛰", "驚蟄"}) then
         if (favor < 1000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1000)"
         end
         Story = "序章 惊蛰"
-        SetUserConf("storyConf", msg.fromQQ, { "storyReadNow", "choiceSelected0" }, { 0, 0 })
-    elseif (search_keywords(StoryTemp, { "元旦特典", "预想此时应更好", "預想此時應更好" })) then
+        SetUserConf("storyConf", msg.fromQQ, {"storyReadNow", "choiceSelected0"}, {0, 0})
+    elseif (search_keywords(StoryTemp, {"元旦特典", "预想此时应更好", "預想此時應更好"})) then
         if (favor < 1500) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1500)"
         end
         Story = "元旦特典 预想此时应更好"
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 0)
-    elseif (search_keywords(StoryTemp, { "第壹章", "第一章", "夜未央" })) then
+    elseif (search_keywords(StoryTemp, {"第壹章", "第一章", "夜未央"})) then
         if (favor < 2000) then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
@@ -141,10 +142,10 @@ function EnterStory(msg)
                 "storyReadNow",
                 "isStory1Option1Choice3"
             },
-            { 4, 1, -1 }
+            {4, 1, -1}
         )
         Story = "第一章 夜未央"
-    elseif (search_keywords(StoryTemp, { "第二章", "難以言明的選擇", "难以言明的选择" })) then
+    elseif (search_keywords(StoryTemp, {"第二章", "難以言明的選擇", "难以言明的选择"})) then
         if (GetUserConf("storyConf", msg.fromQQ, "isShopUnlocked", 0) == 0) then
             return "『✖条件未满足』您需要在第一章中解锁『商店』功能"
         elseif (favor < 3000) then
@@ -162,19 +163,19 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 3)
             Story = "第三章 此般景致"
         end
-    elseif search_keywords(StoryTemp, { "近在咫尺的距離", "七夕特典", "近在咫尺的距离" }) then
+    elseif search_keywords(StoryTemp, {"近在咫尺的距離", "七夕特典", "近在咫尺的距离"}) then
         if favor < 3500 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足3500)"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 1)
         Story = "七夕特典 近在咫尺的距离"
-    elseif search_keywords(StoryTemp, { "聖誕特典", "予妳的光點", "圣诞特典", "予你的光点" }) then
+    elseif search_keywords(StoryTemp, {"聖誕特典", "予妳的光點", "圣诞特典", "予你的光点"}) then
         if favor < 2000 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 2)
         Story = "圣诞特典 予你的光点"
-    elseif search_keywords(StoryTemp, { "白色情人節特典", "白色情人节特典", "獻給妳的禮物", "献给你的礼物" }) then
+    elseif search_keywords(StoryTemp, {"白色情人節特典", "白色情人节特典", "獻給妳的禮物", "献给你的礼物"}) then
         local isSpecial3Read = GetUserConf("storyConf", msg.fromQQ, "isSpecial3Read", 0)
         if isSpecial3Read == 0 then
             local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
@@ -189,7 +190,7 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 3)
             Story = "白色情人节特典 献给你的礼物"
         end
-    elseif search_keywords(StoryTemp, { "衆生相", "众生相", "第四章" }) then
+    elseif search_keywords(StoryTemp, {"衆生相", "众生相", "第四章"}) then
         if GetUserConf("storyConf", msg.fromQQ, "isStory3Read", 0) == 0 then
             return "『✖条件未满足』您需要通过第三章 此般景致"
         elseif favor < 4000 then
@@ -198,7 +199,7 @@ function EnterStory(msg)
             SetUserConf("storyConf", msg.fromQQ, "storyReadNow", 4)
             Story = "第四章 众生相"
         end
-    elseif search_keywords(StoryTemp, { "星星點燈", "星星点灯", "生日特典" }) then
+    elseif search_keywords(StoryTemp, {"星星點燈", "星星点灯", "生日特典"}) then
         local isSepcial4Read = GetUserConf("storyConf", msg.fromQQ, "isSepcial4Read", 0)
         if isSepcial4Read == 0 then
             local fl = GetUserConf("itemConf", msg.fromQQ, "fl", 0)
@@ -225,32 +226,32 @@ function EnterStory(msg)
                 return "您需要拥有1000fl来解锁此剧情哦~"
             end
         end
-    elseif search_keywords(StoryTemp, { "因爲是家人", "因为是家人" }) then
+    elseif search_keywords(StoryTemp, {"因爲是家人", "因为是家人"}) then
         if favor >= 5000 then
             SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 7)
             Story = "因为是家人"
         else
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足5000)"
         end
-    elseif search_keywords(StoryTemp, { "我所希冀的" }) then
+    elseif search_keywords(StoryTemp, {"我所希冀的"}) then
         if favor < 1500 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足1500)"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 8)
         Story = "流希支线 我所希冀的"
-    elseif search_keywords(StoryTemp, { "追忆·其一", "追憶·其一" }) then
+    elseif search_keywords(StoryTemp, {"追忆·其一", "追憶·其一"}) then
         if GetUserConf("itemConf", msg.fromQQ, "风车发饰", 0) == 0 then
             return "『✖条件未满足』进入追忆篇需要获取道具「风车发饰」"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 9)
         Story = "流希支线 追忆·其一"
-    elseif search_keywords(StoryTemp, { "海边旅行", "海邊旅行" }) then
+    elseif search_keywords(StoryTemp, {"海边旅行", "海邊旅行"}) then
         if GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 4000 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足4000)"
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 10)
         Story = "海边旅行"
-    elseif search_keywords(StoryTemp, { "我想一直待在从树叶空隙照进的阳光里·上" }) then
+    elseif search_keywords(StoryTemp, {"我想一直待在从树叶空隙照进的阳光里·上"}) then
         if GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 2000 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
@@ -260,10 +261,7 @@ function EnterStory(msg)
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 11)
         Story = "我想一直待在从树叶空隙照进的阳光里·上"
-    elseif search_keywords(StoryTemp, { "我想一直待在从树叶空隙照进的阳光里·下" }) then
-        if msg.uid ~= 3032902237 then
-            return '暂未开放'
-        end
+    elseif search_keywords(StoryTemp, {"我想一直待在从树叶空隙照进的阳光里·下"}) then
         if GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 2000 then
             return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足2000)"
         end
@@ -273,6 +271,12 @@ function EnterStory(msg)
         end
         SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 12)
         Story = "我想一直待在从树叶空隙照进的阳光里·下"
+    elseif search_keywords(StoryTemp, {"大雨之间"}) then
+        if GetUserConf("favorConf", msg.fromQQ, "好感度", 0) < 5000 then
+            return "『✖条件未满足』茉莉暂时还不想和{nick}分享这些呢..这是茉莉的小秘密哦~(好感度不足5000)"
+        end
+        SetUserConf("storyConf", msg.fromQQ, "specialReadNow", 13)
+        Story = "大雨之间"
     end
     -- 是否存在章节
     if (Story == "") then
@@ -298,14 +302,14 @@ function Init(msg)
             "specialReadNow",
             "nextOption"
         },
-        { 1, 1, 0, 0, -1, -1, 1 }
+        {1, 1, 0, 0, -1, -1, 1}
     )
 end
 
 -- 选项选择
 function Choose(msg)
     local option, StoryNormal, StorySpecial =
-        GetUserConf("storyConf", msg.fromQQ, { "option", "storyReadNow", "specialReadNow" }, { 0, -1, -1 })
+        GetUserConf("storyConf", msg.fromQQ, {"option", "storyReadNow", "specialReadNow"}, {0, -1, -1})
     local Reply = "系统：出现未知错误，请报告系统管理员"
     -- 未进入任何剧情模式
     if (StoryNormal + StorySpecial == -2) then
@@ -349,10 +353,8 @@ function Choose(msg)
         elseif StorySpecial == 8 then
             Reply = StorySevenChoose(msg, res)
         elseif StorySpecial == 11 then
-            require "Special9"
             Reply = SpecialNineChoose(msg, res)
         elseif StorySpecial == 12 then
-            require "Special10"
             Reply = SpecialTenChoose(msg, res)
         end
     end
@@ -364,21 +366,21 @@ msg_order[".C"] = "Choose"
 
 -- 一个选项结束后初始化有关记录
 function OptionNormalInit(msg, index)
-    SetUserConf("storyConf", msg.fromQQ, { "mainIndex", "choiceIndex", "option", "choice" }, { index, 1, 0, 0 })
+    SetUserConf("storyConf", msg.fromQQ, {"mainIndex", "choiceIndex", "option", "choice"}, {index, 1, 0, 0})
 end
 
 -- 跳转到下一选项
 function Skip(msg)
     local StoryNormal, StorySpecial =
         GetUserConf(
-            "storyConf",
-            msg.fromQQ,
-            {
-                "storyReadNow",
-                "specialReadNow"
-            },
-            { -1, -1 }
-        )
+        "storyConf",
+        msg.fromQQ,
+        {
+            "storyReadNow",
+            "specialReadNow"
+        },
+        {-1, -1}
+    )
     local Reply
     -- 未进入任何剧情模式 不响应
     if (StoryNormal + StorySpecial == -2) then
@@ -412,15 +414,10 @@ function Skip(msg)
         elseif StorySpecial == 8 then
             Reply = SkipSpecial7(msg)
         elseif StorySpecial == 11 then
-            require "Special9"
             Reply = SkipSpecial9(msg)
         elseif StorySpecial == 12 then
-            require "Special10"
             Reply = SkipSpecial10(msg)
-        elseif
-            StorySpecial == 4 or StorySpecial == 5 or StorySpecial == 6 or
-            StorySpecial == 7 and StorySpecial == 9 and StorySpecial == 10
-        then
+        else
             Reply = "本剧情没有选项哦~无法跳转"
         end
     end
@@ -435,29 +432,30 @@ msg_order[".skip"] = "Skip"
 function query_story(msg)
     local story_finish =
         GetUserConf(
-            "storyConf",
-            msg.fromQQ,
-            {
-                "isStory0Read",
-                "isSpecial0Read",
-                "isShopUnlocked",
-                "story2Choice",
-                "isSpecial1Read",
-                "isSpecial2Read",
-                "isSpecial3Read",
-                "isStory3Read",
-                "isSpecial4Read",
-                "isSpecial5Read",
-                "isStory4Read",
-                "isSpecial6Read",
-                "isSpecial7Read",
-                "isSpecial8Read",
-                "isSpecial9Read",
-                "isSpecial10Read"
-            },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            true
-        )
+        "storyConf",
+        msg.fromQQ,
+        {
+            "isStory0Read",
+            "isSpecial0Read",
+            "isShopUnlocked",
+            "story2Choice",
+            "isSpecial1Read",
+            "isSpecial2Read",
+            "isSpecial3Read",
+            "isStory3Read",
+            "isSpecial4Read",
+            "isSpecial5Read",
+            "isStory4Read",
+            "isSpecial6Read",
+            "isSpecial7Read",
+            "isSpecial8Read",
+            "isSpecial9Read",
+            "isSpecial10Read",
+            "isSpecial11Read"
+        },
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        true
+    )
     local reply = "收到数据库访问请求，为您检索：\n"
     for _, variable in ipairs(__STORY_VARIABLE__) do
         if story_finish[variable] ~= 0 and story_finish[variable] ~= nil then
@@ -488,7 +486,8 @@ __STORY_NAME__ = {
     isSpecial7Read = "流希支线「我所希冀的」",
     isSpecial8Read = "海边旅行",
     isSpecial9Read = "我想一直待在从树叶空隙照进的阳光里·上",
-    isSpecial10Read = "我想一直待在从树叶空隙照进的阳光里·下"
+    isSpecial10Read = "我想一直待在从树叶空隙照进的阳光里·下",
+    isSpecial11Read = "大雨之间"
 }
 
 __STORY_VARIABLE__ = {
@@ -507,5 +506,6 @@ __STORY_VARIABLE__ = {
     "isSpecial7Read",
     "isSpecial8Read",
     "isSpecial9Read",
-    "isSpecial10Read"
+    "isSpecial10Read",
+    "isSpecial11Read"
 }
