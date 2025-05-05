@@ -147,3 +147,32 @@ function write_queue(queue)
     f:write(json_encode)
     f:close()
 end
+
+-- 简单线性剧情（外传）
+function story_line_special(msg, story, story_name, story_id, favor, fl, item)
+    local mainIndex, isSpecialRead =
+        GetUserConf("storyConf", msg.fromQQ, {"mainIndex", "isSpecial" .. story_id .. "Read"}, {1, 0})
+    local content = "系统：剧情出现未知错误，请报告系统管理员"
+    content = story[mainIndex]
+    if mainIndex == #story then
+        content = content .. "{FormFeed}{FormFeed}「" .. story_name .. "」Fin."
+        if isSpecialRead == 0 then
+            if favor then
+                content = content .. "\n好感变化：+" .. favor
+                SetUserConf("favorConf", msg.fromQQ, "好感度", GetUserConf("favorConf", msg.fromQQ, "好感度", 0) + favor)
+            end
+            if fl then
+                content = content .. "\nFL变化：+" .. fl
+                SetUserConf("itemConf", msg.fromQQ, "fl", GetUserConf("itemConf", msg.fromQQ, "fl", 0) + fl)
+            end
+            if item then
+                content = content .. "\n获得物品：" .. item .. "x1"
+                SetUserConf("itemConf", msg.fromQQ, item, 1)
+            end
+            SetUserConf("storyConf", msg.fromQQ, "isSpecial" .. story_id .. "Read", 1)
+        end
+        Init(msg)
+    end
+    SetUserConf("storyConf", msg.fromQQ, "mainIndex", mainIndex + 1)
+    return content
+end

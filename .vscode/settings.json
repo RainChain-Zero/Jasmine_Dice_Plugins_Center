@@ -14,7 +14,8 @@
     "setGroupConf",
     "http",
     "getUserToday",
-    "setUserToday"
+    "setUserToday",
+    "setPlayerCardAttr"
   ],
   "Lua.diagnostics.disable": [
     "lowercase-global",

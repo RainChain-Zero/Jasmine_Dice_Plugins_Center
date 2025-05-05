@@ -1,3 +1,6 @@
 test.lua
 helpic.lua
 .vscode
+test.*
+*.py
+*.zip

@@ -1,6 +1,20 @@
 ---@diagnostic disable: lowercase-global
 -- 各条交互前预处理
+__BOOM__ = {
+    "呼姆呼姆....网络好像故障了呢，那茉莉先去排查一下错误啦，{nick}就先等待一下吧？",
+    "都说了要维修一下了，{nick}别急了，好了会和你说的",
+    "能别烦茉莉了嘛？刚刚想出来的解决方案被你一吵就全忘干净了啦！",
+    "[CQ:image,file=D:\\DiceDriver\\Dice3349795206\\plugin\\HelpPic\\boom.gif]"
+}
 function preHandle(msg)
+    -- if true then
+    --     local boom = GetUserToday(msg.fromQQ, "boom!", 0)
+    --     if boom >= #__BOOM__ then
+    --         boom = #__BOOM__ - 1
+    --     end
+    --     SetUserToday(msg.fromQQ, "boom!", boom + 1)
+    --     return __BOOM__[boom + 1]
+    -- end
     --! 强制阅读协议注册，一天提醒一次
     local register = check_register(msg)
     if register then
@@ -41,39 +55,39 @@ function check_register(msg)
 end
 
 function JudgeFrequency(msg)
-    local frequency = getUserToday(msg.fromQQ, "frequency", { ["lastTime"] = 0, ["count"] = 0 })
+    local frequency = getUserToday(msg.fromQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     local DiceQQ = getDiceQQ()
-    local frequency_bot = getUserToday(DiceQQ, "frequency", { ["lastTime"] = 0, ["count"] = 0 })
+    local frequency_bot = getUserToday(DiceQQ, "frequency", {["lastTime"] = 0, ["count"] = 0})
     -- 个人冷却时间
     if os.time() - frequency["lastTime"] < 8 then
         frequency["count"] = frequency["count"] + 1
-        setUserToday(msg.fromQQ, "frequency", { ["lastTime"] = os.time(), ["count"] = frequency["count"] })
-        setUserToday(DiceQQ, "frequency", { ["lastTime"] = os.time(), ["count"] = frequency_bot["count"] })
+        setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency["count"]})
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
         if frequency["count"] >= 3 then
-            local favor, affinity = GetUserConf("favorConf", msg.fromQQ, { "好感度", "affinity" }, { 0, 0 })
-            SetUserConf(msg.fromQQ, { "好感度", "affinity" }, { favor - 100, affinity - 20 })
+            local favor, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
+            SetUserConf(msg.fromQQ, {"好感度", "affinity"}, {favor - 100, affinity - 20})
             return "您无视提醒，作为惩罚，您损失了100点好感和20点亲和度"
         end
         return "当前交互频率过高，请等待8s后再试哦~"
     else
-        setUserToday(msg.fromQQ, "frequency", { ["lastTime"] = os.time(), ["count"] = 0 })
-        setUserToday(DiceQQ, "frequency", { ["lastTime"] = os.time(), ["count"] = frequency_bot["count"] })
+        setUserToday(msg.fromQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
     end
     -- 全局冷却时间
     if os.time() - frequency_bot["lastTime"] < 7 then
         frequency_bot["count"] = frequency_bot["count"] + 1
-        setUserToday(DiceQQ, "frequency", { ["lastTime"] = os.time(), ["count"] = frequency_bot["count"] })
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = frequency_bot["count"]})
         if frequency_bot["count"] >= 2 then
             return "当前全局交互频率过高，系统繁忙，茉莉并没有理睬你"
         end
     else
-        setUserToday(DiceQQ, "frequency", { ["lastTime"] = os.time(), ["count"] = 0 })
+        setUserToday(DiceQQ, "frequency", {["lastTime"] = os.time(), ["count"] = 0})
     end
 end
 
 -- 打工状态判断
 function JudgeWorking(msg)
-    local work = GetUserConf("favorConf", msg.fromQQ, "work", { ["working"] = false })
+    local work = GetUserConf("favorConf", msg.fromQQ, "work", {["working"] = false})
     if (work["working"] == true) then
         -- 未进入打工状态
         -- 已经结束了打工
@@ -98,7 +112,7 @@ end
 
 -- 调整信任度和亲和度
 function TrustChange(msg)
-    local favor, trust = GetUserConf("favorConf", msg.fromQQ, { "好感度", "trust" }, { 0, 0 })
+    local favor, trust = GetUserConf("favorConf", msg.fromQQ, {"好感度", "trust"}, {0, 0})
     local admin_judge =
         msg.fromQQ ~= "2677409596" and msg.fromQQ ~= "3032902237" and msg.fromQQ ~= "959686587" and
         msg.fromQQ ~= "2595928998" and
@@ -131,11 +145,11 @@ function CohesionChange(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local isStory0Read, isShopUnlocked, story2Choice, isStory3Read, isStory4Read =
         GetUserConf(
-            "storyConf",
-            msg.fromQQ,
-            { "isStory0Read", "isShopUnlocked", "story2Choice", "isStory3Read", "isStory4Read" },
-            { 0, 0, 0, 0, 0 }
-        )
+        "storyConf",
+        msg.fromQQ,
+        {"isStory0Read", "isShopUnlocked", "story2Choice", "isStory3Read", "isStory4Read"},
+        {0, 0, 0, 0, 0}
+    )
     if (favor < 1000) then
         SetUserConf("favorConf", msg.fromQQ, "cohesion", 0)
     end
@@ -169,20 +183,20 @@ end
 function Notice(msg)
     local favorUVersion = GetUserConf("favorConf", msg.fromQQ, "favorVersion", 0)
     -- 修改版本号只需要将下面的数字修改为目前的版本号即可
-    if (favorUVersion ~= 50) then
-        SetUserConf("favorConf", msg.fromQQ, { "noticeQQ", "favorVersion" }, { 0, 50 })
+    if (favorUVersion ~= 450) then
+        SetUserConf("favorConf", msg.fromQQ, {"noticeQQ", "favorVersion"}, {0, 50})
     end
     local noticeQQ = GetUserConf("favorConf", msg.fromQQ, "noticeQQ", 0)
-    if msg.gid then
-        local group_notice = getUserToday(getDiceQQ(), "group_notice", {})
-        local times = group_notice[msg.gid] or 0
-        if times >= 3 then
-            return
-        end
-        group_notice[msg.gid] = times + 1
-        setUserToday(getDiceQQ(), "group_notice", group_notice)
-    end
     if (noticeQQ == 0) then
+        if msg.gid then
+            local group_notice = getUserToday(getDiceQQ(), "group_notice", {})
+            local times = group_notice[msg.gid] or 0
+            if times >= 3 then
+                return
+            end
+            group_notice[msg.gid] = times + 1
+            setUserToday(getDiceQQ(), "group_notice", group_notice)
+        end
         msg:echo(
             "『V4.5.0版本更新』好感系统已追加「心情子系统」，了解详情：https://rainchain-zero.github.io/JasmineDoc/appendix/moodmechanism.html"
         )
@@ -193,7 +207,7 @@ end
 -- 每天道具增加的附加好感度
 function AddFavor_Item(msg)
     local favor_change = 0
-    local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, { "好感度", "affinity" }, { 0, 0 })
+    local favor_ori, affinity = GetUserConf("favorConf", msg.fromQQ, {"好感度", "affinity"}, {0, 0})
     local addFavorItem, addFavorEveryDay, addFavorEveryAction = {}, "", ""
     -- 袋装曲奇
     if (os.time() < GetUserConf("adjustConf", msg.fromQQ, "addFavorDDL_Cookie", 0)) then
@@ -227,7 +241,7 @@ function AddAffinity_Item(msg)
     local addAffinityEveryDay, addAffinityEveryAction, affinity_change, addAffinityItem = "", "", 0, {}
     -- 寿司
     local sushiDDL, sushiDDLFlag =
-        GetUserConf("adjustConf", msg.fromQQ, { "addAffinityDDL_Sushi", "addAffinityDDLFlag_Sushi" }, { 0, 0 })
+        GetUserConf("adjustConf", msg.fromQQ, {"addAffinityDDL_Sushi", "addAffinityDDLFlag_Sushi"}, {0, 0})
     if (os.time() < sushiDDL) then
         addAffinityEveryDay = "Sushi"
         if (GetUserToday(msg.fromQQ, "addAffinity_Sushi", 0) == 0) then
@@ -258,14 +272,14 @@ function FavorTimePunishDownRate(msg)
     elseif (GetUserConf("adjustConf", msg.fromQQ, "favorTimePunishDownDDLFlag", 1) == 0) then
         sendMsg("注意，您的好感度时间惩罚减免道具效果已消失", msg.gid or 0, msg.fromQQ)
         -- 更新标记，下次不做提醒
-        SetUserConf("adjustConf", msg.fromQQ, { "favorTimePunishDownDDLFlag", "favorTimePunishDownRate" }, { 1, 0 })
+        SetUserConf("adjustConf", msg.fromQQ, {"favorTimePunishDownDDLFlag", "favorTimePunishDownRate"}, {1, 0})
     end
     return 0
 end
 
 -- 一定时间不交互将会降低好感度
 function FavorPunish(msg, show_favor)
-    local favor, lastTime = GetUserConf("favorConf", msg.fromQQ, { "好感度", "lastTime" }, { 0, os.time() })
+    local favor, lastTime = GetUserConf("favorConf", msg.fromQQ, {"好感度", "lastTime"}, {0, os.time()})
     -- 测试群通告
     if favor >= 3000 and getUserConf(msg.fromQQ, "testGroupNotice", 0) == 0 then
         local at = "[CQ:at,qq=" .. msg.fromQQ .. "]"
@@ -285,9 +299,9 @@ function FavorPunish(msg, show_favor)
     if (subyear == 1) then
         subday = (12 - _month + month) * 30 + day - _day -- 跨年情况
     elseif (subyear == 0) then
-        subday = (month - _month) * 30 + day - _day      -- 时间段为本年
+        subday = (month - _month) * 30 + day - _day -- 时间段为本年
     else
-        subday = 1000                                    -- 超过两年的直接设为1000天
+        subday = 1000 -- 超过两年的直接设为1000天
     end
 
     if (show_favor ~= true) then
@@ -345,9 +359,8 @@ function FavorPunish(msg, show_favor)
     local favor_down = ranint(Llimit, Rlimit) * itemDownRate
     if (favor_down > 0) then
         isFavorTimePunish = true
-        local special_mood, coefficient = GetUserConf("favorConf", msg.fromQQ, { "special_mood", "coefficient" },
-            { 0, 0 })
-        coefficient = get_coefficient(special_mood, coefficient, { "开心", "焦虑" })
+        local special_mood, coefficient = GetUserConf("favorConf", msg.fromQQ, {"special_mood", "coefficient"}, {0, 0})
+        coefficient = get_coefficient(special_mood, coefficient, {"开心", "焦虑"})
         favor_down = math.modf(favor_down * coefficient)
     end
     if favor_down > 1000 then
@@ -367,7 +380,7 @@ function FavorPunish(msg, show_favor)
             SetUserConf(
                 "favorConf",
                 msg.fromQQ,
-                { "好感度", "regression" },
+                {"好感度", "regression"},
                 {
                     favor,
                     {
@@ -397,18 +410,18 @@ function isFavorSilent(msg, favor, show_favor)
             msg.fromQQ == "819357315" or
             msg.fromQQ == "751766424" or
             msg.fromQQ == "839968342")
-    then
+     then
         return true
     end
     -- 判断八音盒效果
     local musicBox = getUserConf(msg.fromQQ, "musicBox", {})
     if musicBox["enable"] and not show_favor then
         -- 触发八音盒效果，本次交互不降低好感（刷新交互时间），同时八音盒失效
-        setUserConf(msg.fromQQ, "musicBox", { ["enable"] = false, ["cd"] = musicBox["cd"] })
+        setUserConf(msg.fromQQ, "musicBox", {["enable"] = false, ["cd"] = musicBox["cd"]})
         return true
     end
     --! 是否在回归保护期
-    if (GetUserConf("favorConf", msg.fromQQ, "regression", { ["protection"] = 0 })["protection"] > os.time()) then
+    if (GetUserConf("favorConf", msg.fromQQ, "regression", {["protection"] = 0})["protection"] > os.time()) then
         return true
     end
     if (favor <= 500) then
@@ -420,46 +433,48 @@ end
 function StoryUnlocked(msg)
     local favor = GetUserConf("favorConf", msg.fromQQ, "好感度", 0)
     local storyUnlockedNotice,
-    specialUnlockedNotice,
-    isStory0Read,
-    isSpecial0Read,
-    isShopUnlocked,
-    story2Choice,
-    isSpecial1Read,
-    isSpecial2Read,
-    isSpecial3Read,
-    isStory3Read,
-    isSpecial4Read,
-    isSpecial5Read,
-    isSpecial6Read,
-    isSpecial7Read,
-    isSpecial8Read,
-    isSpecial9Read,
-    isSpecial10Read =
+        specialUnlockedNotice,
+        isStory0Read,
+        isSpecial0Read,
+        isShopUnlocked,
+        story2Choice,
+        isSpecial1Read,
+        isSpecial2Read,
+        isSpecial3Read,
+        isStory3Read,
+        isSpecial4Read,
+        isSpecial5Read,
+        isSpecial6Read,
+        isSpecial7Read,
+        isSpecial8Read,
+        isSpecial9Read,
+        isSpecial10Read,
+        isSpecial11Read =
         GetUserConf(
-            "storyConf",
-            msg.fromQQ,
-            {
-                "storyUnlockedNotice",
-                "specialUnlockedNotice",
-                "isStory0Read",
-                "isSpecial0Read",
-                "isShopUnlocked",
-                "story2Choice",
-                "isSpecial1Read",
-                "isSpecial2Read",
-                "isSpecial3Read",
-                "isStory3Read",
-                "isSpecial4Read",
-                "isSpecial5Read",
-                "isSpecial6Read",
-                "isSpecial7Read",
-                "isSpecial8Read",
-                "isSpecial9Read",
-                "isSpecial10Read"
-            },
-            { "0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-        )
+        "storyConf",
+        msg.fromQQ,
+        {
+            "storyUnlockedNotice",
+            "specialUnlockedNotice",
+            "isStory0Read",
+            "isSpecial0Read",
+            "isShopUnlocked",
+            "story2Choice",
+            "isSpecial1Read",
+            "isSpecial2Read",
+            "isSpecial3Read",
+            "isStory3Read",
+            "isSpecial4Read",
+            "isSpecial5Read",
+            "isSpecial6Read",
+            "isSpecial7Read",
+            "isSpecial8Read",
+            "isSpecial9Read",
+            "isSpecial10Read",
+            "isSpecial11Read"
+        },
+        {"0000000000000000000000000", "0000000000000000000000000", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    )
     local content, flag, res = "", "1", ""
     if (favor >= 1000 and GetUserConf("storyConf", msg.fromQQ, "isStory0Read", 0) == 0) then
         flag = string.sub(storyUnlockedNotice, 1, 1)
@@ -604,6 +619,15 @@ function StoryUnlocked(msg)
                 "『✔提示』「仁光」支线「我想一直待在从树叶空隙照进的阳光里·下」已经开放,输入“进入剧情 我想一直待在从树叶空隙照进的阳光里·下”可浏览剧情\n注意：由于本次剧情较长，同一时间只能2人观看\n"
             specialUnlockedNotice =
                 string.sub(specialUnlockedNotice, 1, 11) .. "1" .. string.sub(specialUnlockedNotice, 13)
+            SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
+        end
+    end
+    if favor >= 5000 and isSpecial11Read == 0 then
+        flag = string.sub(specialUnlockedNotice, 13, 13)
+        if (flag == "0") then
+            content = content .. "『✔提示』剧情模式「大雨之间」已经开放,输入“进入剧情 大雨之间”可浏览剧情"
+            specialUnlockedNotice =
+                string.sub(specialUnlockedNotice, 1, 12) .. "1" .. string.sub(specialUnlockedNotice, 14)
             SetUserConf("storyConf", msg.fromQQ, "specialUnlockedNotice", specialUnlockedNotice)
         end
     end

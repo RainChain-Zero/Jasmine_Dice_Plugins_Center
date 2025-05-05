@@ -1,23 +1,16 @@
 --[[
-    @Author RainChain-Zero
-    @Version 2.2
-    @Last Modified 2024/04/18
-    @Description：适用于方舟泰拉trpg的规则检定
+    @Author 泰拉旅社
+    @Version 0.3
+    @Last Modified 2025/04/09
+    @Description：适用于方舟泰拉trpg（v0.3）的人物作成与规则检定（已不受支持）
 ]]
 ---@diagnostic disable: lowercase-global, assign-type-mismatch, cast-local-type
-msg_order = {}
-order_kng = ".rk"
-msg_order[order_kng] = "ark_main"
-
-at_cq = "%[CQ:at,id=(%d+)%]"
-BASIC_ATTR = {
-   ["欺诈，乔装，潜行，调查，觉察，追踪"] = "精神意志",
-   ["声乐，艺术，心理，游说，取悦，威吓"] = "个人魅力",
-   ["妙手，急救，驾驶，杂耍，短兵，暗器，弓弩，身法"] = "反应机动",
-   ["长兵，刀剑，钝器，格斗，软兵，拳术，盾术"] = "物理强度",
-   ["兵械操作，生物驯养，军事理论，领导力，自然学，工程学，医药学，源石学，社会学，政法学，经管学，神秘学，机械工程，电子工程，农林牧渔，加工工艺"] = "经验智慧"
+msg_order = {
+   [".arkd"] = "roll_arkd",
+   [".rkd"] = "ark_main",
+   [".rka"] = "ark_main"
 }
-
+at_cq = "%[CQ:at,id=(%d+)%]"
 ATTR_INIT = {
    ["投掷"] = 20,
    ["侦查"] = 25,
@@ -43,44 +36,22 @@ objTemp, obj, num, sign, add = "", "", "", "", ""
 function ark_main(msg)
    --将前缀符号均统一为"."
    local str = msg.fromMsg:gsub("^。", ".")
-   -- 判断是.rk还是.rka
+   -- 判断是.rkd还是.rka
    local isrka, at_qq = false, nil
-   -- 判断是否.rkc和可能的dc
-   local isrkc, dc = false, nil
-   -- 判断是否是rkd和骰面
-   local isrkd, dice = false, nil
    if msg.fromMsg:match("^.rka") then
       isrka = true
       -- 获取rka的at_qq
       at_qq = str:match(at_cq)
-      --去掉"a"
-      str = str:gsub("^.rka", ".rk")
-   end
-   if msg.fromMsg:match("^.rkc") then
-      isrkc = true
-      -- 获取rkc的dc
-      dc = str:match("/%s*(%d+)")
-      --去掉"c"
-      str = str:gsub("^.rkc", ".rk")
-   end
-   if msg.fromMsg:match("^.rkd") then
-      isrkd = true
-      -- 获取rkd的骰面和dc(dice/dc)
-      dice, dc = str:match("(%d+)%s*/%s*(%d+)")
-      -- 获取可能的at_qq
-      at_qq = str:match(at_cq)
-      --去掉"d"
-      str = str:gsub("^.rkd", ".rk")
+      --去掉"a"，改为rkd
+      str = str:gsub("^.rka", ".rkd")
    end
    -- 去掉可能的at_qq
    str = str:gsub(at_cq, "")
-   -- 去掉可能的dice和dc
-   str = str:gsub("%d*%s*/%s*%d+", "")
 
    local res, round = "", 1
    str, round = ark_multi(str)
    if round > 10 then
-      return "诶诶诶？{self}这可要丢到什么时候呀..."
+      return "{strDicetooBigErr}"
    end
    -- 联合检定判定(用&分割)
    local ark_union = split(str, "&")
@@ -96,9 +67,9 @@ function ark_main(msg)
       for j = 1, #ark_union do
          local union_item = ark_union[j]
          if j ~= 1 then
-            union_item = ".rk " .. union_item
+            union_item = ".rkd " .. union_item
          end
-         local res_now = ark_check(msg, union_item, isrka, at_qq, isrkc, dc, isrkd, dice)
+         local res_now = ark_check(msg, union_item, isrka, at_qq)
          -- 修改多次检定的剩余结果抬头
          if not isunion and i ~= 1 then
             res_now = res_now:gsub("{pc}进行ark的(.*)检定:", "")
@@ -124,73 +95,7 @@ function ark_main(msg)
    return res
 end
 
--- 处理多轮检定,返回处理后的指令内容和多轮检定轮数
-function ark_multi(str)
-   local round = str:match("(%d+)%s*#")
-   if not round then
-      return str, 1
-   end
-   return str:gsub("%d+%s*#", ""), round * 1
-end
-
--- 处理修正值,格式为xdy+z
-function ark_mod(str)
-   -- 通过+、-号分割字符串
-   local num, op = split(str, "[%+%-]")
-   local res = cal_mod(num[1])
-   for i = 1, #num - 1 do
-      if op[i] == "+" then
-         res = res + cal_mod(num[i + 1])
-      else
-         res = res - cal_mod(num[i + 1])
-      end
-   end
-   return res
-end
-
--- 字符串分割函数
-function split(szFullString, szSeparator)
-   local nFindStartIndex = 1
-   local nSplitIndex = 1
-   local nSplitArray, nSeparatorArray = {}, {}
-   while true do
-      local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)
-      if not nFindLastIndex then
-         nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))
-         break
-      end
-      nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)
-      --nFindStartIndex = nFindLastIndex + string.len(szSeparator)
-      nFindStartIndex = nFindLastIndex + 1
-      nSeparatorArray[nSplitIndex] = string.sub(szFullString, nFindLastIndex, nFindLastIndex)
-      nSplitIndex = nSplitIndex + 1
-   end
-   return nSplitArray, nSeparatorArray
-end
-
--- 计算各个修正项的值
-function cal_mod(mod)
-   local mod_now = 0
-   if not mod:find("[dD]") then
-      mod_now = tonumber(mod)
-      --log(type(mod_now))
-      if type(mod_now) == "number" then
-         return mod_now
-      else
-         return 0
-      end
-   end
-   local x, y = mod:match("(%d+)[dD]+(%d+)")
-   if not x or not y then
-      return 0
-   end
-   for i = 1, x do
-      mod_now = mod_now + ranint(1, y)
-   end
-   return mod_now
-end
-
-function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
+function ark_check(msg, str, isrka, at_qq)
    -- rka ac
    local ac, res_rka = 0, ""
    if isrka and at_qq then
@@ -198,7 +103,7 @@ function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
       res_rka = "\n（反应=" .. string.format("%.0f）", ac)
    end
    --提取参数
-   objTemp, num, sign = str:match("[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)", #order_kng + 1)
+   objTemp, num, sign = str:match("[%.。]rkd[%s]*([^%s^%d^%+^%-]*)[%s]*(%d*)[%s]*([%+|%-]?)")
    --判断合法性
    if (objTemp == "" or objTemp == nil) then
       return "请输入正确的检定条目哦"
@@ -277,14 +182,6 @@ function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
    else
       return "Error，检定输入有误"
    end
-   -- 如果是rkc检定
-   if isrkc then
-      return rkc(msg, dc)
-   end
-   -- 如果是rkd检定
-   if isrkd then
-      return rkd(msg, dice, dc, at_qq)
-   end
    --开始检定
    res = ranint(1, 100)
    --如果没有添加难度条目
@@ -294,6 +191,72 @@ function ark_check(msg, str, isrka, at_qq, isrkc, dc, isrkd, dice)
       --设定了难度条目的情况
       return Hardness[hardness]() .. res_rka
    end
+end
+
+-- 处理多轮检定,返回处理后的指令内容和多轮检定轮数
+function ark_multi(str)
+   local round = str:match("(%d+)%s*#")
+   if not round then
+      return str, 1
+   end
+   return str:gsub("%d+%s*#", ""), round * 1
+end
+
+-- 处理修正值,格式为xdy+z
+function ark_mod(str)
+   -- 通过+、-号分割字符串
+   local num, op = split(str, "[%+%-]")
+   local res = cal_mod(num[1])
+   for i = 1, #num - 1 do
+      if op[i] == "+" then
+         res = res + cal_mod(num[i + 1])
+      else
+         res = res - cal_mod(num[i + 1])
+      end
+   end
+   return res
+end
+
+-- 字符串分割函数
+function split(szFullString, szSeparator)
+   local nFindStartIndex = 1
+   local nSplitIndex = 1
+   local nSplitArray, nSeparatorArray = {}, {}
+   while true do
+      local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)
+      if not nFindLastIndex then
+         nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))
+         break
+      end
+      nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)
+      --nFindStartIndex = nFindLastIndex + string.len(szSeparator)
+      nFindStartIndex = nFindLastIndex + 1
+      nSeparatorArray[nSplitIndex] = string.sub(szFullString, nFindLastIndex, nFindLastIndex)
+      nSplitIndex = nSplitIndex + 1
+   end
+   return nSplitArray, nSeparatorArray
+end
+
+-- 计算各个修正项的值
+function cal_mod(mod)
+   local mod_now = 0
+   if not mod:find("[dD]") then
+      mod_now = tonumber(mod)
+      --log(type(mod_now))
+      if type(mod_now) == "number" then
+         return mod_now
+      else
+         return 0
+      end
+   end
+   local x, y = mod:match("(%d+)[dD]+(%d+)")
+   if not x or not y then
+      return 0
+   end
+   for i = 1, x do
+      mod_now = mod_now + ranint(1, y)
+   end
+   return mod_now
 end
 
 --检测难度条目
@@ -482,187 +445,103 @@ Hardness = {
    ["一般"] = NormalJudge
 }
 
--- rkc检定，技能值d6+基础属性值和dc比较
-function rkc(msg, dc)
-   local random_values, res_sum, basic_attr_value, res_display
-   -- 判断是否是基础属性
-   local basic_attr_input = is_basic_attr(obj)
-   if basic_attr_input then
-      basic_attr_value = getPlayerCardAttr(msg.uid, msg.gid, basic_attr_input, 0)
-      random_values = ndm(basic_attr_value, 6) -- 获取每次掷骰的值
-      res_sum = random_values.sum
-      res_display = table.concat(random_values.values, "+") -- 格式化为a+b+c
+--！ 下面是.arkd的内容
+-- 生成角色
+function generate_advanced_character_stats()
+   -- 初始化属性
+   local stats = {
+      physical_endurance = 0,
+      agility = 0,
+      physical_strength = 0,
+      mental_will = 0,
+      experience_wisdom = 0,
+      originium_arts_adaptability = 0,
+      personal_charm = 0,
+      reputation = 0
+   }
+
+   -- 投掷4d6获取基本属性
+   for _ = 1, 4 do
+      stats.physical_endurance = stats.physical_endurance + ranint(1, 6)
+      stats.agility = stats.agility + ranint(1, 6)
+      stats.physical_strength = stats.physical_strength + ranint(1, 6)
+      stats.mental_will = stats.mental_will + ranint(1, 6)
+      stats.experience_wisdom = stats.experience_wisdom + ranint(1, 6)
+      stats.originium_arts_adaptability = stats.originium_arts_adaptability + ranint(1, 6)
+   end
+
+   -- 投掷3d6获取个人魅力
+   for _ = 1, 3 do
+      stats.personal_charm = stats.personal_charm + ranint(1, 6)
+   end
+
+   -- 投掷5d6获取信誉
+   for _ = 1, 5 do
+      stats.reputation = stats.reputation + ranint(1, 6)
+   end
+
+   -- 计算最终属性值
+   stats.physical_endurance = stats.physical_endurance * 3 + 8
+   stats.agility = stats.agility * 3 + 8
+   stats.physical_strength = stats.physical_strength * 3 + 8
+   stats.mental_will = stats.mental_will * 3 + 8
+   stats.experience_wisdom = stats.experience_wisdom * 3 + 8
+   stats.originium_arts_adaptability = stats.originium_arts_adaptability * 3 + 8
+   stats.personal_charm = stats.personal_charm * 5
+   stats.reputation = stats.reputation + 5
+
+   -- 计算总值
+   local base_stats_total =
+      stats.physical_endurance + stats.agility + stats.physical_strength + stats.mental_will + stats.experience_wisdom +
+      stats.originium_arts_adaptability +
+      stats.personal_charm
+
+   local grand_total = base_stats_total + stats.reputation
+
+   -- 计算偏离比
+   local deviation_ratio = base_stats_total / 352.5
+
+   -- 格式化输出
+   local result =
+      ("{nick}的泰拉人作成\n" ..
+      "生理耐受: %d  反应机动: %d\n" ..
+         "物理强度: %d  精神意志: %d\n" .. "经验智慧: %d  源石技艺适应性: %d\n" .. "个人魅力: %d  信誉: %d\n" .. "共计: %d/%d  偏离比: %.2f"):format(
+      stats.physical_endurance,
+      stats.agility,
+      stats.physical_strength,
+      stats.mental_will,
+      stats.experience_wisdom,
+      stats.originium_arts_adaptability,
+      stats.personal_charm,
+      stats.reputation,
+      base_stats_total,
+      grand_total,
+      deviation_ratio
+   )
+
+   return result
+end
+
+-- 处理arkd指令的函数
+function roll_arkd(msg)
+   -- 解析指令中的次数
+   local count = msg.fromMsg:match("(%d+)")
+
+   -- 设置默认值及范围检查
+   count = count and tonumber(count) or 1
+
+   if count < 1 then
+      return "{strZeroDiceErr}"
+   elseif count > 5 then
+      return "{strDicetooBigErr}"
    else
-      -- 获取技能对应的基础属性
-      local basic_attr = find_basic_attr(obj)
-      if not basic_attr then
-         return "未找到对应的基础属性，请检查技能名是否正确"
+      -- 生成指定次数的角色
+      local results = {}
+      for i = 1, count do
+         table.insert(results, generate_advanced_character_stats())
       end
-      random_values = ndm(num, 6)
-      res_sum = random_values.sum
-      res_display = table.concat(random_values.values, "+")
-      basic_attr_value = getPlayerCardAttr(msg.uid, msg.gid, basic_attr, 0)
-      -- 技能值d6+基础属性值
-      res_sum = res_sum + basic_attr_value
-   end
 
-   -- 构建返回信息
-   local result_message
-   if not dc then
-      if basic_attr_input then
-         result_message =
-            "{pc}进行ark的" .. obj .. "检定:\n" .. basic_attr_value .. "d6=" .. res_display .. "=" .. res_sum .. "，希望你成功吧"
-      else
-         result_message =
-            "{pc}进行ark的" ..
-            obj ..
-               "检定:\n" ..
-                  num ..
-                     "d6+" ..
-                        basic_attr_value .. "=" .. res_display .. "+" .. basic_attr_value .. "=" .. res_sum .. "，希望你成功吧"
-      end
-   else
-      dc = tonumber(dc)
-      if res_sum >= dc then
-         if basic_attr_input then
-            result_message =
-               "{pc}进行ark的" ..
-               obj ..
-                  "检定:\n" ..
-                     basic_attr_value ..
-                        "d6=" .. res_display .. "=" .. res_sum .. "/" .. dc .. "，{strRollRegularSuccess}"
-         else
-            result_message =
-               "{pc}进行ark的" ..
-               obj ..
-                  "检定:\n" ..
-                     num ..
-                        "d6+" ..
-                           basic_attr_value ..
-                              "=" ..
-                                 res_display ..
-                                    "+" .. basic_attr_value .. "=" .. res_sum .. "/" .. dc .. "，{strRollRegularSuccess}"
-         end
-      else
-         if basic_attr_input then
-            result_message =
-               "{pc}进行ark的" ..
-               obj ..
-                  "检定:\n" ..
-                     basic_attr_value .. "d6=" .. res_display .. "=" .. res_sum .. "/" .. dc .. "，{strRollFailure}"
-         else
-            result_message =
-               "{pc}进行ark的" ..
-               obj ..
-                  "检定:\n" ..
-                     num ..
-                        "d6+" ..
-                           basic_attr_value ..
-                              "=" ..
-                                 res_display ..
-                                    "+" .. basic_attr_value .. "=" .. res_sum .. "/" .. dc .. "，{strRollFailure}"
-         end
-      end
+      -- 拼接结果
+      return table.concat(results, "\n\n")
    end
-
-   return result_message
-end
-
--- rkd检定，技能值d骰面+基础属性和dc比较，并将at_qq的hp减去res-- rkd检定，技能值d骰面+基础属性和dc比较，并将at_qq的hp减去res
-function rkd(msg, dice, dc, at_qq)
-   -- dice和dc不为空
-   if not dice or not dc then
-      return "请指定骰面和dc值"
-   end
-   -- 获取技能对应的基础属性
-   local basic_attr = find_basic_attr(obj)
-   if not basic_attr then
-      return "未找到对应的基础属性，请检查技能名是否正确"
-   end
-   -- 掷骰过程
-   local random_result = ndm(num, dice)
-   local random_sum = random_result.sum
-   local random_display = table.concat(random_result.values, "+")
-   local basic_attr_value = getPlayerCardAttr(msg.uid, msg.gid, basic_attr, 0)
-   -- 技能值d骰面+基础属性值
-   local res = random_sum + basic_attr_value
-   dc = tonumber(dc)
-
-   -- 构建返回信息
-   local reply
-   if res >= dc then
-      reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:\n" ..
-               num ..
-                  "d" ..
-                     dice ..
-                        "+" ..
-                           basic_attr_value ..
-                              "-" ..
-                                 dc ..
-                                    "=" ..
-                                       random_display ..
-                                          "+" ..
-                                             basic_attr_value ..
-                                                "-" .. dc .. "=" .. (res - dc) .. "，{strRollRegularSuccess}"
-      -- at_qq的hp减去 res - dc
-      if at_qq then
-         local hp = getPlayerCardAttr(at_qq, msg.gid, "hp", 0)
-         local damage = res - dc
-         hp = hp - damage
-         if hp <= 0 then
-            hp = 0
-            reply = reply .. "\n警告：目标hp已经归零"
-         else
-            reply = reply .. "\n目标hp已减少" .. damage .. "点"
-         end
-         setPlayerCardAttr(at_qq, msg.gid, "hp", hp)
-      end
-   else
-      reply =
-         "{pc}进行ark的" ..
-         obj ..
-            "检定:\n" ..
-               num ..
-                  "d" ..
-                     dice ..
-                        "+" ..
-                           basic_attr_value ..
-                              "=" ..
-                                 random_display ..
-                                    "+" .. basic_attr_value .. "=" .. res .. "/" .. dc .. "，{strRollFailure}"
-   end
-   return reply
-end
-
-function ndm(n, m)
-   local res_sum = 0
-   local rolls = {}
-   for _ = 1, n do
-      local roll = ranint(1, m)
-      table.insert(rolls, roll)
-      res_sum = res_sum + roll
-   end
-   return {values = rolls, sum = res_sum}
-end
-
-function find_basic_attr(str)
-   for k, v in pairs(BASIC_ATTR) do
-      if k:find(str) then
-         return v
-      end
-   end
-   return nil
-end
-
--- 判断是否是基础属性
-function is_basic_attr(str)
-   for _, v in pairs(BASIC_ATTR) do
-      if v == str then
-         return v
-      end
-   end
-   return nil
 end
