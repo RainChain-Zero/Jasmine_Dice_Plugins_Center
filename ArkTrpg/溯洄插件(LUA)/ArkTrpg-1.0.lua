@@ -9,7 +9,8 @@
 msg_order = {
     [".rk"] = "ark_main",
     [".sck"] = "ark_sck",
-    [".ark"] = "roll_ark"
+    [".ark"] = "roll_ark",
+    [".fate"] = "roll_fate"
 }
 
 AT_CQ = "%[CQ:at,id=(%d+)%]"
@@ -29,7 +30,7 @@ function ark_main(msg)
 
     -- 处理at_qq
     local at_qq = msg.fromMsg:match(AT_CQ)
-    msg.fromMsg = msg.fromMsg:gsub(AT_CQ, "")
+    msg.fromMsg = msg.fromMsg:gsub(AT_CQ, " ")
 
     -- 提取参数
     local res, errorMsg = parse_common_roll_command(msg)
@@ -235,6 +236,14 @@ function check_critical(roll_result, face)
     local rolls = roll_result.values
     local dice_count = #rolls
 
+    -- 如果没有骰子，不可能有大成功或大失败
+    if dice_count == 0 then
+        return {
+            critical_success = false,
+            critical_failure = false
+        }
+    end
+
     -- 计算最大值和最小值的出现次数
     local max_value_count = 0
     local min_value_count = 0
@@ -367,4 +376,70 @@ function roll_ark(msg)
         -- 拼接结果
         return table.concat(results, "\n\n")
     end
+end
+
+--! 下面是有关.fate的内容
+-- FATE骰子函数，骰子四个面分别是0，0，+1，-1
+function roll_fate_dice()
+    -- FATE骰子的四个面：0, 0, +1, -1
+    local faces = {0, 0, 1, -1}
+    local result = faces[ranint(1, 4)]
+    return result
+end
+
+-- 掷4个FATE骰子
+function roll_4_fate_dice()
+    local rolls = {}
+    local sum = 0
+
+    for i = 1, 4 do
+        local roll = roll_fate_dice()
+        table.insert(rolls, roll)
+        sum = sum + roll
+    end
+
+    return {values = rolls, sum = sum}
+end
+
+-- 格式化FATE骰子显示
+function format_fate_result(rolls)
+    local display_values = {}
+    for _, roll in ipairs(rolls) do
+        table.insert(display_values, tostring(roll))
+    end
+    return "[" .. table.concat(display_values, "][") .. "]"
+end
+
+-- 处理.fate指令
+function roll_fate(msg)
+    -- 解析指令中的修正值，支持带空格的格式如".fate +1", ".fate + 1"
+    local modifier_str = msg.fromMsg:match("[%.。]fate%s*([%+%-]%s*%d+)") or ""
+    -- 移除所有空格后转换为数字
+    modifier_str = modifier_str:gsub("%s+", "")
+    local modifier = tonumber(modifier_str) or 0
+
+    -- 掷4个FATE骰子
+    local result = roll_4_fate_dice()
+    local final_result = result.sum + modifier
+
+    -- 格式化显示
+    local dice_display = format_fate_result(result.values)
+    local modifier_display = ""
+
+    if modifier > 0 then
+        modifier_display = "+" .. modifier
+    elseif modifier < 0 then
+        modifier_display = tostring(modifier)
+    end
+
+    -- 构建回复信息
+    local reply = "{pc}进行FATE检定:\n4dF" .. modifier_display .. " = " .. dice_display
+
+    if modifier ~= 0 then
+        reply = reply .. modifier_display .. " = " .. result.sum .. modifier_display .. " = " .. final_result
+    else
+        reply = reply .. " = " .. final_result
+    end
+
+    return reply
 end
